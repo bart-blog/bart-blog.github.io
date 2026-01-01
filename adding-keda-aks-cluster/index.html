@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>Adding Event-driven Autoscaling to your Kubernetes Cluster</title>
+
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="apple-touch-icon" sizes="57x57" href="/assets/img/favicons/apple-touch-icon-57x57.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="60x60" href="/assets/img/favicons/apple-touch-icon-60x60.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="72x72" href="/assets/img/favicons/apple-touch-icon-72x72.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="76x76" href="/assets/img/favicons/apple-touch-icon-76x76.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="114x114" href="/assets/img/favicons/apple-touch-icon-114x114.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="120x120" href="/assets/img/favicons/apple-touch-icon-120x120.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="144x144" href="/assets/img/favicons/apple-touch-icon-144x144.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="152x152" href="/assets/img/favicons/apple-touch-icon-152x152.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicons/apple-touch-icon-180x180.png?v=dd83e9e30e">
+
+    <link rel="icon" type="image/png" href="/assets/img/favicons/favicon-32x32.png?v=dd83e9e30e" sizes="32x32">
+    <link rel="icon" type="image/png" href="/assets/img/favicons/android-chrome-192x192.png?v=dd83e9e30e" sizes="192x192">
+    <link rel="icon" type="image/png" href="/assets/img/favicons/favicon-96x96.png?v=dd83e9e30e" sizes="96x96">
+    <link rel="icon" type="image/png" href="/assets/img/favicons/favicon-16x16.png?v=dd83e9e30e" sizes="16x16">
+
+ 
+    <link rel="manifest" href="/assets/img/favicons/manifest.json?v=dd83e9e30e">
+    <link rel="mask-icon" href="/assets/img/favicons/safari-pinned-tab.svg?v=dd83e9e30e" color="#5bbad5">
+    <link rel="shortcut icon" href="https://bart.je/content/images/size/w256h256/2024/05/favicon-194x194.png">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="msapplication-TileImage" content="/assets/img/favicons/mstile-144x144.png?v=dd83e9e30e">
+    <meta name="msapplication-config" content="/assets/img/favicons/browserconfig.xml?v=dd83e9e30e">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/screen.css?v=dd83e9e30e" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/custom.css?v=dd83e9e30e" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/prism.css?v=dd83e9e30e" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/rrssb.css?v=dd83e9e30e" />
+
+    <link rel="icon" href="https://bart.je/content/images/size/w256h256/2024/05/favicon-194x194.png" type="image/png">
+    <link rel="canonical" href="https://bart.je/adding-keda-aks-cluster/">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+    <meta property="og:site_name" content="Bart Jansen">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Adding Event-driven Autoscaling to your Kubernetes Cluster">
+    <meta property="og:description" content="Azure Kubernetes Service (AKS) comes with a Cluster Autoscaler (CA) that can automatically add nodes to the node pool based on the load of the cluster (based on CPU/memory usage). KEDA is active on the pod-level and uses Horizontal Pod Autoscaling (HPA) to dynamically add additional pods based on">
+    <meta property="og:url" content="https://bart.je/adding-keda-aks-cluster/">
+    <meta property="og:image" content="https://bart.je/content/images/2021/07/horizontal-autoscaling-kubernetes-1500x700.jpg">
+    <meta property="article:published_time" content="2021-07-13T12:57:18.000Z">
+    <meta property="article:modified_time" content="2023-11-09T12:07:40.000Z">
+    <meta property="article:tag" content="azure">
+    <meta property="article:tag" content="keda">
+    <meta property="article:tag" content="aks">
+    <meta property="article:tag" content="autoscaling">
+    <meta property="article:tag" content="kubernetes">
+    <meta property="article:tag" content="helm">
+    
+    <meta property="article:publisher" content="https://www.facebook.com/bartj">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Adding Event-driven Autoscaling to your Kubernetes Cluster">
+    <meta name="twitter:description" content="Azure Kubernetes Service (AKS) comes with a Cluster Autoscaler (CA) that can automatically add nodes to the node pool based on the load of the cluster (based on CPU/memory usage). KEDA is active on the pod-level and uses Horizontal Pod Autoscaling (HPA) to dynamically add additional pods based on">
+    <meta name="twitter:url" content="https://bart.je/adding-keda-aks-cluster/">
+    <meta name="twitter:image" content="https://bart.je/content/images/2021/07/horizontal-autoscaling-kubernetes-1500x700.jpg">
+    <meta name="twitter:label1" content="Written by">
+    <meta name="twitter:data1" content="Bart Jansen">
+    <meta name="twitter:label2" content="Filed under">
+    <meta name="twitter:data2" content="azure, keda, aks, autoscaling, kubernetes, helm">
+    <meta name="twitter:site" content="@bartjansn">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="560">
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Bart Jansen",
+        "url": "https://bart.je/",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://bart.je/content/images/2024/05/profilepictest.jpg",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Bart Jansen",
+        "url": "https://bart.je/author/bart/",
+        "sameAs": []
+    },
+    "headline": "Adding Event-driven Autoscaling to your Kubernetes Cluster",
+    "url": "https://bart.je/adding-keda-aks-cluster/",
+    "datePublished": "2021-07-13T12:57:18.000Z",
+    "dateModified": "2023-11-09T12:07:40.000Z",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://bart.je/content/images/2021/07/horizontal-autoscaling-kubernetes-1500x700.jpg",
+        "width": 1200,
+        "height": 560
+    },
+    "keywords": "azure, keda, aks, autoscaling, kubernetes, helm",
+    "description": "Azure Kubernetes Service (AKS) comes with a Cluster Autoscaler (CA) that can automatically add nodes to the node pool based on the load of the cluster (based on CPU/memory usage). KEDA is active on the pod-level and uses Horizontal Pod Autoscaling (HPA) to dynamically add additional pods based on the configured scaler. CA and KEDA therefore go hand-in-hand when managing dynamic workloads on an AKS cluster since they scale on different dimensions, based on different rules, as shown below:\n\n\nOverv",
+    "mainEntityOfPage": "https://bart.je/adding-keda-aks-cluster/"
+}
+    </script>
+
+    <meta name="generator" content="Ghost 6.10">
+    <link rel="alternate" type="application/rss+xml" title="Bart Jansen" href="https://bart.je/rss/">
+    <script defer src="https://cdn.jsdelivr.net/ghost/portal@~2.56/umd/portal.min.js" data-i18n="true" data-ghost="https://bart.je/" data-key="28acd29ae1d63271d41c4c0c57" data-api="https://bart.je/ghost/api/content/" data-locale="en" crossorigin="anonymous"></script><style id="gh-members-styles">.gh-post-upgrade-cta-content,
+.gh-post-upgrade-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    text-align: center;
+    width: 100%;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.gh-post-upgrade-cta-content {
+    border-radius: 8px;
+    padding: 40px 4vw;
+}
+
+.gh-post-upgrade-cta h2 {
+    color: #ffffff;
+    font-size: 28px;
+    letter-spacing: -0.2px;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta p {
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta small {
+    font-size: 16px;
+    letter-spacing: -0.2px;
+}
+
+.gh-post-upgrade-cta a {
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a:hover {
+    color: #ffffff;
+    opacity: 0.8;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a.gh-btn {
+    display: block;
+    background: #ffffff;
+    text-decoration: none;
+    margin: 28px 0 0;
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.gh-post-upgrade-cta a.gh-btn:hover {
+    opacity: 0.92;
+}</style>
+    <script defer src="https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/sodo-search.min.js" data-key="28acd29ae1d63271d41c4c0c57" data-styles="https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/main.css" data-sodo-search="https://bart.je/" data-locale="en" crossorigin="anonymous"></script>
+    
+    <link href="https://bart.je/webmentions/receive/" rel="webmention">
+    <script defer src="/public/cards.min.js?v=dd83e9e30e"></script>
+    <link rel="stylesheet" type="text/css" href="/public/cards.min.css?v=dd83e9e30e">
+    <script defer src="/public/member-attribution.min.js?v=dd83e9e30e"></script><style>:root {--ghost-accent-color: #ecc24a;}</style>
+    <script>
+
+var disqus_shortname = 'bartjansen'
+
+var social_link = {
+    'home': 'https://bart.je',
+    'twitter': 'https://twitter.com/bartjansn',
+    'linkedin': 'https://www.linkedin.com/in/bajansen/',
+    'github': 'https://github.com/bart-jansen',
+    'rss':'https://blog.bart.je/rss/'
+    // you can add more icons
+}
+</script>
+</head>
+<body class="post-template tag-azure tag-keda tag-aks tag-autoscaling tag-kubernetes tag-helm tag-hash-import-2024-12-09-22-15">
+
+
+    <div class="site-wrapper">
+
+        
+
+
+<header class="main-header post-head " style="background-image: url(https://bart.je/content/images/2021/07/horizontal-autoscaling-kubernetes-1500x700.jpg)">
+    <nav class="main-nav overlay clearfix">
+        <a class="back-button icon-arrow-left" href="https://bart.je"> Home</a>
+        <a class="subscribe-button icon-feed" href="https://bart.je/rss/"> Subscribe</a>
+    </nav>
+</header>
+
+<main class="content" role="main">
+    <article class="post tag-azure tag-keda tag-aks tag-autoscaling tag-kubernetes tag-helm tag-hash-import-2024-12-09-22-15">
+
+        <header class="post-header">
+            <h1 class="post-title">Adding Event-driven Autoscaling to your Kubernetes Cluster</h1>
+            <section class="post-meta">
+                <time class="post-date" datetime="2021-07-13">13 July 2021</time>  on <a href="/tag/azure/">azure</a>, <a href="/tag/keda/">keda</a>, <a href="/tag/aks/">aks</a>, <a href="/tag/autoscaling/">autoscaling</a>, <a href="/tag/kubernetes/">kubernetes</a>, <a href="/tag/helm/">helm</a>
+            </section>
+            <section class="social-share">
+                <ul class="rrssb-buttons clearfix">
+    <li class="rrssb-email">
+
+        <!-- Replace subject with your message using URL Endocding: http://meyerweb.com/eric/tools/dencoder/ -->
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M20.11 26.147c-2.335 1.05-4.36 1.4-7.124 1.4C6.524 27.548.84 22.916.84 15.284.84 7.343 6.602.45 15.4.45c6.854 0 11.8 4.7 11.8 11.252 0 5.684-3.193 9.265-7.398 9.3-1.83 0-3.153-.934-3.347-2.997h-.077c-1.208 1.986-2.96 2.997-5.023 2.997-2.532 0-4.36-1.868-4.36-5.062 0-4.75 3.503-9.07 9.11-9.07 1.713 0 3.7.4 4.6.972l-1.17 7.203c-.387 2.298-.115 3.3 1 3.4 1.674 0 3.774-2.102 3.774-6.58 0-5.06-3.27-8.994-9.304-8.994C9.05 2.87 3.83 7.545 3.83 14.97c0 6.5 4.2 10.2 10 10.202 1.987 0 4.09-.43 5.647-1.245l.634 2.22zM16.647 10.1c-.31-.078-.7-.155-1.207-.155-2.572 0-4.596 2.53-4.596 5.53 0 1.5.7 2.4 1.9 2.4 1.44 0 2.96-1.83 3.31-4.088l.592-3.72z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">email</span>
+        </a>
+    </li>
+
+    <li class="rrssb-twitter">
+        <!-- Replace href with your Meta and URL information  -->
+        <a href="https://twitter.com/intent/tweet?text=Ridiculously%20Responsive%20Social%20Sharing%20Buttons%20by%20%40dbox%20and%20%40joshuatuscan%3A%20http%3A%2F%2Fkurtnoble.com%2Flabs%2Frrssb%20%7C%20http%3A%2F%2Fkurtnoble.com%2Flabs%2Frrssb%2Fmedia%2Frrssb-preview.png"
+        class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M24.253 8.756C24.69 17.08 18.297 24.182 9.97 24.62c-3.122.162-6.22-.646-8.86-2.32 2.702.18 5.375-.648 7.507-2.32-2.072-.248-3.818-1.662-4.49-3.64.802.13 1.62.077 2.4-.154-2.482-.466-4.312-2.586-4.412-5.11.688.276 1.426.408 2.168.387-2.135-1.65-2.73-4.62-1.394-6.965C5.574 7.816 9.54 9.84 13.802 10.07c-.842-2.738.694-5.64 3.434-6.48 2.018-.624 4.212.043 5.546 1.682 1.186-.213 2.318-.662 3.33-1.317-.386 1.256-1.248 2.312-2.4 2.942 1.048-.106 2.07-.394 3.02-.85-.458 1.182-1.343 2.15-2.48 2.71z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">twitter</span>
+        </a>
+    </li>
+
+    <li class="rrssb-facebook">
+        <!--  Replace with your URL. For best results, make sure you page has the proper FB Open Graph tags in header:
+              https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content/ -->
+        <a class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29">
+                    <path d="M26.4 0H2.6C1.714 0 0 1.715 0 2.6v23.8c0 .884 1.715 2.6 2.6 2.6h12.393V17.988h-3.996v-3.98h3.997v-3.062c0-3.746 2.835-5.97 6.177-5.97 1.6 0 2.444.173 2.845.226v3.792H21.18c-1.817 0-2.156.9-2.156 2.168v2.847h5.045l-.66 3.978h-4.386V29H26.4c.884 0 2.6-1.716 2.6-2.6V2.6c0-.885-1.716-2.6-2.6-2.6z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">facebook</span>
+        </a>
+    </li>
+
+    <li class="rrssb-linkedin">
+        <!-- Replace href with your meta and URL information -->
+        <a class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28">
+                    <path d="M25.424 15.887v8.447h-4.896v-7.882c0-1.98-.71-3.33-2.48-3.33-1.354 0-2.158.91-2.514 1.802-.13.315-.162.753-.162 1.194v8.216h-4.9s.067-13.35 0-14.73h4.9v2.087c-.01.017-.023.033-.033.05h.032v-.05c.65-1.002 1.812-2.435 4.414-2.435 3.222 0 5.638 2.106 5.638 6.632zM5.348 2.5c-1.676 0-2.772 1.093-2.772 2.54 0 1.42 1.066 2.538 2.717 2.546h.032c1.71 0 2.77-1.132 2.77-2.546C8.056 3.593 7.02 2.5 5.344 2.5h.005zm-2.48 21.834h4.896V9.604H2.867v14.73z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">linkedin</span>
+        </a>
+    </li>
+
+
+    <li class="rrssb-reddit">
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M11.794 15.316c0-1.03-.835-1.895-1.866-1.895-1.03 0-1.893.866-1.893 1.896s.863 1.9 1.9 1.9c1.023-.016 1.865-.916 1.865-1.9zM18.1 13.422c-1.03 0-1.895.864-1.895 1.895 0 1 .9 1.9 1.9 1.865 1.03 0 1.87-.836 1.87-1.865-.006-1.017-.875-1.917-1.875-1.895zM17.527 19.79c-.678.68-1.826 1.007-3.514 1.007h-.03c-1.686 0-2.834-.328-3.51-1.005-.264-.265-.693-.265-.958 0-.264.265-.264.7 0 1 .943.9 2.4 1.4 4.5 1.402.005 0 0 0 0 0 .005 0 0 0 0 0 2.066 0 3.527-.46 4.47-1.402.265-.264.265-.693.002-.958-.267-.334-.688-.334-.988-.043z"
+                    />
+                    <path d="M27.707 13.267c0-1.785-1.453-3.237-3.236-3.237-.792 0-1.517.287-2.08.76-2.04-1.294-4.647-2.068-7.44-2.218l1.484-4.69 4.062.955c.07 1.4 1.3 2.6 2.7 2.555 1.488 0 2.695-1.208 2.695-2.695C25.88 3.2 24.7 2 23.2 2c-1.06 0-1.98.616-2.42 1.508l-4.633-1.09c-.344-.082-.693.117-.803.454l-1.793 5.7C10.55 8.6 7.7 9.4 5.6 10.75c-.594-.45-1.3-.75-2.1-.72-1.785 0-3.237 1.45-3.237 3.2 0 1.1.6 2.1 1.4 2.69-.04.27-.06.55-.06.83 0 2.3 1.3 4.4 3.7 5.9 2.298 1.5 5.3 2.3 8.6 2.325 3.227 0 6.27-.825 8.57-2.325 2.387-1.56 3.7-3.66 3.7-5.917 0-.26-.016-.514-.05-.768.965-.465 1.577-1.565 1.577-2.698zm-4.52-9.912c.74 0 1.3.6 1.3 1.3 0 .738-.6 1.34-1.34 1.34s-1.343-.602-1.343-1.34c.04-.655.596-1.255 1.396-1.3zM1.646 13.3c0-1.038.845-1.882 1.883-1.882.31 0 .6.1.9.21-1.05.867-1.813 1.86-2.26 2.9-.338-.328-.57-.728-.57-1.26zm20.126 8.27c-2.082 1.357-4.863 2.105-7.83 2.105-2.968 0-5.748-.748-7.83-2.105-1.99-1.3-3.087-3-3.087-4.782 0-1.784 1.097-3.484 3.088-4.784 2.08-1.358 4.86-2.106 7.828-2.106 2.967 0 5.7.7 7.8 2.106 1.99 1.3 3.1 3 3.1 4.784C24.86 18.6 23.8 20.3 21.8 21.57zm4.014-6.97c-.432-1.084-1.19-2.095-2.244-2.977.273-.156.59-.245.928-.245 1.036 0 1.9.8 1.9 1.9-.016.522-.27 1.022-.57 1.327z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">reddit</span>
+        </a>
+    </li>
+
+    <li class="rrssb-hackernews">
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path fill="#FFF" d="M14 13.626l-4.508-9.19H6.588l6.165 12.208v6.92h2.51v-6.92l6.15-12.21H18.69" />
+                </svg>
+            </span>
+            <span class="rrssb-text">hackernews</span>
+        </a>
+    </li>
+
+
+</ul>
+            </section>
+        </header>
+
+        <section class="post-content">
+            <p>Azure Kubernetes Service (AKS) comes with a Cluster Autoscaler (CA) that can automatically <em>add nodes</em> to the node pool based on the load of the cluster (based on CPU/memory usage). KEDA is active on the pod-level and uses Horizontal Pod Autoscaling (HPA) to dynamically add <em>additional pods</em> based on the configured scaler. CA and KEDA therefore go hand-in-hand when managing dynamic workloads on an AKS cluster since they scale on different dimensions, based on different rules, as shown below:</p><figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption"><img src="https://bart.je/content/images/2021/07/aks-scaling-dimensions.png" class="kg-image" alt="" loading="lazy" width="822" height="485" srcset="https://bart.je/content/images/size/w600/2021/07/aks-scaling-dimensions.png 600w, https://bart.je/content/images/2021/07/aks-scaling-dimensions.png 822w"><figcaption><span style="white-space: pre-wrap;">Vertical and Horizontal scaling in Kubernetes</span></figcaption></figure><h2 id="overview">Overview</h2><p>An overview of KEDA that scales an <code>App</code> based on the Topic Queue size of <code>Azure Service Bus</code> is shown in this diagram:</p><figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption"><img src="https://bart.je/content/images/2021/07/keda-overview.png" class="kg-image" alt="" loading="lazy" width="1652" height="871" srcset="https://bart.je/content/images/size/w600/2021/07/keda-overview.png 600w, https://bart.je/content/images/size/w1000/2021/07/keda-overview.png 1000w, https://bart.je/content/images/size/w1600/2021/07/keda-overview.png 1600w, https://bart.je/content/images/2021/07/keda-overview.png 1652w" sizes="(min-width: 1200px) 1200px"><figcaption><span style="white-space: pre-wrap;">Communication flow for KEDA scaling an app in AKS</span></figcaption></figure><p>The app is deployed together with a KEDA-backed <code>ScaledObject</code>.  This ScaledObject supports <code>minReplicaCount</code> and <code>maxReplicaCount</code> that defines the range of concurrent replicas for the pods that can exist for the app. Furthermore, a <code>scale trigger</code> object is defined inside the ScaledObject that defines the scaling criteria and conditions for scaling up and down.</p><p>Although optional, the diagram above also uses <em>Pod Identity</em>. Similar to how secrets are <a href="https://github.com/Azure/secrets-store-csi-driver-provider-azure?ref=192.168.1.4">fetched from Azure Key Vault inside containers</a>, Pod Identity is used with KEDA to directly subscribe to an e.g. <em>Azure Service Bus Topic</em> to scale the pods without passing any connecting strings by specifying its <code>AzureIdentityBinding</code>. </p><h2 id="usage">Usage</h2><p>The KEDA <a href="https://github.com/kedacore/charts?ref=192.168.1.4" rel="noopener noreferrer">Helm Chart</a> needs to be installed on the AKS cluster and configured to use  <code>AzureIdentityBinding</code> to access resources in Azure. This Azure AD Identity needs to have sufficient RBAC permissions to directly access the required resources in Azure.</p><p>The <code>ScaledObject</code> is defined as follows, which is deployed along with the application deployment specified under <code>scaleTargetRef</code>. This needs to match the deployment name which needs to be deployed in the same Kubernetes namespace.</p><pre><code class="language-yaml">apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: msg-processor-scaler
+spec:
+  scaleTargetRef:
+    name: msg-processor # must be in the same namespace as the ScaledObject
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  triggers:
+  - type: azure-servicebus
+    metadata:
+      namespace: SERVICE_BUS_NAMESPACE 
+      topicName: SERVICE_BUS_TOPIC
+      subscriptionName: SERVICE_BUS_TOPIC_SUBSCRIPTION
+      messageCount: "5"
+    authenticationRef:
+      name: trigger-auth-service-bus-msgs
+</code></pre><p>It defines the <code>type</code> of scale trigger we would like to use and the scaling criteria specified under the <code>metadata</code> object. Lots of different KEDA scalars are available out of the box and details can be found by going through the <a href="https://keda.sh/docs/latest/scalers/?ref=192.168.1.4">KEDA documentation</a>. </p><p>In the example above, we use an <a href="https://keda.sh/docs/latest/scalers/azure-service-bus/?ref=192.168.1.4">azure-servicebus scalar</a> and would like to scale out if there are more than 5 unprocessed messages on the topic subscription <code>SERVICE_BUS_TOPIC_SUBSCRIPTION</code> on the <code>SERVICE_BUS_TOPIC</code> topic in the <code>SERVICE_BUS_NAMESPACE</code> kubernetes namespace. Scaling will go up to a maximum of 10 concurrent replicas which is defined via <code>maxReplicaCount</code> and there will always be a 1 pod minimum as defined by <code>minReplicaCount</code>.</p><p>Since we are using Pod Identity, we also specify the <code>authenticationRef</code> for the ScaledObject to<code>trigger-auth-service-bus-msgs</code>. This is a <code>TriggerAuthentication</code> resource that defines how KEDA should authenticate to get the metrics.</p><pre><code class="language-yaml">apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: trigger-auth-service-bus-msgs
+spec:
+  podIdentity:
+    provider: azure
+</code></pre><p>In this case, we are telling KEDA to use Azure as a Pod Identity provider which uses <a href="https://github.com/Azure/aad-pod-identity?ref=192.168.1.4" rel="noopener noreferrer">Azure AD Pod Identity</a>. Alternatively, a full connection string can also be used without specifying a TriggerAuthentication resource.</p><p>By using a TriggerAuthentication you can easily re-use this authentication resource, but it also allows you to separate the permissions for KEDA and other resources inside your kubernetes cluster by binding them to different Azure AD Identities with different RBAC permissions.</p><h2 id="using-alternative-keda-scalars">Using alternative KEDA scalars</h2><p>The example above shows how to configure KEDA for autoscaling using <em>Azure Service Bus Topics</em>, but lots of other scalars are supported out of the box and more information can be found on <a href="https://keda.sh/docs/2.2/scalers/?ref=192.168.1.4" rel="noopener noreferrer">KEDA Documentation - Scalars</a> .</p><blockquote>Note: when adding additional triggers, also ensure that Pod Identity can read from these resources by adding the corresponding RBAC permissions.</blockquote><h2 id="using-the-prebuilt-helm-chart-with-keda-support">Using the prebuilt Helm chart with KEDA support</h2><p>If you have <a href="https://blog.bart.je/deploying-a-fully-configured-aks-cluster-in-azure-using-terraform/?ref=192.168.1.4">deployed a fully configured AKS cluster to Azure</a> and you are also using the accompanying <a href="https://github.com/bart-jansen/secretstore-ingress-keda-apps-helm?ref=192.168.1.4">Umbrella Helm chart</a> for easy deployment of your apps then you're in luck, because it also allows you to easily add KEDA support for the applications you deploy to the AKS cluster. </p><p>Most of the documentation to get started is available on <a href="https://github.com/bart-jansen/secretstore-ingress-keda-apps-helm?ref=192.168.1.4">GitHub</a>, but here's a sample on how you would deploy the application described above using this Helm Chart.</p><pre><code class="language-yaml">helm-app:
+  app:
+    name: app-service-name
+    container:
+      image: hello-world:latest
+      port: 80
+
+  keda:
+    enabled: true
+    name: app-service-name-keda
+    authRefName: auth-trigger-app-service-name
+    scaleTargetRef: app-service-name 
+    minReplicaCount: 1
+    maxReplicaCount: 10
+    triggers:
+    - type: azure-servicebus
+      metadata:
+        topicName: sbtopic-app-example-service
+        subscriptionName: sbsub-app-example-service
+        namespace: servicebus-app-example-ns
+        messageCount: 5</code></pre><p>Using this Helm Chart, you can easily deploy your Service, Deployment, Scaled Object, AuthenticationTriggers and optionally all other resources (e.g. ingress, secretstore) your deployment requires. </p>
+        </section>
+		
+			<div class="fb-comments" data-href="https://bart.je/adding-keda-aks-cluster/" data-numposts="5"></div>
+
+        <section class="social-share">
+            <ul class="rrssb-buttons clearfix">
+    <li class="rrssb-email">
+
+        <!-- Replace subject with your message using URL Endocding: http://meyerweb.com/eric/tools/dencoder/ -->
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M20.11 26.147c-2.335 1.05-4.36 1.4-7.124 1.4C6.524 27.548.84 22.916.84 15.284.84 7.343 6.602.45 15.4.45c6.854 0 11.8 4.7 11.8 11.252 0 5.684-3.193 9.265-7.398 9.3-1.83 0-3.153-.934-3.347-2.997h-.077c-1.208 1.986-2.96 2.997-5.023 2.997-2.532 0-4.36-1.868-4.36-5.062 0-4.75 3.503-9.07 9.11-9.07 1.713 0 3.7.4 4.6.972l-1.17 7.203c-.387 2.298-.115 3.3 1 3.4 1.674 0 3.774-2.102 3.774-6.58 0-5.06-3.27-8.994-9.304-8.994C9.05 2.87 3.83 7.545 3.83 14.97c0 6.5 4.2 10.2 10 10.202 1.987 0 4.09-.43 5.647-1.245l.634 2.22zM16.647 10.1c-.31-.078-.7-.155-1.207-.155-2.572 0-4.596 2.53-4.596 5.53 0 1.5.7 2.4 1.9 2.4 1.44 0 2.96-1.83 3.31-4.088l.592-3.72z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">email</span>
+        </a>
+    </li>
+
+    <li class="rrssb-twitter">
+        <!-- Replace href with your Meta and URL information  -->
+        <a href="https://twitter.com/intent/tweet?text=Ridiculously%20Responsive%20Social%20Sharing%20Buttons%20by%20%40dbox%20and%20%40joshuatuscan%3A%20http%3A%2F%2Fkurtnoble.com%2Flabs%2Frrssb%20%7C%20http%3A%2F%2Fkurtnoble.com%2Flabs%2Frrssb%2Fmedia%2Frrssb-preview.png"
+        class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M24.253 8.756C24.69 17.08 18.297 24.182 9.97 24.62c-3.122.162-6.22-.646-8.86-2.32 2.702.18 5.375-.648 7.507-2.32-2.072-.248-3.818-1.662-4.49-3.64.802.13 1.62.077 2.4-.154-2.482-.466-4.312-2.586-4.412-5.11.688.276 1.426.408 2.168.387-2.135-1.65-2.73-4.62-1.394-6.965C5.574 7.816 9.54 9.84 13.802 10.07c-.842-2.738.694-5.64 3.434-6.48 2.018-.624 4.212.043 5.546 1.682 1.186-.213 2.318-.662 3.33-1.317-.386 1.256-1.248 2.312-2.4 2.942 1.048-.106 2.07-.394 3.02-.85-.458 1.182-1.343 2.15-2.48 2.71z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">twitter</span>
+        </a>
+    </li>
+
+    <li class="rrssb-facebook">
+        <!--  Replace with your URL. For best results, make sure you page has the proper FB Open Graph tags in header:
+              https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content/ -->
+        <a class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29">
+                    <path d="M26.4 0H2.6C1.714 0 0 1.715 0 2.6v23.8c0 .884 1.715 2.6 2.6 2.6h12.393V17.988h-3.996v-3.98h3.997v-3.062c0-3.746 2.835-5.97 6.177-5.97 1.6 0 2.444.173 2.845.226v3.792H21.18c-1.817 0-2.156.9-2.156 2.168v2.847h5.045l-.66 3.978h-4.386V29H26.4c.884 0 2.6-1.716 2.6-2.6V2.6c0-.885-1.716-2.6-2.6-2.6z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">facebook</span>
+        </a>
+    </li>
+
+    <li class="rrssb-linkedin">
+        <!-- Replace href with your meta and URL information -->
+        <a class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28">
+                    <path d="M25.424 15.887v8.447h-4.896v-7.882c0-1.98-.71-3.33-2.48-3.33-1.354 0-2.158.91-2.514 1.802-.13.315-.162.753-.162 1.194v8.216h-4.9s.067-13.35 0-14.73h4.9v2.087c-.01.017-.023.033-.033.05h.032v-.05c.65-1.002 1.812-2.435 4.414-2.435 3.222 0 5.638 2.106 5.638 6.632zM5.348 2.5c-1.676 0-2.772 1.093-2.772 2.54 0 1.42 1.066 2.538 2.717 2.546h.032c1.71 0 2.77-1.132 2.77-2.546C8.056 3.593 7.02 2.5 5.344 2.5h.005zm-2.48 21.834h4.896V9.604H2.867v14.73z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">linkedin</span>
+        </a>
+    </li>
+
+
+    <li class="rrssb-reddit">
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M11.794 15.316c0-1.03-.835-1.895-1.866-1.895-1.03 0-1.893.866-1.893 1.896s.863 1.9 1.9 1.9c1.023-.016 1.865-.916 1.865-1.9zM18.1 13.422c-1.03 0-1.895.864-1.895 1.895 0 1 .9 1.9 1.9 1.865 1.03 0 1.87-.836 1.87-1.865-.006-1.017-.875-1.917-1.875-1.895zM17.527 19.79c-.678.68-1.826 1.007-3.514 1.007h-.03c-1.686 0-2.834-.328-3.51-1.005-.264-.265-.693-.265-.958 0-.264.265-.264.7 0 1 .943.9 2.4 1.4 4.5 1.402.005 0 0 0 0 0 .005 0 0 0 0 0 2.066 0 3.527-.46 4.47-1.402.265-.264.265-.693.002-.958-.267-.334-.688-.334-.988-.043z"
+                    />
+                    <path d="M27.707 13.267c0-1.785-1.453-3.237-3.236-3.237-.792 0-1.517.287-2.08.76-2.04-1.294-4.647-2.068-7.44-2.218l1.484-4.69 4.062.955c.07 1.4 1.3 2.6 2.7 2.555 1.488 0 2.695-1.208 2.695-2.695C25.88 3.2 24.7 2 23.2 2c-1.06 0-1.98.616-2.42 1.508l-4.633-1.09c-.344-.082-.693.117-.803.454l-1.793 5.7C10.55 8.6 7.7 9.4 5.6 10.75c-.594-.45-1.3-.75-2.1-.72-1.785 0-3.237 1.45-3.237 3.2 0 1.1.6 2.1 1.4 2.69-.04.27-.06.55-.06.83 0 2.3 1.3 4.4 3.7 5.9 2.298 1.5 5.3 2.3 8.6 2.325 3.227 0 6.27-.825 8.57-2.325 2.387-1.56 3.7-3.66 3.7-5.917 0-.26-.016-.514-.05-.768.965-.465 1.577-1.565 1.577-2.698zm-4.52-9.912c.74 0 1.3.6 1.3 1.3 0 .738-.6 1.34-1.34 1.34s-1.343-.602-1.343-1.34c.04-.655.596-1.255 1.396-1.3zM1.646 13.3c0-1.038.845-1.882 1.883-1.882.31 0 .6.1.9.21-1.05.867-1.813 1.86-2.26 2.9-.338-.328-.57-.728-.57-1.26zm20.126 8.27c-2.082 1.357-4.863 2.105-7.83 2.105-2.968 0-5.748-.748-7.83-2.105-1.99-1.3-3.087-3-3.087-4.782 0-1.784 1.097-3.484 3.088-4.784 2.08-1.358 4.86-2.106 7.828-2.106 2.967 0 5.7.7 7.8 2.106 1.99 1.3 3.1 3 3.1 4.784C24.86 18.6 23.8 20.3 21.8 21.57zm4.014-6.97c-.432-1.084-1.19-2.095-2.244-2.977.273-.156.59-.245.928-.245 1.036 0 1.9.8 1.9 1.9-.016.522-.27 1.022-.57 1.327z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">reddit</span>
+        </a>
+    </li>
+
+    <li class="rrssb-hackernews">
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path fill="#FFF" d="M14 13.626l-4.508-9.19H6.588l6.165 12.208v6.92h2.51v-6.92l6.15-12.21H18.69" />
+                </svg>
+            </span>
+            <span class="rrssb-text">hackernews</span>
+        </a>
+    </li>
+
+
+</ul>
+        </section>
+		
+
+        <footer class="post-footer">
+
+                    
+
+            <section class="primary_author">
+                <h4><a href="/author/bart/">Bart Jansen</a></h4>
+
+                    <p>Read <a href="/author/bart/">more posts</a> by this author.</p>
+                <div class="author-meta">
+                    
+                    
+                </div>
+            </section>
+
+
+        
+
+
+        <section class="post-comments">
+              <div id="disqus_thread"></div>
+              <script type="text/javascript">
+              // required: replace example with your forum shortname
+              if(disqus_shortname && typeof disqus_shortname === "string") {
+                  var disqus_identifier = '';
+
+                  /* * * DON'T EDIT BELOW THIS LINE * * */
+                  (function() {
+                  var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                  })();
+              }
+              </script>
+              <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </section>
+
+        </footer>
+
+    </article>
+</main>
+
+<aside class="read-next">
+    <a class="read-next-story no-cover" href="/using-a-managed-identity-with-databricks-to-run-notebooks-through-a-web-app/">
+        <section class="post">
+            <h2>Using a Managed Identity with Databricks to Run Notebooks Through a Web App</h2>
+            <p>Databricks is great for processing data, and out of the box comes with &#39;Jobs&#39; to automate and&hellip;</p>
+        </section>
+    </a>
+    <a class="read-next-story prev " style="background-image: url(https://bart.je/content/images/2021/07/archdiagram_k8s.png)" href="/deploying-a-fully-configured-aks-cluster-in-azure-using-terraform/">
+        <section class="post">
+            <h2>Deploying a fully configured AKS cluster in Azure using Terraform</h2>
+            <p>Setting up an Azure Kubernetes Service (AKS) using Terraform, is fairly easy. Setting up a full-fledged AKS cluster that&hellip;</p>
+        </section>
+    </a>
+</aside>
+
+
+
+
+        <footer class="site-footer clearfix">
+            <section class="copyright"><a href="https://bart.je">Bart Jansen</a> &copy; 2026</section>
+            <section class="poweredby">Proudly published with <a href="https://ghost.org">Ghost</a></section>
+        </footer>
+
+    </div>
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    
+
+    <script type="text/javascript" src="/assets/js/jquery.fitvids.js?v=dd83e9e30e"></script>
+    <script type="text/javascript" src="/assets/js/index.js?v=dd83e9e30e"></script>
+    <script type="text/javascript" src="/assets/js/prism.js?v=dd83e9e30e"></script>
+    <script type="text/javascript" src="/assets/js/rrssb.min.js?v=dd83e9e30e"></script>
+
+    <script type="text/javascript">
+        jQuery(document).ready(function($) {
+
+            $('.rrssb-buttons').rrssb({
+                // required:
+                title: 'Adding Event-driven Autoscaling to your Kubernetes Cluster',
+                url: 'https://bart.je/adding-keda-aks-cluster/',
+
+                // optional:
+                 description: 'Adding Event-driven Autoscaling to your Kubernetes Cluster',
+                // emailBody: 'Usually email body is just the description + url, but you can customize it if you want'
+            });
+
+        });
+    </script>
+
+    <script>
+        // TO ACTIVATE ADD var ga_id = "your_ga_id" to ghost code injection header
+        if (window.ga_id) {
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+            ga('create', window.ga_id, 'auto');
+            ga('require', 'linkid', 'linkid.js');
+            ga('send', 'pageview');
+        }
+    </script>
+
+    <script>
+        if(window.social_link){
+            var url_regexp = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/
+            $.each(window.social_link,function(type, url){
+                if(typeof url ==="string" && url_regexp.test(url)){
+                    $('<li>').append($('<a>',{
+                                        html: '<i class="fa fa-'+type+'"></i>',
+                                        title: type,
+                                        href: url,
+                                        target: "_blank"
+                                    })
+                                ).appendTo('.social_link');
+
+                }
+            })
+        }
+    </script>
+
+    <script>
+        var images = document.querySelectorAll('.kg-gallery-image img');
+        images.forEach(function (image) {
+            var container = image.closest('.kg-gallery-image');
+            var width = image.attributes.width.value;
+            var height = image.attributes.height.value;
+            var ratio = width / height;
+            container.style.flex = ratio + ' 1 0%';
+            image.onclick = function() { 
+                var win = window.open(image.src, '_blank');
+                win.focus();
+            };
+        });
+
+        var otherImages = document.querySelectorAll('img.kg-image');
+        otherImages.forEach(function(image) {
+            image.onclick = function() { 
+                var win = window.open(image.src, '_blank');
+                win.focus();
+            };
+        });
+    </script>
+
+</body>
+</html>

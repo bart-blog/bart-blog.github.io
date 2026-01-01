@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>Distributing your Search Ingest pipeline using Dapr</title>
+
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="apple-touch-icon" sizes="57x57" href="/assets/img/favicons/apple-touch-icon-57x57.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="60x60" href="/assets/img/favicons/apple-touch-icon-60x60.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="72x72" href="/assets/img/favicons/apple-touch-icon-72x72.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="76x76" href="/assets/img/favicons/apple-touch-icon-76x76.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="114x114" href="/assets/img/favicons/apple-touch-icon-114x114.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="120x120" href="/assets/img/favicons/apple-touch-icon-120x120.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="144x144" href="/assets/img/favicons/apple-touch-icon-144x144.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="152x152" href="/assets/img/favicons/apple-touch-icon-152x152.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicons/apple-touch-icon-180x180.png?v=dd83e9e30e">
+
+    <link rel="icon" type="image/png" href="/assets/img/favicons/favicon-32x32.png?v=dd83e9e30e" sizes="32x32">
+    <link rel="icon" type="image/png" href="/assets/img/favicons/android-chrome-192x192.png?v=dd83e9e30e" sizes="192x192">
+    <link rel="icon" type="image/png" href="/assets/img/favicons/favicon-96x96.png?v=dd83e9e30e" sizes="96x96">
+    <link rel="icon" type="image/png" href="/assets/img/favicons/favicon-16x16.png?v=dd83e9e30e" sizes="16x16">
+
+ 
+    <link rel="manifest" href="/assets/img/favicons/manifest.json?v=dd83e9e30e">
+    <link rel="mask-icon" href="/assets/img/favicons/safari-pinned-tab.svg?v=dd83e9e30e" color="#5bbad5">
+    <link rel="shortcut icon" href="https://bart.je/content/images/size/w256h256/2024/05/favicon-194x194.png">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="msapplication-TileImage" content="/assets/img/favicons/mstile-144x144.png?v=dd83e9e30e">
+    <meta name="msapplication-config" content="/assets/img/favicons/browserconfig.xml?v=dd83e9e30e">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/screen.css?v=dd83e9e30e" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/custom.css?v=dd83e9e30e" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/prism.css?v=dd83e9e30e" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/rrssb.css?v=dd83e9e30e" />
+
+    <link rel="icon" href="https://bart.je/content/images/size/w256h256/2024/05/favicon-194x194.png" type="image/png">
+    <link rel="canonical" href="https://bart.je/distributing-search-ingest-with-dapr/">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+    <meta property="og:site_name" content="Bart Jansen">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Distributing your Search Ingest pipeline using Dapr">
+    <meta property="og:description" content="In the ever-evolving landscape of cloud-native applications, the need for scalable and resilient architectures has never been more critical. Traditional monolithic systems often fall short when it comes to handling large volumes of data and complex workflows. Enter Dapr: Distributed Application Runtime, a powerful framework that helps you build highly">
+    <meta property="og:url" content="https://bart.je/distributing-search-ingest-with-dapr/">
+    <meta property="og:image" content="https://bart.je/content/images/2024/06/dapr-search-overview.drawio-1.svg">
+    <meta property="article:published_time" content="2024-06-14T10:25:28.000Z">
+    <meta property="article:modified_time" content="2024-06-14T10:25:28.000Z">
+    <meta property="article:tag" content="dapr">
+    <meta property="article:tag" content="azure ai search">
+    <meta property="article:tag" content="search ingest">
+    <meta property="article:tag" content="scalability">
+    <meta property="article:tag" content="ingestion">
+    <meta property="article:tag" content="search index">
+    <meta property="article:tag" content="kubernetes">
+    <meta property="article:tag" content="rate limits">
+    <meta property="article:tag" content="distributed ingest">
+    
+    <meta property="article:publisher" content="https://www.facebook.com/bartj">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Distributing your Search Ingest pipeline using Dapr">
+    <meta name="twitter:description" content="In the ever-evolving landscape of cloud-native applications, the need for scalable and resilient architectures has never been more critical. Traditional monolithic systems often fall short when it comes to handling large volumes of data and complex workflows. Enter Dapr: Distributed Application Runtime, a powerful framework that helps you build highly">
+    <meta name="twitter:url" content="https://bart.je/distributing-search-ingest-with-dapr/">
+    <meta name="twitter:image" content="https://bart.je/content/images/2024/06/dapr-search-overview.drawio-1.svg">
+    <meta name="twitter:label1" content="Written by">
+    <meta name="twitter:data1" content="Bart Jansen">
+    <meta name="twitter:label2" content="Filed under">
+    <meta name="twitter:data2" content="dapr, azure ai search, search ingest, scalability, ingestion, search index, kubernetes, rate limits, distributed ingest">
+    <meta name="twitter:site" content="@bartjansn">
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Bart Jansen",
+        "url": "https://bart.je/",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://bart.je/content/images/2024/05/profilepictest.jpg",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Bart Jansen",
+        "url": "https://bart.je/author/bart/",
+        "sameAs": []
+    },
+    "headline": "Distributing your Search Ingest pipeline using Dapr",
+    "url": "https://bart.je/distributing-search-ingest-with-dapr/",
+    "datePublished": "2024-06-14T10:25:28.000Z",
+    "dateModified": "2024-06-14T10:25:28.000Z",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://bart.je/content/images/2024/06/dapr-search-overview.drawio-1.svg"
+    },
+    "keywords": "dapr, azure ai search, search ingest, scalability, ingestion, search index, kubernetes, rate limits, distributed ingest",
+    "description": "In the ever-evolving landscape of cloud-native applications, the need for scalable and resilient architectures has never been more critical. Traditional monolithic systems often fall short when it comes to handling large volumes of data and complex workflows. Enter Dapr: Distributed Application Runtime, a powerful framework that helps you build highly scalable and resilient microservices architecture. In this blog post, we&#x27;ll explore how you can leverage Dapr to distribute your search ingest pip",
+    "mainEntityOfPage": "https://bart.je/distributing-search-ingest-with-dapr/"
+}
+    </script>
+
+    <meta name="generator" content="Ghost 6.10">
+    <link rel="alternate" type="application/rss+xml" title="Bart Jansen" href="https://bart.je/rss/">
+    <script defer src="https://cdn.jsdelivr.net/ghost/portal@~2.56/umd/portal.min.js" data-i18n="true" data-ghost="https://bart.je/" data-key="28acd29ae1d63271d41c4c0c57" data-api="https://bart.je/ghost/api/content/" data-locale="en" crossorigin="anonymous"></script><style id="gh-members-styles">.gh-post-upgrade-cta-content,
+.gh-post-upgrade-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    text-align: center;
+    width: 100%;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.gh-post-upgrade-cta-content {
+    border-radius: 8px;
+    padding: 40px 4vw;
+}
+
+.gh-post-upgrade-cta h2 {
+    color: #ffffff;
+    font-size: 28px;
+    letter-spacing: -0.2px;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta p {
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta small {
+    font-size: 16px;
+    letter-spacing: -0.2px;
+}
+
+.gh-post-upgrade-cta a {
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a:hover {
+    color: #ffffff;
+    opacity: 0.8;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a.gh-btn {
+    display: block;
+    background: #ffffff;
+    text-decoration: none;
+    margin: 28px 0 0;
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.gh-post-upgrade-cta a.gh-btn:hover {
+    opacity: 0.92;
+}</style>
+    <script defer src="https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/sodo-search.min.js" data-key="28acd29ae1d63271d41c4c0c57" data-styles="https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/main.css" data-sodo-search="https://bart.je/" data-locale="en" crossorigin="anonymous"></script>
+    
+    <link href="https://bart.je/webmentions/receive/" rel="webmention">
+    <script defer src="/public/cards.min.js?v=dd83e9e30e"></script>
+    <link rel="stylesheet" type="text/css" href="/public/cards.min.css?v=dd83e9e30e">
+    <script defer src="/public/member-attribution.min.js?v=dd83e9e30e"></script><style>:root {--ghost-accent-color: #ecc24a;}</style>
+    <script>
+
+var disqus_shortname = 'bartjansen'
+
+var social_link = {
+    'home': 'https://bart.je',
+    'twitter': 'https://twitter.com/bartjansn',
+    'linkedin': 'https://www.linkedin.com/in/bajansen/',
+    'github': 'https://github.com/bart-jansen',
+    'rss':'https://blog.bart.je/rss/'
+    // you can add more icons
+}
+</script>
+</head>
+<body class="post-template tag-dapr tag-azure-ai-search tag-search-ingest tag-scalability tag-ingestion tag-search-index tag-kubernetes tag-rate-limits tag-distributed-ingest tag-hash-import-2024-12-09-22-15">
+
+
+    <div class="site-wrapper">
+
+        
+
+
+<header class="main-header post-head " style="background-image: url(https://bart.je/content/images/2024/06/dapr-search-overview.drawio-1.svg)">
+    <nav class="main-nav overlay clearfix">
+        <a class="back-button icon-arrow-left" href="https://bart.je"> Home</a>
+        <a class="subscribe-button icon-feed" href="https://bart.je/rss/"> Subscribe</a>
+    </nav>
+</header>
+
+<main class="content" role="main">
+    <article class="post tag-dapr tag-azure-ai-search tag-search-ingest tag-scalability tag-ingestion tag-search-index tag-kubernetes tag-rate-limits tag-distributed-ingest tag-hash-import-2024-12-09-22-15">
+
+        <header class="post-header">
+            <h1 class="post-title">Distributing your Search Ingest pipeline using Dapr</h1>
+            <section class="post-meta">
+                <time class="post-date" datetime="2024-06-14">14 June 2024</time>  on <a href="/tag/dapr/">dapr</a>, <a href="/tag/azure-ai-search/">azure ai search</a>, <a href="/tag/search-ingest/">search ingest</a>, <a href="/tag/scalability/">scalability</a>, <a href="/tag/ingestion/">ingestion</a>, <a href="/tag/search-index/">search index</a>, <a href="/tag/kubernetes/">kubernetes</a>, <a href="/tag/rate-limits/">rate limits</a>, <a href="/tag/distributed-ingest/">distributed ingest</a>
+            </section>
+            <section class="social-share">
+                <ul class="rrssb-buttons clearfix">
+    <li class="rrssb-email">
+
+        <!-- Replace subject with your message using URL Endocding: http://meyerweb.com/eric/tools/dencoder/ -->
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M20.11 26.147c-2.335 1.05-4.36 1.4-7.124 1.4C6.524 27.548.84 22.916.84 15.284.84 7.343 6.602.45 15.4.45c6.854 0 11.8 4.7 11.8 11.252 0 5.684-3.193 9.265-7.398 9.3-1.83 0-3.153-.934-3.347-2.997h-.077c-1.208 1.986-2.96 2.997-5.023 2.997-2.532 0-4.36-1.868-4.36-5.062 0-4.75 3.503-9.07 9.11-9.07 1.713 0 3.7.4 4.6.972l-1.17 7.203c-.387 2.298-.115 3.3 1 3.4 1.674 0 3.774-2.102 3.774-6.58 0-5.06-3.27-8.994-9.304-8.994C9.05 2.87 3.83 7.545 3.83 14.97c0 6.5 4.2 10.2 10 10.202 1.987 0 4.09-.43 5.647-1.245l.634 2.22zM16.647 10.1c-.31-.078-.7-.155-1.207-.155-2.572 0-4.596 2.53-4.596 5.53 0 1.5.7 2.4 1.9 2.4 1.44 0 2.96-1.83 3.31-4.088l.592-3.72z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">email</span>
+        </a>
+    </li>
+
+    <li class="rrssb-twitter">
+        <!-- Replace href with your Meta and URL information  -->
+        <a href="https://twitter.com/intent/tweet?text=Ridiculously%20Responsive%20Social%20Sharing%20Buttons%20by%20%40dbox%20and%20%40joshuatuscan%3A%20http%3A%2F%2Fkurtnoble.com%2Flabs%2Frrssb%20%7C%20http%3A%2F%2Fkurtnoble.com%2Flabs%2Frrssb%2Fmedia%2Frrssb-preview.png"
+        class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M24.253 8.756C24.69 17.08 18.297 24.182 9.97 24.62c-3.122.162-6.22-.646-8.86-2.32 2.702.18 5.375-.648 7.507-2.32-2.072-.248-3.818-1.662-4.49-3.64.802.13 1.62.077 2.4-.154-2.482-.466-4.312-2.586-4.412-5.11.688.276 1.426.408 2.168.387-2.135-1.65-2.73-4.62-1.394-6.965C5.574 7.816 9.54 9.84 13.802 10.07c-.842-2.738.694-5.64 3.434-6.48 2.018-.624 4.212.043 5.546 1.682 1.186-.213 2.318-.662 3.33-1.317-.386 1.256-1.248 2.312-2.4 2.942 1.048-.106 2.07-.394 3.02-.85-.458 1.182-1.343 2.15-2.48 2.71z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">twitter</span>
+        </a>
+    </li>
+
+    <li class="rrssb-facebook">
+        <!--  Replace with your URL. For best results, make sure you page has the proper FB Open Graph tags in header:
+              https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content/ -->
+        <a class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29">
+                    <path d="M26.4 0H2.6C1.714 0 0 1.715 0 2.6v23.8c0 .884 1.715 2.6 2.6 2.6h12.393V17.988h-3.996v-3.98h3.997v-3.062c0-3.746 2.835-5.97 6.177-5.97 1.6 0 2.444.173 2.845.226v3.792H21.18c-1.817 0-2.156.9-2.156 2.168v2.847h5.045l-.66 3.978h-4.386V29H26.4c.884 0 2.6-1.716 2.6-2.6V2.6c0-.885-1.716-2.6-2.6-2.6z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">facebook</span>
+        </a>
+    </li>
+
+    <li class="rrssb-linkedin">
+        <!-- Replace href with your meta and URL information -->
+        <a class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28">
+                    <path d="M25.424 15.887v8.447h-4.896v-7.882c0-1.98-.71-3.33-2.48-3.33-1.354 0-2.158.91-2.514 1.802-.13.315-.162.753-.162 1.194v8.216h-4.9s.067-13.35 0-14.73h4.9v2.087c-.01.017-.023.033-.033.05h.032v-.05c.65-1.002 1.812-2.435 4.414-2.435 3.222 0 5.638 2.106 5.638 6.632zM5.348 2.5c-1.676 0-2.772 1.093-2.772 2.54 0 1.42 1.066 2.538 2.717 2.546h.032c1.71 0 2.77-1.132 2.77-2.546C8.056 3.593 7.02 2.5 5.344 2.5h.005zm-2.48 21.834h4.896V9.604H2.867v14.73z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">linkedin</span>
+        </a>
+    </li>
+
+
+    <li class="rrssb-reddit">
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M11.794 15.316c0-1.03-.835-1.895-1.866-1.895-1.03 0-1.893.866-1.893 1.896s.863 1.9 1.9 1.9c1.023-.016 1.865-.916 1.865-1.9zM18.1 13.422c-1.03 0-1.895.864-1.895 1.895 0 1 .9 1.9 1.9 1.865 1.03 0 1.87-.836 1.87-1.865-.006-1.017-.875-1.917-1.875-1.895zM17.527 19.79c-.678.68-1.826 1.007-3.514 1.007h-.03c-1.686 0-2.834-.328-3.51-1.005-.264-.265-.693-.265-.958 0-.264.265-.264.7 0 1 .943.9 2.4 1.4 4.5 1.402.005 0 0 0 0 0 .005 0 0 0 0 0 2.066 0 3.527-.46 4.47-1.402.265-.264.265-.693.002-.958-.267-.334-.688-.334-.988-.043z"
+                    />
+                    <path d="M27.707 13.267c0-1.785-1.453-3.237-3.236-3.237-.792 0-1.517.287-2.08.76-2.04-1.294-4.647-2.068-7.44-2.218l1.484-4.69 4.062.955c.07 1.4 1.3 2.6 2.7 2.555 1.488 0 2.695-1.208 2.695-2.695C25.88 3.2 24.7 2 23.2 2c-1.06 0-1.98.616-2.42 1.508l-4.633-1.09c-.344-.082-.693.117-.803.454l-1.793 5.7C10.55 8.6 7.7 9.4 5.6 10.75c-.594-.45-1.3-.75-2.1-.72-1.785 0-3.237 1.45-3.237 3.2 0 1.1.6 2.1 1.4 2.69-.04.27-.06.55-.06.83 0 2.3 1.3 4.4 3.7 5.9 2.298 1.5 5.3 2.3 8.6 2.325 3.227 0 6.27-.825 8.57-2.325 2.387-1.56 3.7-3.66 3.7-5.917 0-.26-.016-.514-.05-.768.965-.465 1.577-1.565 1.577-2.698zm-4.52-9.912c.74 0 1.3.6 1.3 1.3 0 .738-.6 1.34-1.34 1.34s-1.343-.602-1.343-1.34c.04-.655.596-1.255 1.396-1.3zM1.646 13.3c0-1.038.845-1.882 1.883-1.882.31 0 .6.1.9.21-1.05.867-1.813 1.86-2.26 2.9-.338-.328-.57-.728-.57-1.26zm20.126 8.27c-2.082 1.357-4.863 2.105-7.83 2.105-2.968 0-5.748-.748-7.83-2.105-1.99-1.3-3.087-3-3.087-4.782 0-1.784 1.097-3.484 3.088-4.784 2.08-1.358 4.86-2.106 7.828-2.106 2.967 0 5.7.7 7.8 2.106 1.99 1.3 3.1 3 3.1 4.784C24.86 18.6 23.8 20.3 21.8 21.57zm4.014-6.97c-.432-1.084-1.19-2.095-2.244-2.977.273-.156.59-.245.928-.245 1.036 0 1.9.8 1.9 1.9-.016.522-.27 1.022-.57 1.327z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">reddit</span>
+        </a>
+    </li>
+
+    <li class="rrssb-hackernews">
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path fill="#FFF" d="M14 13.626l-4.508-9.19H6.588l6.165 12.208v6.92h2.51v-6.92l6.15-12.21H18.69" />
+                </svg>
+            </span>
+            <span class="rrssb-text">hackernews</span>
+        </a>
+    </li>
+
+
+</ul>
+            </section>
+        </header>
+
+        <section class="post-content">
+            <p>In the ever-evolving landscape of cloud-native applications, the need for scalable and resilient architectures has never been more critical. Traditional monolithic systems often fall short when it comes to handling large volumes of data and complex workflows. Enter <a href="https://dapr.io/?ref=192.168.1.4" rel="noreferrer">Dapr</a>: Distributed Application Runtime, a powerful framework that helps you build highly scalable and resilient microservices architecture. In this blog post, we'll explore how you can leverage Dapr to distribute your search ingest pipeline, enhancing scalability, resiliency, and maintainability.</p><h3 id="why-dapr">Why Dapr?</h3><p>Traditional monolithic architectures often struggle with the demands of processing large volumes of documents for search indexing. Challenges include scalability, resiliency, and efficient orchestration of the various services involved in extracting, processing, and enriching document content. All these services have their own rate limits, which need to be managed carefully with proper back-off and retry strategies optimized for that specific service.  Enter Dapr, with its microservices-oriented approach, offering a compelling solution to these challenges.</p><h3 id="comparison">Comparison</h3><table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Monolithic Approach</th>
+<th>Dapr-based Solution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Scalability</td>
+<td>❌ Limited; scaling the entire application can be inefficient</td>
+<td>✅ High; individual components can be scaled independently</td>
+</tr>
+<tr>
+<td>Resiliency</td>
+<td>❌ Retry policies and error handling can be complex</td>
+<td>✅ Improved; easier to manage with Dapr's built-in mechanisms</td>
+</tr>
+<tr>
+<td>Kubernetes Integration</td>
+<td>❌ May require additional configuration</td>
+<td>✅ Kubernetes-native; designed to work seamlessly with k8s</td>
+</tr>
+<tr>
+<td>Monitoring</td>
+<td>❌ Custom setup required for metrics and tracing</td>
+<td>✅ Built-in support for Application Insights and other monitoring tools</td>
+</tr>
+<tr>
+<td>Componentization</td>
+<td>❌ All logic is within a single application</td>
+<td>✅ Logic is distributed across multiple Dapr applications</td>
+</tr>
+<tr>
+<td>Complexity</td>
+<td>✅ Single application to manage</td>
+<td>❌ Multiple applications increase management complexity</td>
+</tr>
+<tr>
+<td>Asynchronous Processing</td>
+<td>❌ Can be challenging to implement and track</td>
+<td>✅ Native support for async operations, but tracking can be complex</td>
+</tr>
+<tr>
+<td>Overhead</td>
+<td>✅ Potentially lower as there's a single runtime</td>
+<td>❌ Additional overhead due to Dapr sidecars and messaging/statestore components</td>
+</tr>
+</tbody>
+</table>
+<blockquote>Dapr shows significant improvements, adding just a bit of complexity and overhead</blockquote><h3 id="how-does-it-work">How does it work?</h3><p>Dapr facilitates the development of distributed applications by providing building blocks that abstract away the complexities of direct communication between microservices, state management, and resource binding. By leveraging Dapr in a document processing pipeline, each stage of the process becomes a separate Dapr application, capable of independently scaling and recovering from failures. </p><h4 id="typical-workflow">Typical workflow</h4><p>Consider a workflow designed to ingest, process, and index documents for search. The process involves several stages, from extracting text from documents to enriching the content with metadata, generating embeddings, and ultimately indexing the documents for search. With Dapr, each of these stages can be implemented as a separate microservice, communicating through Dapr's pub/sub messaging and utilizing shared state management and resource bindings.</p><p>The workflow typically includes the following stages:</p><ol><li><strong>Batcher</strong>: Initiates the process by listing documents from a storage service and triggering the document processing pipeline.</li><li><strong>Process Document</strong>: Extracts text from documents using OCR or other text extraction tools and splits the content into manageable chunks.</li><li><strong>Generate Embeddings</strong>: Converts text chunks into vector representations using machine learning models, facilitating efficient search and similarity comparisons.</li><li><strong>Generate Keyphrases and Summaries</strong>: Enriches the content with key phrases and summaries, enhancing the searchability and relevance of the documents.</li><li><strong>Indexing</strong>: Once all enrichments are complete, the processed documents are added to a search index, making them searchable.</li></ol><figure class="kg-card kg-image-card kg-width-full kg-card-hascaption"><img src="https://bart.je/content/images/2024/06/dapr-search-overview.drawio.svg" class="kg-image" alt="" loading="lazy" width="1656" height="657"><figcaption><span style="white-space: pre-wrap;">Typical Dapr-approach for distributing search ingest</span></figcaption></figure><p>To summarize the flow:</p><ul><li> <code>Batcher</code> is triggered by an HTTP request,  retrieving every single document in the given blob path and adding these to a queue.</li><li><code>ProcessDocument</code> is subscribed to this queue, pulling the raw document from blob and extracting its content using Form Recognizer/Document Intelligence, splitting it up into multiple manageable sections. Each section is added to 3 enrichment queues (<code>GenerateEmbeddings</code>, <code>GenerateKeyphrases</code>, <code>GenerateSummary</code>).</li><li>These 3 enrichment queues are processed in parallel, triggered with a reference to the section that's pulled from the statestore (e.g. Redis), enriched using an external service (e.g. OpenAI embedding, Azure Language API) with the enrichment stored back into the statestore and triggering an <code>EnrichmentComplete</code> .</li><li>Once all enrichments are captured for a single section, the section is stored into Blob for indexing and <code>DocumentCompleted</code> is triggered to notify the section is finished.</li><li>Similarly, once all sections for a single Document are processed, <code>BatchCompleted</code> is triggered to notify the Document is fully processed.</li><li>Once <code>BatchCompleted</code> has been triggered for all Documents that needed processing in the pipeline, Azure Search Indexer is started, pulling all sections from Blob to populate the search index.</li></ul><p>This <a href="https://github.com/bart-jansen/search-ingest-dapr?ref=192.168.1.4" rel="noreferrer">GitHub repository</a> can serve as inspiration for implementing this flow, including scripts to deploy the infrastructure, local development and deployment scripts for deploying these services to Kubernetes.</p><h3 id="conclusion">Conclusion</h3><p>Adopting Dapr for your search ingest pipeline can be a game-changer. It offers significant advantages in scalability, resiliency, and maintainability, making it a strategic investment for future-proofing your applications. While it introduces some complexity and overhead, the benefits of a microservices-oriented architecture, particularly in a Kubernetes environment, far outweigh these trade-offs.</p><p>Splitting each service into its own Dapr container provides several key advantages:</p><ol><li><strong>Granular Control</strong>: You can set specific rate limits for each external service, ensuring that no single service becomes a bottleneck.</li><li><strong>Retry Mechanisms</strong>: By breaking down the ingestion flow into smaller, independent pieces, you can easily retry only the failed service without having to reprocess the entire workflow. This makes the system more efficient and resilient to errors.</li></ol><p>For more details and to access the deployment scripts, visit the <a href="https://github.com/bart-jansen/search-ingest-dapr?ref=192.168.1.4" rel="noreferrer">search-ingest-dapr GitHub repository</a>.</p><p></p>
+        </section>
+		
+			<div class="fb-comments" data-href="https://bart.je/distributing-search-ingest-with-dapr/" data-numposts="5"></div>
+
+        <section class="social-share">
+            <ul class="rrssb-buttons clearfix">
+    <li class="rrssb-email">
+
+        <!-- Replace subject with your message using URL Endocding: http://meyerweb.com/eric/tools/dencoder/ -->
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M20.11 26.147c-2.335 1.05-4.36 1.4-7.124 1.4C6.524 27.548.84 22.916.84 15.284.84 7.343 6.602.45 15.4.45c6.854 0 11.8 4.7 11.8 11.252 0 5.684-3.193 9.265-7.398 9.3-1.83 0-3.153-.934-3.347-2.997h-.077c-1.208 1.986-2.96 2.997-5.023 2.997-2.532 0-4.36-1.868-4.36-5.062 0-4.75 3.503-9.07 9.11-9.07 1.713 0 3.7.4 4.6.972l-1.17 7.203c-.387 2.298-.115 3.3 1 3.4 1.674 0 3.774-2.102 3.774-6.58 0-5.06-3.27-8.994-9.304-8.994C9.05 2.87 3.83 7.545 3.83 14.97c0 6.5 4.2 10.2 10 10.202 1.987 0 4.09-.43 5.647-1.245l.634 2.22zM16.647 10.1c-.31-.078-.7-.155-1.207-.155-2.572 0-4.596 2.53-4.596 5.53 0 1.5.7 2.4 1.9 2.4 1.44 0 2.96-1.83 3.31-4.088l.592-3.72z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">email</span>
+        </a>
+    </li>
+
+    <li class="rrssb-twitter">
+        <!-- Replace href with your Meta and URL information  -->
+        <a href="https://twitter.com/intent/tweet?text=Ridiculously%20Responsive%20Social%20Sharing%20Buttons%20by%20%40dbox%20and%20%40joshuatuscan%3A%20http%3A%2F%2Fkurtnoble.com%2Flabs%2Frrssb%20%7C%20http%3A%2F%2Fkurtnoble.com%2Flabs%2Frrssb%2Fmedia%2Frrssb-preview.png"
+        class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M24.253 8.756C24.69 17.08 18.297 24.182 9.97 24.62c-3.122.162-6.22-.646-8.86-2.32 2.702.18 5.375-.648 7.507-2.32-2.072-.248-3.818-1.662-4.49-3.64.802.13 1.62.077 2.4-.154-2.482-.466-4.312-2.586-4.412-5.11.688.276 1.426.408 2.168.387-2.135-1.65-2.73-4.62-1.394-6.965C5.574 7.816 9.54 9.84 13.802 10.07c-.842-2.738.694-5.64 3.434-6.48 2.018-.624 4.212.043 5.546 1.682 1.186-.213 2.318-.662 3.33-1.317-.386 1.256-1.248 2.312-2.4 2.942 1.048-.106 2.07-.394 3.02-.85-.458 1.182-1.343 2.15-2.48 2.71z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">twitter</span>
+        </a>
+    </li>
+
+    <li class="rrssb-facebook">
+        <!--  Replace with your URL. For best results, make sure you page has the proper FB Open Graph tags in header:
+              https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content/ -->
+        <a class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29">
+                    <path d="M26.4 0H2.6C1.714 0 0 1.715 0 2.6v23.8c0 .884 1.715 2.6 2.6 2.6h12.393V17.988h-3.996v-3.98h3.997v-3.062c0-3.746 2.835-5.97 6.177-5.97 1.6 0 2.444.173 2.845.226v3.792H21.18c-1.817 0-2.156.9-2.156 2.168v2.847h5.045l-.66 3.978h-4.386V29H26.4c.884 0 2.6-1.716 2.6-2.6V2.6c0-.885-1.716-2.6-2.6-2.6z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">facebook</span>
+        </a>
+    </li>
+
+    <li class="rrssb-linkedin">
+        <!-- Replace href with your meta and URL information -->
+        <a class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28">
+                    <path d="M25.424 15.887v8.447h-4.896v-7.882c0-1.98-.71-3.33-2.48-3.33-1.354 0-2.158.91-2.514 1.802-.13.315-.162.753-.162 1.194v8.216h-4.9s.067-13.35 0-14.73h4.9v2.087c-.01.017-.023.033-.033.05h.032v-.05c.65-1.002 1.812-2.435 4.414-2.435 3.222 0 5.638 2.106 5.638 6.632zM5.348 2.5c-1.676 0-2.772 1.093-2.772 2.54 0 1.42 1.066 2.538 2.717 2.546h.032c1.71 0 2.77-1.132 2.77-2.546C8.056 3.593 7.02 2.5 5.344 2.5h.005zm-2.48 21.834h4.896V9.604H2.867v14.73z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">linkedin</span>
+        </a>
+    </li>
+
+
+    <li class="rrssb-reddit">
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M11.794 15.316c0-1.03-.835-1.895-1.866-1.895-1.03 0-1.893.866-1.893 1.896s.863 1.9 1.9 1.9c1.023-.016 1.865-.916 1.865-1.9zM18.1 13.422c-1.03 0-1.895.864-1.895 1.895 0 1 .9 1.9 1.9 1.865 1.03 0 1.87-.836 1.87-1.865-.006-1.017-.875-1.917-1.875-1.895zM17.527 19.79c-.678.68-1.826 1.007-3.514 1.007h-.03c-1.686 0-2.834-.328-3.51-1.005-.264-.265-.693-.265-.958 0-.264.265-.264.7 0 1 .943.9 2.4 1.4 4.5 1.402.005 0 0 0 0 0 .005 0 0 0 0 0 2.066 0 3.527-.46 4.47-1.402.265-.264.265-.693.002-.958-.267-.334-.688-.334-.988-.043z"
+                    />
+                    <path d="M27.707 13.267c0-1.785-1.453-3.237-3.236-3.237-.792 0-1.517.287-2.08.76-2.04-1.294-4.647-2.068-7.44-2.218l1.484-4.69 4.062.955c.07 1.4 1.3 2.6 2.7 2.555 1.488 0 2.695-1.208 2.695-2.695C25.88 3.2 24.7 2 23.2 2c-1.06 0-1.98.616-2.42 1.508l-4.633-1.09c-.344-.082-.693.117-.803.454l-1.793 5.7C10.55 8.6 7.7 9.4 5.6 10.75c-.594-.45-1.3-.75-2.1-.72-1.785 0-3.237 1.45-3.237 3.2 0 1.1.6 2.1 1.4 2.69-.04.27-.06.55-.06.83 0 2.3 1.3 4.4 3.7 5.9 2.298 1.5 5.3 2.3 8.6 2.325 3.227 0 6.27-.825 8.57-2.325 2.387-1.56 3.7-3.66 3.7-5.917 0-.26-.016-.514-.05-.768.965-.465 1.577-1.565 1.577-2.698zm-4.52-9.912c.74 0 1.3.6 1.3 1.3 0 .738-.6 1.34-1.34 1.34s-1.343-.602-1.343-1.34c.04-.655.596-1.255 1.396-1.3zM1.646 13.3c0-1.038.845-1.882 1.883-1.882.31 0 .6.1.9.21-1.05.867-1.813 1.86-2.26 2.9-.338-.328-.57-.728-.57-1.26zm20.126 8.27c-2.082 1.357-4.863 2.105-7.83 2.105-2.968 0-5.748-.748-7.83-2.105-1.99-1.3-3.087-3-3.087-4.782 0-1.784 1.097-3.484 3.088-4.784 2.08-1.358 4.86-2.106 7.828-2.106 2.967 0 5.7.7 7.8 2.106 1.99 1.3 3.1 3 3.1 4.784C24.86 18.6 23.8 20.3 21.8 21.57zm4.014-6.97c-.432-1.084-1.19-2.095-2.244-2.977.273-.156.59-.245.928-.245 1.036 0 1.9.8 1.9 1.9-.016.522-.27 1.022-.57 1.327z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">reddit</span>
+        </a>
+    </li>
+
+    <li class="rrssb-hackernews">
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path fill="#FFF" d="M14 13.626l-4.508-9.19H6.588l6.165 12.208v6.92h2.51v-6.92l6.15-12.21H18.69" />
+                </svg>
+            </span>
+            <span class="rrssb-text">hackernews</span>
+        </a>
+    </li>
+
+
+</ul>
+        </section>
+		
+
+        <footer class="post-footer">
+
+                    
+
+            <section class="primary_author">
+                <h4><a href="/author/bart/">Bart Jansen</a></h4>
+
+                    <p>Read <a href="/author/bart/">more posts</a> by this author.</p>
+                <div class="author-meta">
+                    
+                    
+                </div>
+            </section>
+
+
+        
+
+
+        <section class="post-comments">
+              <div id="disqus_thread"></div>
+              <script type="text/javascript">
+              // required: replace example with your forum shortname
+              if(disqus_shortname && typeof disqus_shortname === "string") {
+                  var disqus_identifier = '';
+
+                  /* * * DON'T EDIT BELOW THIS LINE * * */
+                  (function() {
+                  var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                  })();
+              }
+              </script>
+              <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </section>
+
+        </footer>
+
+    </article>
+</main>
+
+<aside class="read-next">
+    <a class="read-next-story prev " style="background-image: url(https://bart.je/content/images/2024/05/zerotobloghero2-2.svg)" href="/hosting-your-own-ghost-blog-with-github-pages/">
+        <section class="post">
+            <h2>From Zero to Blog Hero: Hosting your own blog for free with Ghost and GitHub Pages</h2>
+            <p>I often get the question: how do you manage your blog? Do you pay anything for hosting your blog?&hellip;</p>
+        </section>
+    </a>
+</aside>
+
+
+
+
+        <footer class="site-footer clearfix">
+            <section class="copyright"><a href="https://bart.je">Bart Jansen</a> &copy; 2026</section>
+            <section class="poweredby">Proudly published with <a href="https://ghost.org">Ghost</a></section>
+        </footer>
+
+    </div>
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    
+
+    <script type="text/javascript" src="/assets/js/jquery.fitvids.js?v=dd83e9e30e"></script>
+    <script type="text/javascript" src="/assets/js/index.js?v=dd83e9e30e"></script>
+    <script type="text/javascript" src="/assets/js/prism.js?v=dd83e9e30e"></script>
+    <script type="text/javascript" src="/assets/js/rrssb.min.js?v=dd83e9e30e"></script>
+
+    <script type="text/javascript">
+        jQuery(document).ready(function($) {
+
+            $('.rrssb-buttons').rrssb({
+                // required:
+                title: 'Distributing your Search Ingest pipeline using Dapr',
+                url: 'https://bart.je/distributing-search-ingest-with-dapr/',
+
+                // optional:
+                 description: 'Distributing your Search Ingest pipeline using Dapr',
+                // emailBody: 'Usually email body is just the description + url, but you can customize it if you want'
+            });
+
+        });
+    </script>
+
+    <script>
+        // TO ACTIVATE ADD var ga_id = "your_ga_id" to ghost code injection header
+        if (window.ga_id) {
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+            ga('create', window.ga_id, 'auto');
+            ga('require', 'linkid', 'linkid.js');
+            ga('send', 'pageview');
+        }
+    </script>
+
+    <script>
+        if(window.social_link){
+            var url_regexp = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/
+            $.each(window.social_link,function(type, url){
+                if(typeof url ==="string" && url_regexp.test(url)){
+                    $('<li>').append($('<a>',{
+                                        html: '<i class="fa fa-'+type+'"></i>',
+                                        title: type,
+                                        href: url,
+                                        target: "_blank"
+                                    })
+                                ).appendTo('.social_link');
+
+                }
+            })
+        }
+    </script>
+
+    <script>
+        var images = document.querySelectorAll('.kg-gallery-image img');
+        images.forEach(function (image) {
+            var container = image.closest('.kg-gallery-image');
+            var width = image.attributes.width.value;
+            var height = image.attributes.height.value;
+            var ratio = width / height;
+            container.style.flex = ratio + ' 1 0%';
+            image.onclick = function() { 
+                var win = window.open(image.src, '_blank');
+                win.focus();
+            };
+        });
+
+        var otherImages = document.querySelectorAll('img.kg-image');
+        otherImages.forEach(function(image) {
+            image.onclick = function() { 
+                var win = window.open(image.src, '_blank');
+                win.focus();
+            };
+        });
+    </script>
+
+</body>
+</html>

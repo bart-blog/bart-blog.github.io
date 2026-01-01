@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>Enhancing Your Data with Azure: Unlocking Insights through Retrieval-Augmented Generation</title>
+
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="apple-touch-icon" sizes="57x57" href="/assets/img/favicons/apple-touch-icon-57x57.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="60x60" href="/assets/img/favicons/apple-touch-icon-60x60.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="72x72" href="/assets/img/favicons/apple-touch-icon-72x72.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="76x76" href="/assets/img/favicons/apple-touch-icon-76x76.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="114x114" href="/assets/img/favicons/apple-touch-icon-114x114.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="120x120" href="/assets/img/favicons/apple-touch-icon-120x120.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="144x144" href="/assets/img/favicons/apple-touch-icon-144x144.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="152x152" href="/assets/img/favicons/apple-touch-icon-152x152.png?v=dd83e9e30e">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicons/apple-touch-icon-180x180.png?v=dd83e9e30e">
+
+    <link rel="icon" type="image/png" href="/assets/img/favicons/favicon-32x32.png?v=dd83e9e30e" sizes="32x32">
+    <link rel="icon" type="image/png" href="/assets/img/favicons/android-chrome-192x192.png?v=dd83e9e30e" sizes="192x192">
+    <link rel="icon" type="image/png" href="/assets/img/favicons/favicon-96x96.png?v=dd83e9e30e" sizes="96x96">
+    <link rel="icon" type="image/png" href="/assets/img/favicons/favicon-16x16.png?v=dd83e9e30e" sizes="16x16">
+
+ 
+    <link rel="manifest" href="/assets/img/favicons/manifest.json?v=dd83e9e30e">
+    <link rel="mask-icon" href="/assets/img/favicons/safari-pinned-tab.svg?v=dd83e9e30e" color="#5bbad5">
+    <link rel="shortcut icon" href="https://bart.je/content/images/size/w256h256/2024/05/favicon-194x194.png">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="msapplication-TileImage" content="/assets/img/favicons/mstile-144x144.png?v=dd83e9e30e">
+    <meta name="msapplication-config" content="/assets/img/favicons/browserconfig.xml?v=dd83e9e30e">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/screen.css?v=dd83e9e30e" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/custom.css?v=dd83e9e30e" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/prism.css?v=dd83e9e30e" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/rrssb.css?v=dd83e9e30e" />
+
+    <link rel="icon" href="https://bart.je/content/images/size/w256h256/2024/05/favicon-194x194.png" type="image/png">
+    <link rel="canonical" href="https://bart.je/enhancing-data-azure-insights-retrieval-augmented-generation/">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+    <meta property="og:site_name" content="Bart Jansen">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Enhancing Your Data with Azure: Unlocking Insights through Retrieval-Augmented Generation">
+    <meta property="og:description" content="In the rapidly evolving world of data analytics and AI, new frameworks are popping up every day to enhance the way we interact with and understand our data. One of the most exciting developments is the integration of tailor-made Large Language Models (LLM) into business processes. These models, like Azure">
+    <meta property="og:url" content="https://bart.je/enhancing-data-azure-insights-retrieval-augmented-generation/">
+    <meta property="og:image" content="https://bart.je/content/images/2023/11/needle-in-haystack.jpg">
+    <meta property="article:published_time" content="2023-11-08T19:49:00.000Z">
+    <meta property="article:modified_time" content="2023-11-20T23:01:41.000Z">
+    <meta property="article:tag" content="llm">
+    <meta property="article:tag" content="azure openai">
+    <meta property="article:tag" content="embeddings">
+    <meta property="article:tag" content="vector search">
+    <meta property="article:tag" content="azure cognitive search">
+    <meta property="article:tag" content="rag">
+    <meta property="article:tag" content="retrievel augmented generation">
+    
+    <meta property="article:publisher" content="https://www.facebook.com/bartj">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Enhancing Your Data with Azure: Unlocking Insights through Retrieval-Augmented Generation">
+    <meta name="twitter:description" content="In the rapidly evolving world of data analytics and AI, new frameworks are popping up every day to enhance the way we interact with and understand our data. One of the most exciting developments is the integration of tailor-made Large Language Models (LLM) into business processes. These models, like Azure">
+    <meta name="twitter:url" content="https://bart.je/enhancing-data-azure-insights-retrieval-augmented-generation/">
+    <meta name="twitter:image" content="https://bart.je/content/images/2023/11/needle-in-haystack.jpg">
+    <meta name="twitter:label1" content="Written by">
+    <meta name="twitter:data1" content="Bart Jansen">
+    <meta name="twitter:label2" content="Filed under">
+    <meta name="twitter:data2" content="llm, azure openai, embeddings, vector search, azure cognitive search, rag, retrievel augmented generation">
+    <meta name="twitter:site" content="@bartjansn">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="800">
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Bart Jansen",
+        "url": "https://bart.je/",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://bart.je/content/images/2024/05/profilepictest.jpg",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Bart Jansen",
+        "url": "https://bart.je/author/bart/",
+        "sameAs": []
+    },
+    "headline": "Enhancing Your Data with Azure: Unlocking Insights through Retrieval-Augmented Generation",
+    "url": "https://bart.je/enhancing-data-azure-insights-retrieval-augmented-generation/",
+    "datePublished": "2023-11-08T19:49:00.000Z",
+    "dateModified": "2023-11-20T23:01:41.000Z",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://bart.je/content/images/2023/11/needle-in-haystack.jpg",
+        "width": 1200,
+        "height": 800
+    },
+    "keywords": "llm, azure openai, embeddings, vector search, azure cognitive search, rag, retrievel augmented generation",
+    "description": "In the rapidly evolving world of data analytics and AI, new frameworks are popping up every day to enhance the way we interact with and understand our data. One of the most exciting developments is the integration of tailor-made Large Language Models (LLM) into business processes. These models, like Azure OpenAI&#x27;s GPT-4, are transforming how companies get insights from their data. In this post, we&#x27;ll dive into how you can leverage Retrieval-Augmented Generation (RAG) using Azure OpenAI and Azure",
+    "mainEntityOfPage": "https://bart.je/enhancing-data-azure-insights-retrieval-augmented-generation/"
+}
+    </script>
+
+    <meta name="generator" content="Ghost 6.10">
+    <link rel="alternate" type="application/rss+xml" title="Bart Jansen" href="https://bart.je/rss/">
+    <script defer src="https://cdn.jsdelivr.net/ghost/portal@~2.56/umd/portal.min.js" data-i18n="true" data-ghost="https://bart.je/" data-key="28acd29ae1d63271d41c4c0c57" data-api="https://bart.je/ghost/api/content/" data-locale="en" crossorigin="anonymous"></script><style id="gh-members-styles">.gh-post-upgrade-cta-content,
+.gh-post-upgrade-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    text-align: center;
+    width: 100%;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.gh-post-upgrade-cta-content {
+    border-radius: 8px;
+    padding: 40px 4vw;
+}
+
+.gh-post-upgrade-cta h2 {
+    color: #ffffff;
+    font-size: 28px;
+    letter-spacing: -0.2px;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta p {
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta small {
+    font-size: 16px;
+    letter-spacing: -0.2px;
+}
+
+.gh-post-upgrade-cta a {
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a:hover {
+    color: #ffffff;
+    opacity: 0.8;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a.gh-btn {
+    display: block;
+    background: #ffffff;
+    text-decoration: none;
+    margin: 28px 0 0;
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.gh-post-upgrade-cta a.gh-btn:hover {
+    opacity: 0.92;
+}</style>
+    <script defer src="https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/sodo-search.min.js" data-key="28acd29ae1d63271d41c4c0c57" data-styles="https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/main.css" data-sodo-search="https://bart.je/" data-locale="en" crossorigin="anonymous"></script>
+    
+    <link href="https://bart.je/webmentions/receive/" rel="webmention">
+    <script defer src="/public/cards.min.js?v=dd83e9e30e"></script>
+    <link rel="stylesheet" type="text/css" href="/public/cards.min.css?v=dd83e9e30e">
+    <script defer src="/public/member-attribution.min.js?v=dd83e9e30e"></script><style>:root {--ghost-accent-color: #ecc24a;}</style>
+    <script>
+
+var disqus_shortname = 'bartjansen'
+
+var social_link = {
+    'home': 'https://bart.je',
+    'twitter': 'https://twitter.com/bartjansn',
+    'linkedin': 'https://www.linkedin.com/in/bajansen/',
+    'github': 'https://github.com/bart-jansen',
+    'rss':'https://blog.bart.je/rss/'
+    // you can add more icons
+}
+</script>
+</head>
+<body class="post-template tag-llm tag-azure-openai tag-embeddings tag-vector-search tag-azure-cognitive-search tag-rag tag-retrievel-augmented-generation tag-hash-import-2024-12-09-22-15">
+
+
+    <div class="site-wrapper">
+
+        
+
+
+<header class="main-header post-head " style="background-image: url(https://bart.je/content/images/2023/11/needle-in-haystack.jpg)">
+    <nav class="main-nav overlay clearfix">
+        <a class="back-button icon-arrow-left" href="https://bart.je"> Home</a>
+        <a class="subscribe-button icon-feed" href="https://bart.je/rss/"> Subscribe</a>
+    </nav>
+</header>
+
+<main class="content" role="main">
+    <article class="post tag-llm tag-azure-openai tag-embeddings tag-vector-search tag-azure-cognitive-search tag-rag tag-retrievel-augmented-generation tag-hash-import-2024-12-09-22-15">
+
+        <header class="post-header">
+            <h1 class="post-title">Enhancing Your Data with Azure: Unlocking Insights through Retrieval-Augmented Generation</h1>
+            <section class="post-meta">
+                <time class="post-date" datetime="2023-11-08">08 November 2023</time>  on <a href="/tag/llm/">llm</a>, <a href="/tag/azure-openai/">azure openai</a>, <a href="/tag/embeddings/">embeddings</a>, <a href="/tag/vector-search/">vector search</a>, <a href="/tag/azure-cognitive-search/">azure cognitive search</a>, <a href="/tag/rag/">rag</a>, <a href="/tag/retrievel-augmented-generation/">retrievel augmented generation</a>
+            </section>
+            <section class="social-share">
+                <ul class="rrssb-buttons clearfix">
+    <li class="rrssb-email">
+
+        <!-- Replace subject with your message using URL Endocding: http://meyerweb.com/eric/tools/dencoder/ -->
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M20.11 26.147c-2.335 1.05-4.36 1.4-7.124 1.4C6.524 27.548.84 22.916.84 15.284.84 7.343 6.602.45 15.4.45c6.854 0 11.8 4.7 11.8 11.252 0 5.684-3.193 9.265-7.398 9.3-1.83 0-3.153-.934-3.347-2.997h-.077c-1.208 1.986-2.96 2.997-5.023 2.997-2.532 0-4.36-1.868-4.36-5.062 0-4.75 3.503-9.07 9.11-9.07 1.713 0 3.7.4 4.6.972l-1.17 7.203c-.387 2.298-.115 3.3 1 3.4 1.674 0 3.774-2.102 3.774-6.58 0-5.06-3.27-8.994-9.304-8.994C9.05 2.87 3.83 7.545 3.83 14.97c0 6.5 4.2 10.2 10 10.202 1.987 0 4.09-.43 5.647-1.245l.634 2.22zM16.647 10.1c-.31-.078-.7-.155-1.207-.155-2.572 0-4.596 2.53-4.596 5.53 0 1.5.7 2.4 1.9 2.4 1.44 0 2.96-1.83 3.31-4.088l.592-3.72z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">email</span>
+        </a>
+    </li>
+
+    <li class="rrssb-twitter">
+        <!-- Replace href with your Meta and URL information  -->
+        <a href="https://twitter.com/intent/tweet?text=Ridiculously%20Responsive%20Social%20Sharing%20Buttons%20by%20%40dbox%20and%20%40joshuatuscan%3A%20http%3A%2F%2Fkurtnoble.com%2Flabs%2Frrssb%20%7C%20http%3A%2F%2Fkurtnoble.com%2Flabs%2Frrssb%2Fmedia%2Frrssb-preview.png"
+        class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M24.253 8.756C24.69 17.08 18.297 24.182 9.97 24.62c-3.122.162-6.22-.646-8.86-2.32 2.702.18 5.375-.648 7.507-2.32-2.072-.248-3.818-1.662-4.49-3.64.802.13 1.62.077 2.4-.154-2.482-.466-4.312-2.586-4.412-5.11.688.276 1.426.408 2.168.387-2.135-1.65-2.73-4.62-1.394-6.965C5.574 7.816 9.54 9.84 13.802 10.07c-.842-2.738.694-5.64 3.434-6.48 2.018-.624 4.212.043 5.546 1.682 1.186-.213 2.318-.662 3.33-1.317-.386 1.256-1.248 2.312-2.4 2.942 1.048-.106 2.07-.394 3.02-.85-.458 1.182-1.343 2.15-2.48 2.71z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">twitter</span>
+        </a>
+    </li>
+
+    <li class="rrssb-facebook">
+        <!--  Replace with your URL. For best results, make sure you page has the proper FB Open Graph tags in header:
+              https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content/ -->
+        <a class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29">
+                    <path d="M26.4 0H2.6C1.714 0 0 1.715 0 2.6v23.8c0 .884 1.715 2.6 2.6 2.6h12.393V17.988h-3.996v-3.98h3.997v-3.062c0-3.746 2.835-5.97 6.177-5.97 1.6 0 2.444.173 2.845.226v3.792H21.18c-1.817 0-2.156.9-2.156 2.168v2.847h5.045l-.66 3.978h-4.386V29H26.4c.884 0 2.6-1.716 2.6-2.6V2.6c0-.885-1.716-2.6-2.6-2.6z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">facebook</span>
+        </a>
+    </li>
+
+    <li class="rrssb-linkedin">
+        <!-- Replace href with your meta and URL information -->
+        <a class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28">
+                    <path d="M25.424 15.887v8.447h-4.896v-7.882c0-1.98-.71-3.33-2.48-3.33-1.354 0-2.158.91-2.514 1.802-.13.315-.162.753-.162 1.194v8.216h-4.9s.067-13.35 0-14.73h4.9v2.087c-.01.017-.023.033-.033.05h.032v-.05c.65-1.002 1.812-2.435 4.414-2.435 3.222 0 5.638 2.106 5.638 6.632zM5.348 2.5c-1.676 0-2.772 1.093-2.772 2.54 0 1.42 1.066 2.538 2.717 2.546h.032c1.71 0 2.77-1.132 2.77-2.546C8.056 3.593 7.02 2.5 5.344 2.5h.005zm-2.48 21.834h4.896V9.604H2.867v14.73z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">linkedin</span>
+        </a>
+    </li>
+
+
+    <li class="rrssb-reddit">
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M11.794 15.316c0-1.03-.835-1.895-1.866-1.895-1.03 0-1.893.866-1.893 1.896s.863 1.9 1.9 1.9c1.023-.016 1.865-.916 1.865-1.9zM18.1 13.422c-1.03 0-1.895.864-1.895 1.895 0 1 .9 1.9 1.9 1.865 1.03 0 1.87-.836 1.87-1.865-.006-1.017-.875-1.917-1.875-1.895zM17.527 19.79c-.678.68-1.826 1.007-3.514 1.007h-.03c-1.686 0-2.834-.328-3.51-1.005-.264-.265-.693-.265-.958 0-.264.265-.264.7 0 1 .943.9 2.4 1.4 4.5 1.402.005 0 0 0 0 0 .005 0 0 0 0 0 2.066 0 3.527-.46 4.47-1.402.265-.264.265-.693.002-.958-.267-.334-.688-.334-.988-.043z"
+                    />
+                    <path d="M27.707 13.267c0-1.785-1.453-3.237-3.236-3.237-.792 0-1.517.287-2.08.76-2.04-1.294-4.647-2.068-7.44-2.218l1.484-4.69 4.062.955c.07 1.4 1.3 2.6 2.7 2.555 1.488 0 2.695-1.208 2.695-2.695C25.88 3.2 24.7 2 23.2 2c-1.06 0-1.98.616-2.42 1.508l-4.633-1.09c-.344-.082-.693.117-.803.454l-1.793 5.7C10.55 8.6 7.7 9.4 5.6 10.75c-.594-.45-1.3-.75-2.1-.72-1.785 0-3.237 1.45-3.237 3.2 0 1.1.6 2.1 1.4 2.69-.04.27-.06.55-.06.83 0 2.3 1.3 4.4 3.7 5.9 2.298 1.5 5.3 2.3 8.6 2.325 3.227 0 6.27-.825 8.57-2.325 2.387-1.56 3.7-3.66 3.7-5.917 0-.26-.016-.514-.05-.768.965-.465 1.577-1.565 1.577-2.698zm-4.52-9.912c.74 0 1.3.6 1.3 1.3 0 .738-.6 1.34-1.34 1.34s-1.343-.602-1.343-1.34c.04-.655.596-1.255 1.396-1.3zM1.646 13.3c0-1.038.845-1.882 1.883-1.882.31 0 .6.1.9.21-1.05.867-1.813 1.86-2.26 2.9-.338-.328-.57-.728-.57-1.26zm20.126 8.27c-2.082 1.357-4.863 2.105-7.83 2.105-2.968 0-5.748-.748-7.83-2.105-1.99-1.3-3.087-3-3.087-4.782 0-1.784 1.097-3.484 3.088-4.784 2.08-1.358 4.86-2.106 7.828-2.106 2.967 0 5.7.7 7.8 2.106 1.99 1.3 3.1 3 3.1 4.784C24.86 18.6 23.8 20.3 21.8 21.57zm4.014-6.97c-.432-1.084-1.19-2.095-2.244-2.977.273-.156.59-.245.928-.245 1.036 0 1.9.8 1.9 1.9-.016.522-.27 1.022-.57 1.327z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">reddit</span>
+        </a>
+    </li>
+
+    <li class="rrssb-hackernews">
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path fill="#FFF" d="M14 13.626l-4.508-9.19H6.588l6.165 12.208v6.92h2.51v-6.92l6.15-12.21H18.69" />
+                </svg>
+            </span>
+            <span class="rrssb-text">hackernews</span>
+        </a>
+    </li>
+
+
+</ul>
+            </section>
+        </header>
+
+        <section class="post-content">
+            <p>In the rapidly evolving world of data analytics and AI, new frameworks are popping up every day to enhance the way we interact with and understand our data. One of the most exciting developments is the integration of tailor-made Large Language Models (LLM) into business processes. These models, like Azure OpenAI's GPT-4, are transforming how companies get insights from their data. In this post, we'll dive into how you can leverage Retrieval-Augmented Generation (RAG) using Azure OpenAI and Azure Cognitive Search to create a CoPilot experience for your data.</p><h3 id="what-is-rag-and-why-should-you-care">What Is RAG and Why Should You Care?</h3><p>Retrieval-Augmented Generation is an architecture that combines the best of two worlds: the knowledge and natural language understanding of LLMs and the precision of an effective search index. While there are other alternatives available, RAG stands out for its ease of use and effectiveness.</p><figure class="kg-card kg-image-card kg-width-wide"><img src="https://bart.je/content/images/2023/11/ragexample.svg" class="kg-image" alt="" loading="lazy" width="851" height="294"></figure><p>As shown in the diagram above, RAG works by first retrieving relevant information from, e.g. a search index, and then using that specific knowledge index from the data sources to generate more informed and accurate responses using GPT. This makes it particularly valuable for businesses looking to extract insights from their existing data, while having the ability to form a proper natural language based response.</p><h3 id="how-to-implement-rag-in-your-data-pipeline">How to Implement RAG in Your Data Pipeline</h3><p>Implementing RAG involves two main components: setting up an ingestion pipeline that indexes all your business-specific data and creating a RAG consumption pipeline. Here's how you can do it:</p><p><strong>Setting Up the Ingestion Pipeline:</strong></p><ol><li><strong>Create an Azure Cognitive Search Index with Vector Embeddings:</strong> Start by building an index that can handle vector embeddings. This will lay the foundation for powerful search capabilities.</li><li><strong>Ingest Your Data and Populate Your Index:</strong> Once your index is ready, ingest your existing data. This step is crucial as it populates your index with the data that the RAG model will use.</li></ol><p><strong>Setting Up the RAG Consumption Pipeline:</strong></p><ol><li><strong>Generate Embeddings for Prompts:</strong> Use Azure OpenAI to generate embeddings for your prompts. These embeddings represent the semantic content of your queries.</li><li><strong>Query Azure Cognitive Search Endpoint:</strong> Hit the Azure Cognitive Search endpoint to retrieve the top results based on your embeddings.</li><li><strong>Combine Results with a Customized System Prompt:</strong> Take the results from Azure Cognitive Search and combine them with a customized prompt. Then, use this combined input to query the GPT-4 model to provide an insightful answer.</li></ol><h3 id="testing-and-optimizing-performance">Testing and Optimizing Performance</h3><p>An essential part of implementing RAG is testing and optimizing the performance of your Azure Cognitive Search Index. You can use an LLM like GPT-4 to generate question-answer pairs relevant to your data. This approach allows you to test how well your index performs, giving you insights into the effectiveness of your data indexing strategies, chunking, overlap size, and data enrichment processes. A simple approach using synthetic QA generation is described <a href="https://jakobs.dev/evaluating-rag-synthetic-dataset-generation/?ref=192.168.1.4" rel="noreferrer">here</a>.</p><h3 id="conclusion">Conclusion</h3><p>Adding RAG to your data pipeline using Azure OpenAI and Azure Cognitive Search is not just about keeping up with the latest tech trends. It's about unlocking new levels of understanding and insights from your data, tailored specifically to your company's data. With the steps outlined above, you're well on your way to implementing a powerful CoPilot for your data.</p>
+        </section>
+		
+			<div class="fb-comments" data-href="https://bart.je/enhancing-data-azure-insights-retrieval-augmented-generation/" data-numposts="5"></div>
+
+        <section class="social-share">
+            <ul class="rrssb-buttons clearfix">
+    <li class="rrssb-email">
+
+        <!-- Replace subject with your message using URL Endocding: http://meyerweb.com/eric/tools/dencoder/ -->
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M20.11 26.147c-2.335 1.05-4.36 1.4-7.124 1.4C6.524 27.548.84 22.916.84 15.284.84 7.343 6.602.45 15.4.45c6.854 0 11.8 4.7 11.8 11.252 0 5.684-3.193 9.265-7.398 9.3-1.83 0-3.153-.934-3.347-2.997h-.077c-1.208 1.986-2.96 2.997-5.023 2.997-2.532 0-4.36-1.868-4.36-5.062 0-4.75 3.503-9.07 9.11-9.07 1.713 0 3.7.4 4.6.972l-1.17 7.203c-.387 2.298-.115 3.3 1 3.4 1.674 0 3.774-2.102 3.774-6.58 0-5.06-3.27-8.994-9.304-8.994C9.05 2.87 3.83 7.545 3.83 14.97c0 6.5 4.2 10.2 10 10.202 1.987 0 4.09-.43 5.647-1.245l.634 2.22zM16.647 10.1c-.31-.078-.7-.155-1.207-.155-2.572 0-4.596 2.53-4.596 5.53 0 1.5.7 2.4 1.9 2.4 1.44 0 2.96-1.83 3.31-4.088l.592-3.72z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">email</span>
+        </a>
+    </li>
+
+    <li class="rrssb-twitter">
+        <!-- Replace href with your Meta and URL information  -->
+        <a href="https://twitter.com/intent/tweet?text=Ridiculously%20Responsive%20Social%20Sharing%20Buttons%20by%20%40dbox%20and%20%40joshuatuscan%3A%20http%3A%2F%2Fkurtnoble.com%2Flabs%2Frrssb%20%7C%20http%3A%2F%2Fkurtnoble.com%2Flabs%2Frrssb%2Fmedia%2Frrssb-preview.png"
+        class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M24.253 8.756C24.69 17.08 18.297 24.182 9.97 24.62c-3.122.162-6.22-.646-8.86-2.32 2.702.18 5.375-.648 7.507-2.32-2.072-.248-3.818-1.662-4.49-3.64.802.13 1.62.077 2.4-.154-2.482-.466-4.312-2.586-4.412-5.11.688.276 1.426.408 2.168.387-2.135-1.65-2.73-4.62-1.394-6.965C5.574 7.816 9.54 9.84 13.802 10.07c-.842-2.738.694-5.64 3.434-6.48 2.018-.624 4.212.043 5.546 1.682 1.186-.213 2.318-.662 3.33-1.317-.386 1.256-1.248 2.312-2.4 2.942 1.048-.106 2.07-.394 3.02-.85-.458 1.182-1.343 2.15-2.48 2.71z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">twitter</span>
+        </a>
+    </li>
+
+    <li class="rrssb-facebook">
+        <!--  Replace with your URL. For best results, make sure you page has the proper FB Open Graph tags in header:
+              https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content/ -->
+        <a class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29">
+                    <path d="M26.4 0H2.6C1.714 0 0 1.715 0 2.6v23.8c0 .884 1.715 2.6 2.6 2.6h12.393V17.988h-3.996v-3.98h3.997v-3.062c0-3.746 2.835-5.97 6.177-5.97 1.6 0 2.444.173 2.845.226v3.792H21.18c-1.817 0-2.156.9-2.156 2.168v2.847h5.045l-.66 3.978h-4.386V29H26.4c.884 0 2.6-1.716 2.6-2.6V2.6c0-.885-1.716-2.6-2.6-2.6z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">facebook</span>
+        </a>
+    </li>
+
+    <li class="rrssb-linkedin">
+        <!-- Replace href with your meta and URL information -->
+        <a class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28">
+                    <path d="M25.424 15.887v8.447h-4.896v-7.882c0-1.98-.71-3.33-2.48-3.33-1.354 0-2.158.91-2.514 1.802-.13.315-.162.753-.162 1.194v8.216h-4.9s.067-13.35 0-14.73h4.9v2.087c-.01.017-.023.033-.033.05h.032v-.05c.65-1.002 1.812-2.435 4.414-2.435 3.222 0 5.638 2.106 5.638 6.632zM5.348 2.5c-1.676 0-2.772 1.093-2.772 2.54 0 1.42 1.066 2.538 2.717 2.546h.032c1.71 0 2.77-1.132 2.77-2.546C8.056 3.593 7.02 2.5 5.344 2.5h.005zm-2.48 21.834h4.896V9.604H2.867v14.73z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">linkedin</span>
+        </a>
+    </li>
+
+
+    <li class="rrssb-reddit">
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path d="M11.794 15.316c0-1.03-.835-1.895-1.866-1.895-1.03 0-1.893.866-1.893 1.896s.863 1.9 1.9 1.9c1.023-.016 1.865-.916 1.865-1.9zM18.1 13.422c-1.03 0-1.895.864-1.895 1.895 0 1 .9 1.9 1.9 1.865 1.03 0 1.87-.836 1.87-1.865-.006-1.017-.875-1.917-1.875-1.895zM17.527 19.79c-.678.68-1.826 1.007-3.514 1.007h-.03c-1.686 0-2.834-.328-3.51-1.005-.264-.265-.693-.265-.958 0-.264.265-.264.7 0 1 .943.9 2.4 1.4 4.5 1.402.005 0 0 0 0 0 .005 0 0 0 0 0 2.066 0 3.527-.46 4.47-1.402.265-.264.265-.693.002-.958-.267-.334-.688-.334-.988-.043z"
+                    />
+                    <path d="M27.707 13.267c0-1.785-1.453-3.237-3.236-3.237-.792 0-1.517.287-2.08.76-2.04-1.294-4.647-2.068-7.44-2.218l1.484-4.69 4.062.955c.07 1.4 1.3 2.6 2.7 2.555 1.488 0 2.695-1.208 2.695-2.695C25.88 3.2 24.7 2 23.2 2c-1.06 0-1.98.616-2.42 1.508l-4.633-1.09c-.344-.082-.693.117-.803.454l-1.793 5.7C10.55 8.6 7.7 9.4 5.6 10.75c-.594-.45-1.3-.75-2.1-.72-1.785 0-3.237 1.45-3.237 3.2 0 1.1.6 2.1 1.4 2.69-.04.27-.06.55-.06.83 0 2.3 1.3 4.4 3.7 5.9 2.298 1.5 5.3 2.3 8.6 2.325 3.227 0 6.27-.825 8.57-2.325 2.387-1.56 3.7-3.66 3.7-5.917 0-.26-.016-.514-.05-.768.965-.465 1.577-1.565 1.577-2.698zm-4.52-9.912c.74 0 1.3.6 1.3 1.3 0 .738-.6 1.34-1.34 1.34s-1.343-.602-1.343-1.34c.04-.655.596-1.255 1.396-1.3zM1.646 13.3c0-1.038.845-1.882 1.883-1.882.31 0 .6.1.9.21-1.05.867-1.813 1.86-2.26 2.9-.338-.328-.57-.728-.57-1.26zm20.126 8.27c-2.082 1.357-4.863 2.105-7.83 2.105-2.968 0-5.748-.748-7.83-2.105-1.99-1.3-3.087-3-3.087-4.782 0-1.784 1.097-3.484 3.088-4.784 2.08-1.358 4.86-2.106 7.828-2.106 2.967 0 5.7.7 7.8 2.106 1.99 1.3 3.1 3 3.1 4.784C24.86 18.6 23.8 20.3 21.8 21.57zm4.014-6.97c-.432-1.084-1.19-2.095-2.244-2.977.273-.156.59-.245.928-.245 1.036 0 1.9.8 1.9 1.9-.016.522-.27 1.022-.57 1.327z"
+                    />
+                </svg>
+            </span>
+            <span class="rrssb-text">reddit</span>
+        </a>
+    </li>
+
+    <li class="rrssb-hackernews">
+        <a>
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                    <path fill="#FFF" d="M14 13.626l-4.508-9.19H6.588l6.165 12.208v6.92h2.51v-6.92l6.15-12.21H18.69" />
+                </svg>
+            </span>
+            <span class="rrssb-text">hackernews</span>
+        </a>
+    </li>
+
+
+</ul>
+        </section>
+		
+
+        <footer class="post-footer">
+
+                    
+
+            <section class="primary_author">
+                <h4><a href="/author/bart/">Bart Jansen</a></h4>
+
+                    <p>Read <a href="/author/bart/">more posts</a> by this author.</p>
+                <div class="author-meta">
+                    
+                    
+                </div>
+            </section>
+
+
+        
+
+
+        <section class="post-comments">
+              <div id="disqus_thread"></div>
+              <script type="text/javascript">
+              // required: replace example with your forum shortname
+              if(disqus_shortname && typeof disqus_shortname === "string") {
+                  var disqus_identifier = '';
+
+                  /* * * DON'T EDIT BELOW THIS LINE * * */
+                  (function() {
+                  var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                  })();
+              }
+              </script>
+              <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </section>
+
+        </footer>
+
+    </article>
+</main>
+
+<aside class="read-next">
+    <a class="read-next-story no-cover" href="/transforming-pdf-chaos-clarity-azure-cognitive-search-rag/">
+        <section class="post">
+            <h2>Transforming PDF Chaos into clarity: Add PDF Insights with Azure AI Search &amp; RAG</h2>
+            <p>A great way to add insights to your unstructured PDFs is by ingesting them into an Azure AI Search&hellip;</p>
+        </section>
+    </a>
+    <a class="read-next-story prev " style="background-image: url(https://bart.je/content/images/2023/11/Screenshot-2023-11-09-at-11.36.02.png)" href="/host-your-own-chatgpt-instance-azure-openai/">
+        <section class="post">
+            <h2>Host your own ChatGPT instance using Azure OpenAI</h2>
+            <p>It’s 2023, everyone is playing around with ChatGPT on OpenAI and a new and improved version of GPT&hellip;</p>
+        </section>
+    </a>
+</aside>
+
+
+
+
+        <footer class="site-footer clearfix">
+            <section class="copyright"><a href="https://bart.je">Bart Jansen</a> &copy; 2026</section>
+            <section class="poweredby">Proudly published with <a href="https://ghost.org">Ghost</a></section>
+        </footer>
+
+    </div>
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    
+
+    <script type="text/javascript" src="/assets/js/jquery.fitvids.js?v=dd83e9e30e"></script>
+    <script type="text/javascript" src="/assets/js/index.js?v=dd83e9e30e"></script>
+    <script type="text/javascript" src="/assets/js/prism.js?v=dd83e9e30e"></script>
+    <script type="text/javascript" src="/assets/js/rrssb.min.js?v=dd83e9e30e"></script>
+
+    <script type="text/javascript">
+        jQuery(document).ready(function($) {
+
+            $('.rrssb-buttons').rrssb({
+                // required:
+                title: 'Enhancing Your Data with Azure: Unlocking Insights through Retrieval-Augmented Generation',
+                url: 'https://bart.je/enhancing-data-azure-insights-retrieval-augmented-generation/',
+
+                // optional:
+                 description: 'Enhancing Your Data with Azure: Unlocking Insights through Retrieval-Augmented Generation',
+                // emailBody: 'Usually email body is just the description + url, but you can customize it if you want'
+            });
+
+        });
+    </script>
+
+    <script>
+        // TO ACTIVATE ADD var ga_id = "your_ga_id" to ghost code injection header
+        if (window.ga_id) {
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+            ga('create', window.ga_id, 'auto');
+            ga('require', 'linkid', 'linkid.js');
+            ga('send', 'pageview');
+        }
+    </script>
+
+    <script>
+        if(window.social_link){
+            var url_regexp = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/
+            $.each(window.social_link,function(type, url){
+                if(typeof url ==="string" && url_regexp.test(url)){
+                    $('<li>').append($('<a>',{
+                                        html: '<i class="fa fa-'+type+'"></i>',
+                                        title: type,
+                                        href: url,
+                                        target: "_blank"
+                                    })
+                                ).appendTo('.social_link');
+
+                }
+            })
+        }
+    </script>
+
+    <script>
+        var images = document.querySelectorAll('.kg-gallery-image img');
+        images.forEach(function (image) {
+            var container = image.closest('.kg-gallery-image');
+            var width = image.attributes.width.value;
+            var height = image.attributes.height.value;
+            var ratio = width / height;
+            container.style.flex = ratio + ' 1 0%';
+            image.onclick = function() { 
+                var win = window.open(image.src, '_blank');
+                win.focus();
+            };
+        });
+
+        var otherImages = document.querySelectorAll('img.kg-image');
+        otherImages.forEach(function(image) {
+            image.onclick = function() { 
+                var win = window.open(image.src, '_blank');
+                win.focus();
+            };
+        });
+    </script>
+
+</body>
+</html>

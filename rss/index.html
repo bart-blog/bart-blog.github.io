@@ -1,0 +1,585 @@
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0" xmlns:media="http://search.yahoo.com/mrss/"><channel><title><![CDATA[Bart Jansen]]></title><description><![CDATA[Software Engineer at Microsoft]]></description><link>https://bart.je/</link><image><url>https://bart.je/favicon.png</url><title>Bart Jansen</title><link>https://bart.je/</link></image><generator>Ghost 6.10</generator><lastBuildDate>Thu, 01 Jan 2026 18:14:54 GMT</lastBuildDate><atom:link href="https://bart.je/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title><![CDATA[Distributing your Search Ingest pipeline using Dapr]]></title><description><![CDATA[<p>In the ever-evolving landscape of cloud-native applications, the need for scalable and resilient architectures has never been more critical. Traditional monolithic systems often fall short when it comes to handling large volumes of data and complex workflows. Enter <a href="https://dapr.io/?ref=192.168.1.4" rel="noreferrer">Dapr</a>: Distributed Application Runtime, a powerful framework that helps you build highly</p>]]></description><link>https://bart.je/distributing-search-ingest-with-dapr/</link><guid isPermaLink="false">67576bf5ff25d50001134094</guid><category><![CDATA[dapr]]></category><category><![CDATA[azure ai search]]></category><category><![CDATA[search ingest]]></category><category><![CDATA[scalability]]></category><category><![CDATA[ingestion]]></category><category><![CDATA[search index]]></category><category><![CDATA[kubernetes]]></category><category><![CDATA[rate limits]]></category><category><![CDATA[distributed ingest]]></category><dc:creator><![CDATA[Bart Jansen]]></dc:creator><pubDate>Fri, 14 Jun 2024 10:25:28 GMT</pubDate><media:content url="https://bart.je/content/images/2024/06/dapr-search-overview.drawio-1.svg" medium="image"/><content:encoded><![CDATA[<img src="https://bart.je/content/images/2024/06/dapr-search-overview.drawio-1.svg" alt="Distributing your Search Ingest pipeline using Dapr"><p>In the ever-evolving landscape of cloud-native applications, the need for scalable and resilient architectures has never been more critical. Traditional monolithic systems often fall short when it comes to handling large volumes of data and complex workflows. Enter <a href="https://dapr.io/?ref=192.168.1.4" rel="noreferrer">Dapr</a>: Distributed Application Runtime, a powerful framework that helps you build highly scalable and resilient microservices architecture. In this blog post, we&apos;ll explore how you can leverage Dapr to distribute your search ingest pipeline, enhancing scalability, resiliency, and maintainability.</p><h3 id="why-dapr">Why Dapr?</h3><p>Traditional monolithic architectures often struggle with the demands of processing large volumes of documents for search indexing. Challenges include scalability, resiliency, and efficient orchestration of the various services involved in extracting, processing, and enriching document content. All these services have their own rate limits, which need to be managed carefully with proper back-off and retry strategies optimized for that specific service.  Enter Dapr, with its microservices-oriented approach, offering a compelling solution to these challenges.</p><h3 id="comparison">Comparison</h3><table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Monolithic Approach</th>
+<th>Dapr-based Solution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Scalability</td>
+<td>&#x274C; Limited; scaling the entire application can be inefficient</td>
+<td>&#x2705; High; individual components can be scaled independently</td>
+</tr>
+<tr>
+<td>Resiliency</td>
+<td>&#x274C; Retry policies and error handling can be complex</td>
+<td>&#x2705; Improved; easier to manage with Dapr&apos;s built-in mechanisms</td>
+</tr>
+<tr>
+<td>Kubernetes Integration</td>
+<td>&#x274C; May require additional configuration</td>
+<td>&#x2705; Kubernetes-native; designed to work seamlessly with k8s</td>
+</tr>
+<tr>
+<td>Monitoring</td>
+<td>&#x274C; Custom setup required for metrics and tracing</td>
+<td>&#x2705; Built-in support for Application Insights and other monitoring tools</td>
+</tr>
+<tr>
+<td>Componentization</td>
+<td>&#x274C; All logic is within a single application</td>
+<td>&#x2705; Logic is distributed across multiple Dapr applications</td>
+</tr>
+<tr>
+<td>Complexity</td>
+<td>&#x2705; Single application to manage</td>
+<td>&#x274C; Multiple applications increase management complexity</td>
+</tr>
+<tr>
+<td>Asynchronous Processing</td>
+<td>&#x274C; Can be challenging to implement and track</td>
+<td>&#x2705; Native support for async operations, but tracking can be complex</td>
+</tr>
+<tr>
+<td>Overhead</td>
+<td>&#x2705; Potentially lower as there&apos;s a single runtime</td>
+<td>&#x274C; Additional overhead due to Dapr sidecars and messaging/statestore components</td>
+</tr>
+</tbody>
+</table>
+<blockquote>Dapr shows significant improvements, adding just a bit of complexity and overhead</blockquote><h3 id="how-does-it-work">How does it work?</h3><p>Dapr facilitates the development of distributed applications by providing building blocks that abstract away the complexities of direct communication between microservices, state management, and resource binding. By leveraging Dapr in a document processing pipeline, each stage of the process becomes a separate Dapr application, capable of independently scaling and recovering from failures. </p><h4 id="typical-workflow">Typical workflow</h4><p>Consider a workflow designed to ingest, process, and index documents for search. The process involves several stages, from extracting text from documents to enriching the content with metadata, generating embeddings, and ultimately indexing the documents for search. With Dapr, each of these stages can be implemented as a separate microservice, communicating through Dapr&apos;s pub/sub messaging and utilizing shared state management and resource bindings.</p><p>The workflow typically includes the following stages:</p><ol><li><strong>Batcher</strong>: Initiates the process by listing documents from a storage service and triggering the document processing pipeline.</li><li><strong>Process Document</strong>: Extracts text from documents using OCR or other text extraction tools and splits the content into manageable chunks.</li><li><strong>Generate Embeddings</strong>: Converts text chunks into vector representations using machine learning models, facilitating efficient search and similarity comparisons.</li><li><strong>Generate Keyphrases and Summaries</strong>: Enriches the content with key phrases and summaries, enhancing the searchability and relevance of the documents.</li><li><strong>Indexing</strong>: Once all enrichments are complete, the processed documents are added to a search index, making them searchable.</li></ol><figure class="kg-card kg-image-card kg-width-full kg-card-hascaption"><img src="https://bart.je/content/images/2024/06/dapr-search-overview.drawio.svg" class="kg-image" alt="Distributing your Search Ingest pipeline using Dapr" loading="lazy" width="1656" height="657"><figcaption><span style="white-space: pre-wrap;">Typical Dapr-approach for distributing search ingest</span></figcaption></figure><p>To summarize the flow:</p><ul><li> <code>Batcher</code> is triggered by an HTTP request,  retrieving every single document in the given blob path and adding these to a queue.</li><li><code>ProcessDocument</code> is subscribed to this queue, pulling the raw document from blob and extracting its content using Form Recognizer/Document Intelligence, splitting it up into multiple manageable sections. Each section is added to 3 enrichment queues (<code>GenerateEmbeddings</code>, <code>GenerateKeyphrases</code>, <code>GenerateSummary</code>).</li><li>These 3 enrichment queues are processed in parallel, triggered with a reference to the section that&apos;s pulled from the statestore (e.g. Redis), enriched using an external service (e.g. OpenAI embedding, Azure Language API) with the enrichment stored back into the statestore and triggering an <code>EnrichmentComplete</code> .</li><li>Once all enrichments are captured for a single section, the section is stored into Blob for indexing and <code>DocumentCompleted</code> is triggered to notify the section is finished.</li><li>Similarly, once all sections for a single Document are processed, <code>BatchCompleted</code> is triggered to notify the Document is fully processed.</li><li>Once <code>BatchCompleted</code> has been triggered for all Documents that needed processing in the pipeline, Azure Search Indexer is started, pulling all sections from Blob to populate the search index.</li></ul><p>This <a href="https://github.com/bart-jansen/search-ingest-dapr?ref=192.168.1.4" rel="noreferrer">GitHub repository</a> can serve as inspiration for implementing this flow, including scripts to deploy the infrastructure, local development and deployment scripts for deploying these services to Kubernetes.</p><h3 id="conclusion">Conclusion</h3><p>Adopting Dapr for your search ingest pipeline can be a game-changer. It offers significant advantages in scalability, resiliency, and maintainability, making it a strategic investment for future-proofing your applications. While it introduces some complexity and overhead, the benefits of a microservices-oriented architecture, particularly in a Kubernetes environment, far outweigh these trade-offs.</p><p>Splitting each service into its own Dapr container provides several key advantages:</p><ol><li><strong>Granular Control</strong>: You can set specific rate limits for each external service, ensuring that no single service becomes a bottleneck.</li><li><strong>Retry Mechanisms</strong>: By breaking down the ingestion flow into smaller, independent pieces, you can easily retry only the failed service without having to reprocess the entire workflow. This makes the system more efficient and resilient to errors.</li></ol><p>For more details and to access the deployment scripts, visit the <a href="https://github.com/bart-jansen/search-ingest-dapr?ref=192.168.1.4" rel="noreferrer">search-ingest-dapr GitHub repository</a>.</p><p></p>]]></content:encoded></item><item><title><![CDATA[From Zero to Blog Hero: Hosting your own blog for free with Ghost and GitHub Pages]]></title><description><![CDATA[<p>I often get the question: how do you manage your blog? Do you pay anything for hosting your blog? Do you have some sort of markdown interpreter? How about Search Engine Optimizations, can your blog posts be found online using Google? The short respective answers: Completely managed through a self-hosted</p>]]></description><link>https://bart.je/hosting-your-own-ghost-blog-with-github-pages/</link><guid isPermaLink="false">67576bf5ff25d50001134093</guid><category><![CDATA[ghost]]></category><category><![CDATA[blog]]></category><category><![CDATA[github]]></category><category><![CDATA[github pages]]></category><category><![CDATA[docker]]></category><dc:creator><![CDATA[Bart Jansen]]></dc:creator><pubDate>Sun, 12 May 2024 11:49:53 GMT</pubDate><media:content url="https://bart.je/content/images/2024/05/zerotobloghero2-2.svg" medium="image"/><content:encoded><![CDATA[<img src="https://bart.je/content/images/2024/05/zerotobloghero2-2.svg" alt="From Zero to Blog Hero: Hosting your own blog for free with Ghost and GitHub Pages"><p>I often get the question: how do you manage your blog? Do you pay anything for hosting your blog? Do you have some sort of markdown interpreter? How about Search Engine Optimizations, can your blog posts be found online using Google? The short respective answers: Completely managed through a self-hosted Ghost instance, completely free, with rich editor and out of the box search engine optimizations.</p><p>So, how does it work? Let&apos;s start with a list of requirements:</p><ul><li>Running Ghost locally via Docker</li><li>Setting up <code>ghost-static-page-generator</code> for creating static page content</li><li>Set up Github Pages repository to host your static HTML</li><li>Optionally: Add CNAME record and update DNS records to host your blog on your custom domain</li></ul><h3 id="running-ghost-locally-via-docker">Running Ghost locally via Docker</h3><p>After you&apos;ve setup Docker, run Ghost locally with the following <code>docker-compose.yml</code>, this also sets up a local mysql container for storing your blog posts:</p><pre><code class="language-yaml">version: &apos;3&apos;
+services:
+  ghost:
+    container_name: ghost
+    image: ghost:latest
+    restart: always
+    ports:
+      - 2368:2368
+    volumes:
+      - ./content:/var/lib/ghost/content
+    environment:
+      url: http://localhost:2368
+      database__client: mysql
+      database__connection__host: db
+      database__connection__user: root
+      database__connection__password: superS3cretp@ssw0rd
+      database__connection__database: ghost
+
+  db:
+    container_name: ghost_mysql
+    image: mysql:8.4
+    command: mysqld --mysql-native-password=ON --authentication_policy=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: superS3cretp@ssw0rd
+    volumes:
+      - ./data:/var/lib/mysql
+</code></pre><blockquote><strong>Note:</strong> remember to change your database password to a strong unique password </blockquote><p>With this file in-place, run the container with:</p><pre><code class="language-bash">docker-compose up -d</code></pre><p>Once the initial run is complete, your Ghost instance will be available at <a href="http://localhost:2368/?ref=192.168.1.4" rel="noreferrer">http://localhost:2368</a>.</p><h3 id="set-up-ghost-static-site-generator">Set up ghost-static-site-generator</h3><p>With Ghost running locally, you can convert your blog to static html with <code>gssg</code>. This creates static html and resources for all the endpoints of your blog, which you can then host on a website. Static sites benefit from faster load times and enhanced security since they don&apos;t rely on server-side scripting, making your blog not only quick to access but also less vulnerable to web attacks.</p><p>To install <code>gssg</code>, with Node.js installed on your local machine, globally install <code>gssg</code> using:</p><pre><code class="language-bash">npm install -g gssg</code></pre><p>With <code>gssg</code> installed, you can generate the static site with:</p><pre><code class="language-bash">gssg --domain http://localhost:2368 --url https://blog.example.com --dest ./static</code></pre><p>With the following parameters</p><ul><li><code>--domain</code> this is the domain and port hosting your local Ghost instance </li><li><code>--url</code> the external URL where your blog will be hosted (e.g., <a href="https://blog.example.com/?ref=192.168.1.4">https://blog.example.com</a>)</li><li><code>--dest</code> the local path of your static website content</li></ul><h3 id="push-blog-content-to-github-pages">Push blog content to Github Pages</h3><p>To make your blog accessible to the world, push your static HTML content to a GitHub repository configured with GitHub Pages. GitHub Pages offers a robust, free hosting solution that integrates seamlessly with your GitHub workflow.  For most personal and project blogs, it provides a perfect balance between ease of use and functionality. </p><p>Follow the instructions below to setup your own GitHub repository with GitHub Pages:</p><figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="https://pages.github.com/?ref=192.168.1.4"><div class="kg-bookmark-content"><div class="kg-bookmark-title">GitHub Pages</div><div class="kg-bookmark-description">Websites for you and your projects, hosted directly from your GitHub repository. Just edit, push, and your changes are live.</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="https://pages.github.com/favicon.ico" alt="From Zero to Blog Hero: Hosting your own blog for free with Ghost and GitHub Pages"><span class="kg-bookmark-author">GitHub Pages</span></div></div><div class="kg-bookmark-thumbnail"><img src="https://pages.github.com/images/logo.svg" alt="From Zero to Blog Hero: Hosting your own blog for free with Ghost and GitHub Pages" onerror="this.style.display = &apos;none&apos;"></div></a></figure><ul><li>Create a repository named <code>your-github-username.github.io.</code> For example, mine is <a href="https://github.com/bart-jansen/bart-jansen.github.io?ref=192.168.1.4">https://github.com/bart-jansen/bart-jansen.github.io</a></li><li>Push your static HTML content to this repository</li><li>Your blog is now available at <a href="https://username.github.io./?ref=192.168.1.4">https://your-github-username.github.io</a></li></ul><h3 id="add-cname-record-to-host-your-blog-on-your-own-custom-domain">Add CNAME record to host your blog on your own custom domain</h3><p>To personalize your blog&apos;s URL, you can configure a custom domain by adding a CNAME record. A CNAME record (Canonical Name) redirects visitors from your default GitHub domain to a domain name of your choosing. For instance, instead of&#xA0;<code>your-github-username.github.io</code>, visitors could reach your blog via&#xA0;<code>www.yourblogname.com</code>.</p><figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site?ref=192.168.1.4"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Managing a custom domain for your GitHub Pages site - GitHub Docs</div><div class="kg-bookmark-description">You can set up or update certain DNS records and your repository settings to point the default domain for your GitHub Pages site to a custom domain.</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="https://docs.github.com/assets/cb-345/images/site/favicon.png" alt="From Zero to Blog Hero: Hosting your own blog for free with Ghost and GitHub Pages"><span class="kg-bookmark-author">GitHub Docs</span></div></div><div class="kg-bookmark-thumbnail"><img src="https://github.githubassets.com/images/modules/open_graph/github-logo.png" alt="From Zero to Blog Hero: Hosting your own blog for free with Ghost and GitHub Pages" onerror="this.style.display = &apos;none&apos;"></div></a></figure><p>Follow instructions in the link above:</p><ul><li>Navigate to Settings -&gt; Pages and configure your domain e.g. <code>bart.je</code> which will push a <code>CNAME</code> file to root of your repository with <code>bart.je</code> </li><li>Add the <a href="https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site?ref=192.168.1.4#dns-records-for-your-custom-domain" rel="noreferrer">appropriate DNS records</a> to your domain provider</li><li>Optionally enforce HTTPS, using either your own SSL certificate, or by e.g. putting Cloudflare in between.</li></ul>]]></content:encoded></item><item><title><![CDATA[Optimizing Azure AI Search: Comparing Push and Pull approaches with performance recommendations]]></title><description><![CDATA[<p>The Azure Search Index can be populated in two different ways. You can either directly <em>push</em> data into the index via the REST API/SDK (left image), or leverage the built-in Azure Search Indexer, which&#xA0;<em>pulls</em>&#xA0;data from a chosen DataSource and adds them to a specified index</p>]]></description><link>https://bart.je/optimizing-azure-ai-search-push-vs-pull/</link><guid isPermaLink="false">67576bf5ff25d50001134092</guid><category><![CDATA[azure ai search]]></category><category><![CDATA[push]]></category><category><![CDATA[pull]]></category><category><![CDATA[indexers]]></category><category><![CDATA[search index]]></category><category><![CDATA[vector search]]></category><category><![CDATA[ingestion]]></category><dc:creator><![CDATA[Bart Jansen]]></dc:creator><pubDate>Mon, 06 May 2024 09:44:00 GMT</pubDate><media:content url="https://bart.je/content/images/2024/05/pushvspull_yellow.png" medium="image"/><content:encoded><![CDATA[<img src="https://bart.je/content/images/2024/05/pushvspull_yellow.png" alt="Optimizing Azure AI Search: Comparing Push and Pull approaches with performance recommendations"><p>The Azure Search Index can be populated in two different ways. You can either directly <em>push</em> data into the index via the REST API/SDK (left image), or leverage the built-in Azure Search Indexer, which&#xA0;<em>pulls</em>&#xA0;data from a chosen DataSource and adds them to a specified index (right image)</p><figure class="kg-card kg-image-card kg-width-full"><img src="https://bart.je/content/images/2024/05/search-index-solutions.drawio-1.png" class="kg-image" alt="Optimizing Azure AI Search: Comparing Push and Pull approaches with performance recommendations" loading="lazy" width="1061" height="342" srcset="https://bart.je/content/images/size/w600/2024/05/search-index-solutions.drawio-1.png 600w, https://bart.je/content/images/size/w1000/2024/05/search-index-solutions.drawio-1.png 1000w, https://bart.je/content/images/2024/05/search-index-solutions.drawio-1.png 1061w"></figure><p>Choosing between the pull and push models depends on the requirements you have. Do you care most about how fast your data gets indexed, or is security your top priority? Maybe you need the flexibility to work with many different data sources. Each model has its own set of pros and cons. To help you decide, we&apos;ve put together a comparison table below that breaks down the differences between the pull and push models across several important areas, including their ability to enrich data with AI, security features, indexing performance, and more. </p>
+<!--kg-card-begin: html-->
+<table>
+  <thead>
+    <tr>
+      <th>Aspect</th>
+      <th>Pull Model</th>
+      <th>Push Model</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Enrichment</strong></td>
+      <td>&#x2705; Supports AI enrichment through built-in skillsets.</td>
+      <td>&#x274C; Does not support AI enrichment capabilities via skillsets.</td>
+      <td>Manual enrichment before indexing also possible</td>
+    </tr>
+    <tr>
+      <td><strong>Security</strong></td>
+      <td>&#x2705; Makes use of Azure AI Search&apos;s built-in security.</td>
+      <td>&#x274C; All security measures must be implemented by the user.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Performance</strong></td>
+      <td>&#x274C; Inferior indexing performance compared to push model (currently ~3 times slower)* </td>
+      <td>&#x2705; More performant indexing, allows async upload upto 1000 documents per batch.</td>
+      <td>Indexing performance is key for the overall ingestion duration.</td>
+    </tr>
+    <tr>
+      <td><strong>Monitoring</strong></td>
+      <td>&#x2705; Azure AI Search provides built-in monitoring capabilities.</td>
+      <td>&#x274C; User needs to monitor the index status manually.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Flexibility</strong></td>
+      <td>&#x274C; Limited to supported data sources; source needs to be compatible with Azure AI Search Indexer.</td>
+      <td>&#x2705; More flexible; can push data from any source.</td>
+      <td>Azure Blob, Data Lake, SQL, Table Storage and CosmosDB are supported at time of writing.</td>
+    </tr>
+    <tr>
+      <td><strong>Reindexing</strong></td>
+      <td>&#x2705; Easily able to reindex with a simple trigger, if data stays in place in DataSource.</td>
+      <td>&#x274C; Need to cache documents and manually push each document again</td>
+      <td>Re-indexing a lot easier with pull model.</td>
+    </tr>
+    <tr>
+      <td><strong>Tooling</strong></td>
+      <td>&#x2705; Indexer functionality is exposed in the Azure portal.</td>
+      <td>&#x274C; No tool support for pushing data via the portal.</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+<!--kg-card-end: html-->
+<p>The comparison between the pull and push models shows that the pull model excels in areas like AI enrichment, built-in security, monitoring, and ease of reindexing, thanks to its integration with Azure AI Search&apos;s capabilities. However, it falls short in indexing performance and flexibility, being slower and limited to certain data sources.</p><h2 id="performance-improvements">Performance improvements</h2><p>Feeding data into your search index, whether through push or pull, significantly impacts the overall time taken for ingestion. As seen from the comparison table above, using the push approach can make the process up to three times faster. These results come from the standard configuration, when using a single Azure Search Indexer and a single thread pushing batches of documents to the search index.</p><p>Using a dataset with 10,000 documents, we evaluated the performance of ingestions data with the pull and push models under various configurations:</p><ul><li>Upgrade Azure AI Search service tier from S1 to S2</li><li>Add partitions, scaling document counts as well as faster data ingestion by spanning your index over multiple units</li><li>Parallel indexing, using multiple indexers and async pushing documents</li></ul><p>We&apos;ll have a look at the impact of each individual configuration first, and then combine configurations for further optimizations. To ensure consistency in testing conditions and to mitigate the effects of throughput and latency, all data ingestions were conducted within the same Azure Region, originating from an Azure-hosted machine. The results presented are the average of five test runs.</p>
+<!--kg-card-begin: html-->
+<table>
+    <tr>
+        <th></th>
+        <th><strong>Indexer/Pull</strong></th>
+        <th><strong>Push</strong></th>
+    </tr>
+    <tr>
+        <td>S1 1 partition</td>
+        <td>3:10</td>
+        <td>1:05</td>
+    </tr>
+    <tr>
+        <td>S2 1 partition</td>
+        <td>2:51</td>
+        <td>0:57</td>
+    </tr>
+    <tr>
+        <td>S1 4 partitions</td>
+        <td>3:22</td>
+        <td>1:10</td>
+    </tr>
+</table>
+<!--kg-card-end: html-->
+<p>As shown in the results above, the push method is almost three times faster than using an indexer.Interestingly, the introduction of additional partitions and upgrading to an S2 search instance had a negligible effect on performance in these tests. These results suggest that both the addition of more partitions and upgrading to an S2 search instance primarily enhance capacity and query-performance, rather than directly improving the rate of data ingestion. </p><p>To speed things up, we also investigated parallel indexing. For the pull model we can use multiple indexers that write to the same index, and with the push model we can asynchronously push multiple batches simultaneously. Here, we also play with the partition size, to see how that effects the results.</p>
+<!--kg-card-begin: html-->
+<table>
+    <tr>
+        <th></th>
+        <th><strong>Indexer/Pull</strong></th>
+        <th><strong>Push</strong></th>
+    </tr>
+    <tr>
+        <td>S1 1 parallel</td>
+        <td>3:10</td>
+        <td>1:05</td>
+    </tr>
+    <tr>
+        <td>S1 10 parallel</td>
+        <td>0:20</td>
+        <td>0:59</td>
+    </tr>
+    <tr>
+        <td>S1 20 parallel</td>
+        <td>0:11</td>
+        <td>0:49</td>
+    </tr>
+    <tr>
+        <td>S1 40 parallel</td>
+        <td>0:06</td>
+        <td>0:34</td>
+    </tr>
+</table>
+<!--kg-card-end: html-->
+<p>The performance of the indexer scaled almost linearly with parallelization, showing significant improvements. Specifically, using 10 indexers was approximately 9.5 times faster, 20 indexers around 17.3 times faster, and 40 indexers about 31.2 times faster compared to a single indexer. Although asynchronously pushing batches also enhanced performance, the improvement was roughly 2 times better when using 40 parallel threads for pushing. Increasing parallel threads further had a negative impact and decreased performance for both push and pull.</p><h2 id="considerations">Considerations</h2><p>Choosing between the push and pull models for populating the Azure Search Index should be based on project-specific requirements, including indexing speed, security, source flexibility,  AI enrichment potential and the need for re-indexing over time. While the pull model integrates closely with Azure AI Search&apos;s advanced features, offering built-in enrichment and easy re-indexing, it lags behind the push model in terms of speed and flexibility.</p><p>Using standard configurations, the push model outperforms pull and is three times faster. However, you can setup multiple indexers to linearly improve ingestion speed for each indexer added, minding the <a href="https://learn.microsoft.com/en-us/azure/search/search-limits-quotas-capacity?ref=192.168.1.4#indexer-limits" rel="noreferrer">maximum limit</a> of indexers. This does  require a bit of orchestration, where you need to split your indexes over multiple data sources (or folders) and track the progress of multiple indexers.</p><p></p><p></p><p></p><p> </p>]]></content:encoded></item><item><title><![CDATA[Transforming PDF Chaos into clarity: Add PDF Insights with Azure AI Search & RAG]]></title><description><![CDATA[<p>A great way to add insights to your unstructured PDFs is by ingesting them into an Azure AI Search Index and adding an LLM on top, also known as the RAG pattern as described in: <a href="https://blog.bart.je/enhancing-data-azure-insights-retrieval-augmented-generation/?ref=192.168.1.4" rel="noreferrer">Enhancing Your Data with Azure: Unlocking Insights through Retrieval-Augmented Generation</a>.</p><p>This blog posts shows various</p>]]></description><link>https://bart.je/transforming-pdf-chaos-clarity-azure-cognitive-search-rag/</link><guid isPermaLink="false">67576bf5ff25d50001134091</guid><category><![CDATA[ingestion]]></category><category><![CDATA[rag]]></category><category><![CDATA[retrievel augmented generation]]></category><category><![CDATA[azure cognitive search]]></category><category><![CDATA[form recognizer]]></category><category><![CDATA[python]]></category><category><![CDATA[search index]]></category><category><![CDATA[azure openai]]></category><category><![CDATA[embeddings]]></category><category><![CDATA[azure ai search]]></category><dc:creator><![CDATA[Bart Jansen]]></dc:creator><pubDate>Mon, 13 Nov 2023 13:52:00 GMT</pubDate><content:encoded><![CDATA[<p>A great way to add insights to your unstructured PDFs is by ingesting them into an Azure AI Search Index and adding an LLM on top, also known as the RAG pattern as described in: <a href="https://blog.bart.je/enhancing-data-azure-insights-retrieval-augmented-generation/?ref=192.168.1.4" rel="noreferrer">Enhancing Your Data with Azure: Unlocking Insights through Retrieval-Augmented Generation</a>.</p><p>This blog posts shows various code snippets, on how to achieve these different steps using Python. The first bit is to setup and populate the Search Index, and the last sections show how to query the search index and enrich the data using GPT. </p><blockquote>Please keep in mind that these snippets are a great starting point, but have been kept as small as possible to fit the format of this blog. Comprehensive processing such as chunking, text splitting, enriching, embedding and semantic configuration, semantic reranking have consciously been kept out of the scope of this blog post, but are required for creating an effective search index.</blockquote><figure class="kg-card kg-image-card kg-width-full"><img src="https://bart.je/content/images/2023/11/cognitive-search-pdf-ingestion.png" class="kg-image" alt loading="lazy" width="2000" height="487" srcset="https://bart.je/content/images/size/w600/2023/11/cognitive-search-pdf-ingestion.png 600w, https://bart.je/content/images/size/w1000/2023/11/cognitive-search-pdf-ingestion.png 1000w, https://bart.je/content/images/size/w1600/2023/11/cognitive-search-pdf-ingestion.png 1600w, https://bart.je/content/images/size/w2400/2023/11/cognitive-search-pdf-ingestion.png 2400w"></figure><h3 id="create-azure-ai-search-index">Create Azure AI Search Index</h3><p>First step is to create an Azure AI Search Index, this can be done through the Azure Portal, the REST API or with the Python SDK:</p><pre><code class="language-python">SEARCH_SERVICE = &quot;your-azure-search-resource&quot;
+SEARCH_INDEX = &quot;your-search-index&quot;
+SEARCH_KEY = &quot;your-secret-azure-search-key&quot;
+SEARCH_CREDS = AzureKeyCredential(SEARCH_KEY)
+SEARCH_CLIENT = SearchIndexerClient(endpoint=f&quot;https://{SEARCH_SERVICE}.search.windows.net/&quot;, credential=SEARCH_CREDS)
+
+def create_index():
+    client = SearchIndexClient(endpoint=f&quot;https://{SEARCH_SERVICE}.search.windows.net/&quot;, index=SEARCH_INDEX, credential=SEARCH_CREDS)
+    # Define the index
+    index_definition = SearchIndex(
+        name=SEARCH_INDEX,
+        fields=[
+            SearchField(name=&quot;id&quot;, type=SearchFieldDataType.String, key=True),
+            SearchField(name=&quot;content&quot;, type=SearchFieldDataType.String, filterable=True, sortable=True),
+            SearchField(name=&quot;sourcefile&quot;, type=SearchFieldDataType.String, filterable=True, facetable=True),
+            SearchField(
+                name=&quot;embedding&quot;,
+                type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
+                hidden=False,
+                searchable=True,
+                filterable=False,
+                sortable=False,
+                facetable=False,
+                vector_search_dimensions=1536,
+                vector_search_configuration=&quot;default&quot;,
+            )
+        ],
+        semantic_settings=SemanticSettings(
+            configurations=[
+                SemanticConfiguration(
+                    name=&apos;default&apos;,
+                    prioritized_fields=PrioritizedFields(
+                        title_field=None, prioritized_content_fields=[SemanticField(field_name=&apos;content&apos;)]
+                    )
+                )
+            ]
+        ),
+        vector_search=VectorSearch(
+            algorithm_configurations=[
+                VectorSearchAlgorithmConfiguration(
+                    name=&quot;default&quot;,
+                    kind=&quot;hnsw&quot;,
+                    hnsw_parameters=HnswParameters(metric=&quot;cosine&quot;)
+                )
+            ]
+        )
+    )
+    
+    # Create the index
+    client.create_index(index=index_definition)
+</code></pre><p>This sets up an Azure AI Search Index with these fields:</p><ul><li> <code>id</code> : ID of the document</li><li> <code>content</code> : plain text content of your document</li><li><code>sourcefile</code> : PDF file used, including page number of this document</li><li><code>embedding</code> : vectorized embedding of your plain text content</li></ul><p>Since we&apos;re using a vector embedding field we configure <code>vector_search</code>, we also setup a default <code>semantic_configuration</code> and define which fields to use for our (non-vector) content (<code>content</code> in our case).</p><h3 id="process-pdfs">Process PDFs</h3><p>With the index in place, we need to split PDFs to process, chunk size &amp; overlap size, form recognizer for OCR/Tables, enrichment.</p><p>First, we split the PDFs into single page documents:</p><pre><code class="language-python">import io
+from PyPDF2 import PdfFileReader, PdfFileWriter
+
+def split_pdf_to_pages(pdf_path):
+    &quot;&quot;&quot;
+    Splits a PDF file into individual pages and returns a list of byte streams, 
+    each representing a single page.
+    &quot;&quot;&quot;
+    pages = []
+    with open(pdf_path, &apos;rb&apos;) as file:
+        reader = PdfFileReader(file)
+
+        for i in range(reader.getNumPages()):
+            writer = PdfFileWriter()
+            writer.addPage(reader.getPage(i))
+
+            page_stream = io.BytesIO()
+            writer.write(page_stream)
+            page_stream.seek(0)
+            pages.append(page_stream)
+
+    return pages
+
+# Example usage
+pdf_path = &apos;path/to/your/pdf/file.pdf&apos;
+pages = split_pdf_to_pages(pdf_path)</code></pre><p>We then use the contents of these single-page documents with Azure Form Recognizer (also known as Azure Document Intelligence), to extract the text from the document:</p><pre><code class="language-python">FORM_RECOGNIZER_SERVICE = &quot;your-fr-resource&quot;
+FORM_RECOGNIZER_KEY = &quot;SECRET_FR_KEY&quot;
+FORM_RECOGNIZER_CREDS = AzureKeyCredential(FORM_RECOGNIZER_KEY)
+
+def get_document_text_from_content(blob_content):
+    offset = 0
+    page_map = []
+
+    form_recognizer_client = DocumentAnalysisClient(
+        endpoint=f&quot;https://{FORM_RECOGNIZER_SERVICE}.cognitiveservices.azure.com/&quot;, 
+        credential=FORM_RECOGNIZER_CREDS, 
+        headers={&quot;x-ms-useragent&quot;: &quot;azure-search-sample/1.0.0&quot;}
+    )
+
+    poller = form_recognizer_client.begin_analyze_document(&quot;prebuilt-layout&quot;, document=blob_content)
+    form_recognizer_results = poller.result()
+
+    for page_num, page in enumerate(form_recognizer_results.pages):
+        # Extract text for each page
+        page_text = page.content
+        page_map.append((page_num, offset, page_text))
+        offset += len(page_text)
+
+    return page_map
+</code></pre><h3 id="split-text-into-indexable-sized-chunks">Split text into indexable sized chunks</h3><p>With the page contents extracted from the PDF, per page, we can split the text to chunks, an easy way to do this is:</p><pre><code class="language-python">def split_text(page_map, max_section_length):
+    &quot;&quot;&quot;
+    Splits the text from page_map into sections of a specified maximum length.
+
+    :param page_map: List of tuples containing page text.
+    :param max_section_length: Maximum length of each text section.
+    :return: Generator yielding text sections.
+    &quot;&quot;&quot;
+    all_text = &quot;&quot;.join(p[2] for p in page_map)  # Concatenate all text
+    start = 0
+    length = len(all_text)
+
+    while start &lt; length:
+        end = min(start + max_section_length, length)
+        section_text = all_text[start:end]
+        yield section_text
+        start = end
+
+# Example usage
+max_section_length = 1000  # For example, 1000 characters per section
+sections = split_text(page_map, max_section_length)
+
+for section in sections:
+    print(section)  # Process each section as needed
+</code></pre><blockquote>Note: the snippet above is a very simplistic way of splitting text. In production you&apos;d want to take into account sentence_endings, overlap, word_breaks, tables, cross-page sections, etc.</blockquote><h3 id="create-search-index-sections">Create Search Index sections</h3><p>We can use the <code>page_map</code> from <code>get_document_from_text</code>  to call the<code>split_text</code> function and setup the sections for our index:</p><pre><code class="language-python">def create_sections(filename, page_map):
+    for i, (content, pagenum) in enumerate(split_text(page_map, filename)):
+        section = {
+            &quot;id&quot;: f&quot;{filename}-page-{i}&quot;,
+            &quot;content&quot;: content,
+            &quot;sourcefile&quot;: filename
+        }
+        section[&quot;embedding&quot;] = compute_embedding(content)
+        yield section</code></pre><h3 id="generate-embeddings">Generate embeddings</h3><p>We can generate embeddings using Azure OpenAI&apos;s <code>text-embedding-ada-002</code> model:</p><pre><code class="language-python"># Configurations
+OPENAI_SERVICE = &quot;your-azure-openai-resource&quot;
+OPENAI_DEPLOYMENT = &quot;embedding&quot;
+OPENAI_KEY = &quot;your-secret-openai-key&quot;
+
+# OpenAI setup
+openai.api_type = &quot;azure&quot;
+openai.api_key = OPENAI_KEY
+openai.api_base = f&quot;https://{OPENAI_SERVICE}.openai.azure.com&quot;
+openai.api_version = &quot;2022-12-01&quot;
+
+def compute_embedding(text):
+    return openai.Embedding.create(engine=OPENAI_DEPLOYMENT, input=text)[&quot;data&quot;][0][&quot;embedding&quot;]</code></pre><h3 id="ingest-data-into-search-index">Ingest Data into Search Index</h3><p>With the computed sections from <code>create_sections</code> we can batch-upload them  (in pairs of 1000 documents) into our Search Index:</p><pre><code class="language-python">def index_sections(filename, sections):
+    &quot;&quot;&quot;
+    Indexes sections from a file into a search index.
+
+    :param filename: The name of the file being indexed.
+    :param sections: The sections of text to index.
+    &quot;&quot;&quot;
+    search_client = SearchClient(endpoint=f&quot;https://{SEARCH_SERVICE}.search.windows.net/&quot;,
+                                 index_name=SEARCH_INDEX,
+                                 credential=SEARCH_CREDS)
+
+    batch = []
+    for i, section in enumerate(sections, 1):
+        batch.append(section)
+        if i % 1000 == 0:
+            search_client.upload_documents(documents=batch)
+            batch = []
+
+    if batch:
+        search_client.upload_documents(documents=batch)
+
+# filename and sections from previous steps
+index_sections(filename, sections)</code></pre><p>The result of this last ingestion step is a fully populated Search Index, ready to be consumed.</p><h3 id="retrieval-augmented-generation">Retrieval Augmented Generation</h3><p>Now we can query our Search Index endpoint, using:</p><pre><code class="language-python">from azure.core.credentials import AzureKeyCredential
+from azure.search.documents import SearchClient
+
+def search_index(query, endpoint, index_name, api_key):
+    &quot;&quot;&quot;
+    Searches the indexed data in Azure Search.
+
+    :param query: The search query string.
+    :param endpoint: Azure Search service endpoint URL.
+    :param index_name: Name of the Azure Search index.
+    :param api_key: Azure Search API key.
+    :return: Search results.
+    &quot;&quot;&quot;
+    credential = AzureKeyCredential(api_key)
+    search_client = SearchClient(endpoint=endpoint, index_name=index_name, credential=credential)
+
+    results = search_client.search(query)
+    return [result for result in results]
+
+# Example usage
+endpoint = &apos;https://[service-name].search.windows.net&apos;  # Replace with your service endpoint
+index_name = &apos;your-index-name&apos;  # Replace with your index name
+api_key = &apos;your-api-key&apos;  # Replace with your API key
+search_query = &apos;example search text&apos;
+
+search_results = search_index(search_query, endpoint, index_name, api_key)
+
+for result in search_results:
+    print(result)  # Process each search result as needed
+</code></pre><h3 id="enrich-results-with-gpt-4">Enrich results with GPT-4</h3><p>After retrieval, we can enrich the search results with GPT-4:</p><pre><code class="language-python">import openai
+
+def enrich_with_gpt(result, openai_api_key):
+    &quot;&quot;&quot;
+    Enriches the search result with additional information generated by OpenAI GPT-4.
+
+    :param result: The search result item to enrich.
+    :param openai_api_key: OpenAI API key.
+    :return: Enriched information.
+    &quot;&quot;&quot;
+    openai.api_key = openai_api_key
+
+    # Construct a prompt based on the result for GPT-4
+    prompt = f&quot;Based on the following search result: {result}, generate additional insights.&quot;
+
+    # Call OpenAI GPT-4 to generate additional information
+    response = openai.Completion.create(engine=&quot;gpt4-32k&quot;, prompt=prompt, max_tokens=150)
+    return response.choices[0].text.strip()
+
+# Example usage
+openai_api_key = &apos;your-openai-api-key&apos;  # Replace with your OpenAI API key
+
+enriched_results = []
+for result in search_results:
+    enriched_info = enrich_with_gpt(result, openai_api_key)
+    enriched_results.append((result, enriched_info))
+
+for result, enriched_info in enriched_results:
+    print(&quot;Original Result:&quot;, result)
+    print(&quot;Enriched Information:&quot;, enriched_info)
+    print(&quot;-----&quot;)
+</code></pre><h3 id="next-steps">Next Steps</h3><p>As mentioned in the beginning of this blog post, this code snippets can serve as the basis of your RAG ingestion &amp; consumption pipeline. But to come increase the effectiveness of your RAG implementation, there&apos;s a lot of improvements that can be made.</p><p></p><p></p>]]></content:encoded></item><item><title><![CDATA[Enhancing Your Data with Azure: Unlocking Insights through Retrieval-Augmented Generation]]></title><description><![CDATA[<p>In the rapidly evolving world of data analytics and AI, new frameworks are popping up every day to enhance the way we interact with and understand our data. One of the most exciting developments is the integration of tailor-made Large Language Models (LLM) into business processes. These models, like Azure</p>]]></description><link>https://bart.je/enhancing-data-azure-insights-retrieval-augmented-generation/</link><guid isPermaLink="false">67576bf5ff25d50001134090</guid><category><![CDATA[llm]]></category><category><![CDATA[azure openai]]></category><category><![CDATA[embeddings]]></category><category><![CDATA[vector search]]></category><category><![CDATA[azure cognitive search]]></category><category><![CDATA[rag]]></category><category><![CDATA[retrievel augmented generation]]></category><dc:creator><![CDATA[Bart Jansen]]></dc:creator><pubDate>Wed, 08 Nov 2023 19:49:00 GMT</pubDate><media:content url="https://bart.je/content/images/2023/11/needle-in-haystack.jpg" medium="image"/><content:encoded><![CDATA[<img src="https://bart.je/content/images/2023/11/needle-in-haystack.jpg" alt="Enhancing Your Data with Azure: Unlocking Insights through Retrieval-Augmented Generation"><p>In the rapidly evolving world of data analytics and AI, new frameworks are popping up every day to enhance the way we interact with and understand our data. One of the most exciting developments is the integration of tailor-made Large Language Models (LLM) into business processes. These models, like Azure OpenAI&apos;s GPT-4, are transforming how companies get insights from their data. In this post, we&apos;ll dive into how you can leverage Retrieval-Augmented Generation (RAG) using Azure OpenAI and Azure Cognitive Search to create a CoPilot experience for your data.</p><h3 id="what-is-rag-and-why-should-you-care">What Is RAG and Why Should You Care?</h3><p>Retrieval-Augmented Generation is an architecture that combines the best of two worlds: the knowledge and natural language understanding of LLMs and the precision of an effective search index. While there are other alternatives available, RAG stands out for its ease of use and effectiveness.</p><figure class="kg-card kg-image-card kg-width-wide"><img src="https://bart.je/content/images/2023/11/ragexample.svg" class="kg-image" alt="Enhancing Your Data with Azure: Unlocking Insights through Retrieval-Augmented Generation" loading="lazy" width="851" height="294"></figure><p>As shown in the diagram above, RAG works by first retrieving relevant information from, e.g. a search index, and then using that specific knowledge index from the data sources to generate more informed and accurate responses using GPT. This makes it particularly valuable for businesses looking to extract insights from their existing data, while having the ability to form a proper natural language based response.</p><h3 id="how-to-implement-rag-in-your-data-pipeline">How to Implement RAG in Your Data Pipeline</h3><p>Implementing RAG involves two main components: setting up an ingestion pipeline that indexes all your business-specific data and creating a RAG consumption pipeline. Here&apos;s how you can do it:</p><p><strong>Setting Up the Ingestion Pipeline:</strong></p><ol><li><strong>Create an Azure Cognitive Search Index with Vector Embeddings:</strong> Start by building an index that can handle vector embeddings. This will lay the foundation for powerful search capabilities.</li><li><strong>Ingest Your Data and Populate Your Index:</strong> Once your index is ready, ingest your existing data. This step is crucial as it populates your index with the data that the RAG model will use.</li></ol><p><strong>Setting Up the RAG Consumption Pipeline:</strong></p><ol><li><strong>Generate Embeddings for Prompts:</strong> Use Azure OpenAI to generate embeddings for your prompts. These embeddings represent the semantic content of your queries.</li><li><strong>Query Azure Cognitive Search Endpoint:</strong> Hit the Azure Cognitive Search endpoint to retrieve the top results based on your embeddings.</li><li><strong>Combine Results with a Customized System Prompt:</strong> Take the results from Azure Cognitive Search and combine them with a customized prompt. Then, use this combined input to query the GPT-4 model to provide an insightful answer.</li></ol><h3 id="testing-and-optimizing-performance">Testing and Optimizing Performance</h3><p>An essential part of implementing RAG is testing and optimizing the performance of your Azure Cognitive Search Index. You can use an LLM like GPT-4 to generate question-answer pairs relevant to your data. This approach allows you to test how well your index performs, giving you insights into the effectiveness of your data indexing strategies, chunking, overlap size, and data enrichment processes. A simple approach using synthetic QA generation is described <a href="https://jakobs.dev/evaluating-rag-synthetic-dataset-generation/?ref=192.168.1.4" rel="noreferrer">here</a>.</p><h3 id="conclusion">Conclusion</h3><p>Adding RAG to your data pipeline using Azure OpenAI and Azure Cognitive Search is not just about keeping up with the latest tech trends. It&apos;s about unlocking new levels of understanding and insights from your data, tailored specifically to your company&apos;s data. With the steps outlined above, you&apos;re well on your way to implementing a powerful CoPilot for your data.</p>]]></content:encoded></item><item><title><![CDATA[Host your own ChatGPT instance using Azure OpenAI]]></title><description><![CDATA[<p>It&#x2019;s 2023, everyone is playing around with ChatGPT on <a href="https://chat.openai.com/?ref=192.168.1.4" rel="noreferrer">OpenAI</a> and a new and improved version of GPT is being released every couple of months with lots of new improvements which make you even more effective.</p><p>The problem with these new models is that they&#x2019;re only</p>]]></description><link>https://bart.je/host-your-own-chatgpt-instance-azure-openai/</link><guid isPermaLink="false">67576bf5ff25d50001134085</guid><category><![CDATA[chatgpt]]></category><category><![CDATA[openai]]></category><category><![CDATA[azure]]></category><category><![CDATA[azure openai]]></category><dc:creator><![CDATA[Bart Jansen]]></dc:creator><pubDate>Tue, 31 Oct 2023 14:30:19 GMT</pubDate><media:content url="https://bart.je/content/images/2023/11/Screenshot-2023-11-09-at-11.36.02.png" medium="image"/><content:encoded><![CDATA[<img src="https://bart.je/content/images/2023/11/Screenshot-2023-11-09-at-11.36.02.png" alt="Host your own ChatGPT instance using Azure OpenAI"><p>It&#x2019;s 2023, everyone is playing around with ChatGPT on <a href="https://chat.openai.com/?ref=192.168.1.4" rel="noreferrer">OpenAI</a> and a new and improved version of GPT is being released every couple of months with lots of new improvements which make you even more effective.</p><p>The problem with these new models is that they&#x2019;re only available for customers with OpenAI plus subscriptions, setting you back $20 each month (excluding tax). Instead of using OpenAI&#x2019;s version, you can also setup your own gpt-4 instance on Azure OpenAI .</p><h3 id="great-but-what%E2%80%99s-in-it-for-me"><strong>Great! But what&#x2019;s in it for me?</strong></h3><ul><li>You pay as you go; instead of a flat fee of $20 per month, you pay a small amount per query</li><li>Your data isn&#x2019;t used for training the models, whereas the OpenAI ChatGPT implementation is continuously <a href="https://help.openai.com/en/articles/5722486-how-your-data-is-used-to-improve-model-performance?ref=192.168.1.4" rel="noreferrer">used to improve the model</a>.</li><li>More flexibility: you can customize the temperature of the GPT model and customize the system prompt message</li><li>It allows you to have way larger context windows for your queries, at the time of writing Azure OpenAI supports 32k token limit versus 8k token limit of ChatGPT&apos;s Plus subscription&#xA0;</li></ul><h3 id="but-where%E2%80%99s-my-nice-chatgpt-like-ui"><strong>But where&#x2019;s my nice ChatGPT-like UI?</strong></h3><p>Luckily there are lots of open source solutions that have you covered. All very much inspired by ChatGPT&#x2019;s interface, showing a prompt history, word per word output and nice formatting.</p><p>A personal favorite of mine is <a href="https://github.com/mckaywrigley/chatbot-ui?ref=192.168.1.4" rel="noreferrer">chatbot-ui</a>. I run this as a docker container on a raspberry pi in my local network, accessible only within my local network or with a proper VPN connection:</p><figure class="kg-card kg-code-card"><pre><code class="language-bash">docker run \
+  -e OPENAI_API_KEY=YOURKEY \
+  -e AZURE_DEPLOYMENT_ID=YOURDEPLOYMENTNAME \
+  -e OPENAI_API_HOST=https://YOURENDPOINT.openai.azure.com \
+  -e OPENAI_API_TYPE=azure \
+  -e DEFAULT_MODEL=gpt-4-32k \
+  -p 3000:3000 \
+  bartmsft/chatbot-ui:main
+</code></pre><figcaption><p><span style="white-space: pre-wrap;">*don&apos;t ever run UIs like this, with your OpenAI GPT keys, on the public internet</span></p></figcaption></figure><p>Simply replace your <code>OPENAI_API_KEY</code>, <code>AZURE_DEPLOYMENT_ID</code> and <code>OPENAI_API_HOST</code> with respectively your primary key, deployment-name and Azure OpenAI endpoint. Your UI will be available on <a href="http://localhost:3000/?ref=192.168.1.4" rel="noreferrer">http://localhost:3000</a>. </p><blockquote>Update May 2024: As of earlier this year, the original maintainer of chatbot-ui moved to a new interface, adding more features but also adding lots of extra dependencies. Therefore I&apos;m using a personal fork on  <a href="https://hub.docker.com/r/bartmsft/chatbot-ui?ref=192.168.1.4" rel="noreferrer">Docker Hub - bartmsft</a> of the old instance.</blockquote>]]></content:encoded></item><item><title><![CDATA[Using a Managed Identity with Databricks to Run Notebooks Through a Web App]]></title><description><![CDATA[<p>Databricks is great for processing data, and out of the box comes with &apos;Jobs&apos; to automate and schedule notebooks. If you want more control over these triggers, customize the notebook parameters or have your own orchestrator, you could also trigger these notebook runs via another resource, such as</p>]]></description><link>https://bart.je/using-a-managed-identity-with-databricks-to-run-notebooks-through-a-web-app/</link><guid isPermaLink="false">67576bf5ff25d5000113408f</guid><category><![CDATA[managed identity]]></category><category><![CDATA[databricks]]></category><category><![CDATA[rbac]]></category><category><![CDATA[terraform]]></category><dc:creator><![CDATA[Bart Jansen]]></dc:creator><pubDate>Wed, 18 Oct 2023 08:08:00 GMT</pubDate><content:encoded><![CDATA[<p>Databricks is great for processing data, and out of the box comes with &apos;Jobs&apos; to automate and schedule notebooks. If you want more control over these triggers, customize the notebook parameters or have your own orchestrator, you could also trigger these notebook runs via another resource, such as a Web App. We can use the Web App&apos;s managed identity to run Databricks notebooks. This is a powerful way to automate and secure your data processing workflows, and it&apos;s surprisingly easy to set up.</p><h3 id="what-is-a-managed-identity">What is a Managed Identity?</h3><p>Before we dive in, let&apos;s quickly define what a managed identity is. In Azure, a managed identity is a service principal that&apos;s automatically managed by Azure. It provides an identity for applications to use when connecting to resources that support Azure Active Directory (Azure AD) authentication.</p><h3 id="why-not-use-role-based-access-control-rbac">Why not use Role-Based Access Control (RBAC)?</h3><p>While Role-Based Access Control (RBAC) is a common practice in many Azure services to manage access, when it comes to Databricks, there are specific reasons to opt for Databricks&apos; own access control management:</p><ol><li><strong>Customized Access Control</strong>: Databricks provides its own specialized access system, allowing for direct integration with Azure resources via Service Principals. This approach is tailored to Databricks&apos; unique workflows and ecosystem.</li><li><strong>Granularity of Permissions</strong>: Databricks allows specific entitlements, such as workspace access or cluster creation. This refined control surpasses the often generalized permissions of traditional RBAC, granting precise access based on exact needs.</li><li><strong>Group-Based Assignments</strong>: Beyond just entitlements, Databricks facilitates the assignment of Service Principals to specific groups. This caters to varied levels of access needed for different jobs or notebooks, ensuring both security and flexibility.</li></ol><p>In summary, while RBAC is a valuable tool for many Azure services, when working within Databricks, leveraging its custom access control mechanisms can offer more precise, flexible, and streamlined management of permissions and access.</p><p>In order to programatically setup these permissions we can leverage the <a href="https://learn.microsoft.com/en-us/azure/databricks/administration-guide/users-groups/scim/aad?ref=192.168.1.4">SCIM API</a> to assign a managed identity and assign it to a group. These groups can have specific entitlements for specific workspaces. One way to do this is shown in the diagram below:</p><figure class="kg-card kg-image-card"><img src="https://bart.je/content/images/2023/10/20230501-end-to-end-authentication-and-authorization-06.png" class="kg-image" alt loading="lazy" width="783" height="307" srcset="https://bart.je/content/images/size/w600/2023/10/20230501-end-to-end-authentication-and-authorization-06.png 600w, https://bart.je/content/images/2023/10/20230501-end-to-end-authentication-and-authorization-06.png 783w" sizes="(min-width: 720px) 720px"></figure><h3 id="setting-up-a-managed-identity">Setting Up a Managed Identity</h3><p>To set up a managed identity for your existing Web App, you&apos;ll need to follow these steps:</p><ol><li>In the Azure Portal, open the Web App</li><li>Click on &quot;Identity&quot; and enable &quot;System assigned managed identitiy&quot;.</li><li>Copy the generated &quot;Object (principal) ID&quot; and search for the associated Enterprise Application in Azure Active Directory.</li><li>Copy the associated Application ID, as we will need this to configure Databricks.</li></ol><h3 id="assigning-the-managed-identity-to-databricks">Assigning the Managed Identity to Databricks</h3><p>After creating the managed identity, you&apos;ll need to assign it to your Databricks workspace:<br>1. In the Azure portal, go to your Databricks workspace.<br>2. In the Admin settings (right top), go to the &quot;Service principals&quot; section.<br>3. Click on Add Service Principal, add the Application ID you copied earlier and tick &quot;Allow workspace access&quot; to ensure the Service Principal has sufficient privileges to run notebooks.</p><h3 id="running-databricks-notebooks-from-a-web-app">Running Databricks Notebooks from a Web App</h3><p>Now that we have a managed identity set up and assigned to Databricks, we can use it to run Databricks notebooks from a web application. Here&apos;s how:</p><ol><li>In your web application, use the Azure SDK to get a token for the managed identity. This token will be used to authenticate to Databricks.</li><li>Use the Databricks REST API to create a new job. The job should be configured to run the notebook you want.</li><li>Start the job using the Databricks REST API. You&apos;ll need to include the token you got in step 1 in the Authorization header.</li></ol><p>Here&apos;s a sample code snippet in Python that shows how to do this:</p><pre><code class="language-python">from azure.identity import DefaultAzureCredential
+from azure.databricks import DatabricksClient
+
+# Get a token for the managed identity
+credential = DefaultAzureCredential()
+token = credential.get_token(&apos;2ff814a6-3304-4ab8-85cb-cd0e6f879c1d&apos;)
+
+# Create a Databricks client
+client = DatabricksClient(base_url=&apos;https://&lt;databricks-instance&gt;&apos;, token=token.token)
+
+# Create a new job
+job_id = client.jobs.create({&apos;notebook_task&apos;: {&apos;notebook_path&apos;: &apos;/path/to/notebook&apos;}})
+
+# Start the job
+client.jobs.run_now(job_id)</code></pre><p>With this setup, you can securely run Databricks notebooks from your web application using a managed identity. The same applies for other services that support managed identity (e.g. Azure Functions, Azure Container Instances, AKS, etc) and the same also applies for User Assigned Managed Identities instead of System Assigned Managed Identities.</p><h3 id="automate-deployment-using-terraform">Automate deployment using Terraform</h3><p>Instead of configuring the managed identity manually, we can leverage the azure and databricks terraform providers to automate the creation of the managed identity and attaching it to a databricks cluster. The databricks providers uses the SCIM API under the hood, and here&apos;s an example how to tie everything together in terraform:</p><pre><code class="language-hcl">provider &quot;azurerm&quot; {
+  features {}
+}
+
+data &quot;azurerm_databricks_workspace&quot; &quot;workspace&quot; {
+  name                = &quot;your-databricks-workspace-name&quot;
+  resource_group_name = &quot;your-databricks-rg-name&quot;
+}
+
+provider &quot;databricks&quot; {
+  host                        = data.azurerm_databricks_workspace.workspace.workspace_url
+  azure_workspace_resource_id = data.azurerm_databricks_workspace.workspace.id
+}
+
+resource &quot;azurerm_resource_group&quot; &quot;example&quot; {
+  name     = &quot;example-resources&quot;
+  location = &quot;West Europe&quot;
+}
+
+resource &quot;azurerm_service_plan&quot; &quot;example&quot; {
+  name                = &quot;example&quot;
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+  os_type             = &quot;Linux&quot;
+  sku_name            = &quot;P1v2&quot;
+}
+
+resource &quot;azurerm_linux_web_app&quot; &quot;example&quot; {
+  name                = &quot;example&quot;
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_service_plan.example.location
+  service_plan_id     = azurerm_service_plan.example.id
+
+  site_config {}
+
+  identity {
+    type = &quot;SystemAssigned&quot;
+  }
+}
+
+/* 
+The code below adds the Managed Identity service principal to the databricks 
+admin group using the Databricks Terraform Provider. 
+
+This is required to allow the WebApp to access the Databricks REST API.
+*/
+data &quot;databricks_group&quot; &quot;admin&quot; {
+  display_name = &quot;admin&quot; // existing admin group in databricks workspace
+}
+
+resource &quot;databricks_service_principal&quot; &quot;sp&quot; {
+  application_id = azurerm_linux_web_app.example.identity[0].client_id
+  display_name   = &quot;appsvc-id&quot;
+}
+
+resource &quot;databricks_group_member&quot; &quot;admin_group&quot; {
+  group_id  = data.databricks_group.admin.id
+  member_id = databricks_service_principal.sp.id
+}</code></pre><h3 id="wrapping-up"><br>Wrapping up</h3><p>Managed identities offer a secure and simple way to authenticate to services like Databricks. By using a managed identity, you can eliminate the need to store sensitive credentials in your code and simplify your authentication process. Assigning the managed identity to Databricks, allows us to have granular control on what the identity (i.e. Web App) can access and this will allow you to e.g. trigger Databricks workloads from other resources in Azure. </p>]]></content:encoded></item><item><title><![CDATA[Adding Event-driven Autoscaling to your Kubernetes Cluster]]></title><description><![CDATA[<p>Azure Kubernetes Service (AKS) comes with a Cluster Autoscaler (CA) that can automatically <em>add nodes</em> to the node pool based on the load of the cluster (based on CPU/memory usage). KEDA is active on the pod-level and uses Horizontal Pod Autoscaling (HPA) to dynamically add <em>additional pods</em> based on</p>]]></description><link>https://bart.je/adding-keda-aks-cluster/</link><guid isPermaLink="false">67576bf5ff25d5000113408e</guid><category><![CDATA[azure]]></category><category><![CDATA[keda]]></category><category><![CDATA[aks]]></category><category><![CDATA[autoscaling]]></category><category><![CDATA[kubernetes]]></category><category><![CDATA[helm]]></category><dc:creator><![CDATA[Bart Jansen]]></dc:creator><pubDate>Tue, 13 Jul 2021 12:57:18 GMT</pubDate><media:content url="https://bart.je/content/images/2021/07/horizontal-autoscaling-kubernetes-1500x700.jpg" medium="image"/><content:encoded><![CDATA[<img src="https://bart.je/content/images/2021/07/horizontal-autoscaling-kubernetes-1500x700.jpg" alt="Adding Event-driven Autoscaling to your Kubernetes Cluster"><p>Azure Kubernetes Service (AKS) comes with a Cluster Autoscaler (CA) that can automatically <em>add nodes</em> to the node pool based on the load of the cluster (based on CPU/memory usage). KEDA is active on the pod-level and uses Horizontal Pod Autoscaling (HPA) to dynamically add <em>additional pods</em> based on the configured scaler. CA and KEDA therefore go hand-in-hand when managing dynamic workloads on an AKS cluster since they scale on different dimensions, based on different rules, as shown below:</p><figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption"><img src="https://bart.je/content/images/2021/07/aks-scaling-dimensions.png" class="kg-image" alt="Adding Event-driven Autoscaling to your Kubernetes Cluster" loading="lazy" width="822" height="485" srcset="https://bart.je/content/images/size/w600/2021/07/aks-scaling-dimensions.png 600w, https://bart.je/content/images/2021/07/aks-scaling-dimensions.png 822w"><figcaption><span style="white-space: pre-wrap;">Vertical and Horizontal scaling in Kubernetes</span></figcaption></figure><h2 id="overview">Overview</h2><p>An overview of KEDA that scales an <code>App</code> based on the Topic Queue size of <code>Azure Service Bus</code> is shown in this diagram:</p><figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption"><img src="https://bart.je/content/images/2021/07/keda-overview.png" class="kg-image" alt="Adding Event-driven Autoscaling to your Kubernetes Cluster" loading="lazy" width="1652" height="871" srcset="https://bart.je/content/images/size/w600/2021/07/keda-overview.png 600w, https://bart.je/content/images/size/w1000/2021/07/keda-overview.png 1000w, https://bart.je/content/images/size/w1600/2021/07/keda-overview.png 1600w, https://bart.je/content/images/2021/07/keda-overview.png 1652w" sizes="(min-width: 1200px) 1200px"><figcaption><span style="white-space: pre-wrap;">Communication flow for KEDA scaling an app in AKS</span></figcaption></figure><p>The app is deployed together with a KEDA-backed <code>ScaledObject</code>.  This ScaledObject supports <code>minReplicaCount</code> and <code>maxReplicaCount</code> that defines the range of concurrent replicas for the pods that can exist for the app. Furthermore, a <code>scale trigger</code> object is defined inside the ScaledObject that defines the scaling criteria and conditions for scaling up and down.</p><p>Although optional, the diagram above also uses <em>Pod Identity</em>. Similar to how secrets are <a href="https://github.com/Azure/secrets-store-csi-driver-provider-azure?ref=192.168.1.4">fetched from Azure Key Vault inside containers</a>, Pod Identity is used with KEDA to directly subscribe to an e.g. <em>Azure Service Bus Topic</em> to scale the pods without passing any connecting strings by specifying its <code>AzureIdentityBinding</code>. </p><h2 id="usage">Usage</h2><p>The KEDA <a href="https://github.com/kedacore/charts?ref=192.168.1.4" rel="noopener noreferrer">Helm Chart</a> needs to be installed on the AKS cluster and configured to use  <code>AzureIdentityBinding</code> to access resources in Azure. This Azure AD Identity needs to have sufficient RBAC permissions to directly access the required resources in Azure.</p><p>The <code>ScaledObject</code> is defined as follows, which is deployed along with the application deployment specified under <code>scaleTargetRef</code>. This needs to match the deployment name which needs to be deployed in the same Kubernetes namespace.</p><pre><code class="language-yaml">apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: msg-processor-scaler
+spec:
+  scaleTargetRef:
+    name: msg-processor # must be in the same namespace as the ScaledObject
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  triggers:
+  - type: azure-servicebus
+    metadata:
+      namespace: SERVICE_BUS_NAMESPACE 
+      topicName: SERVICE_BUS_TOPIC
+      subscriptionName: SERVICE_BUS_TOPIC_SUBSCRIPTION
+      messageCount: &quot;5&quot;
+    authenticationRef:
+      name: trigger-auth-service-bus-msgs
+</code></pre><p>It defines the <code>type</code> of scale trigger we would like to use and the scaling criteria specified under the <code>metadata</code> object. Lots of different KEDA scalars are available out of the box and details can be found by going through the <a href="https://keda.sh/docs/latest/scalers/?ref=192.168.1.4">KEDA documentation</a>. </p><p>In the example above, we use an <a href="https://keda.sh/docs/latest/scalers/azure-service-bus/?ref=192.168.1.4">azure-servicebus scalar</a> and would like to scale out if there are more than 5 unprocessed messages on the topic subscription <code>SERVICE_BUS_TOPIC_SUBSCRIPTION</code> on the <code>SERVICE_BUS_TOPIC</code> topic in the <code>SERVICE_BUS_NAMESPACE</code> kubernetes namespace. Scaling will go up to a maximum of 10 concurrent replicas which is defined via <code>maxReplicaCount</code> and there will always be a 1 pod minimum as defined by <code>minReplicaCount</code>.</p><p>Since we are using Pod Identity, we also specify the <code>authenticationRef</code> for the ScaledObject to<code>trigger-auth-service-bus-msgs</code>. This is a <code>TriggerAuthentication</code> resource that defines how KEDA should authenticate to get the metrics.</p><pre><code class="language-yaml">apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: trigger-auth-service-bus-msgs
+spec:
+  podIdentity:
+    provider: azure
+</code></pre><p>In this case, we are telling KEDA to use Azure as a Pod Identity provider which uses <a href="https://github.com/Azure/aad-pod-identity?ref=192.168.1.4" rel="noopener noreferrer">Azure AD Pod Identity</a>. Alternatively, a full connection string can also be used without specifying a TriggerAuthentication resource.</p><p>By using a TriggerAuthentication you can easily re-use this authentication resource, but it also allows you to separate the permissions for KEDA and other resources inside your kubernetes cluster by binding them to different Azure AD Identities with different RBAC permissions.</p><h2 id="using-alternative-keda-scalars">Using alternative KEDA scalars</h2><p>The example above shows how to configure KEDA for autoscaling using <em>Azure Service Bus Topics</em>, but lots of other scalars are supported out of the box and more information can be found on <a href="https://keda.sh/docs/2.2/scalers/?ref=192.168.1.4" rel="noopener noreferrer">KEDA Documentation - Scalars</a> .</p><blockquote>Note: when adding additional triggers, also ensure that Pod Identity can read from these resources by adding the corresponding RBAC permissions.</blockquote><h2 id="using-the-prebuilt-helm-chart-with-keda-support">Using the prebuilt Helm chart with KEDA support</h2><p>If you have <a href="https://blog.bart.je/deploying-a-fully-configured-aks-cluster-in-azure-using-terraform/?ref=192.168.1.4">deployed a fully configured AKS cluster to Azure</a> and you are also using the accompanying <a href="https://github.com/bart-jansen/secretstore-ingress-keda-apps-helm?ref=192.168.1.4">Umbrella Helm chart</a> for easy deployment of your apps then you&apos;re in luck, because it also allows you to easily add KEDA support for the applications you deploy to the AKS cluster. </p><p>Most of the documentation to get started is available on <a href="https://github.com/bart-jansen/secretstore-ingress-keda-apps-helm?ref=192.168.1.4">GitHub</a>, but here&apos;s a sample on how you would deploy the application described above using this Helm Chart.</p><pre><code class="language-yaml">helm-app:
+  app:
+    name: app-service-name
+    container:
+      image: hello-world:latest
+      port: 80
+
+  keda:
+    enabled: true
+    name: app-service-name-keda
+    authRefName: auth-trigger-app-service-name
+    scaleTargetRef: app-service-name 
+    minReplicaCount: 1
+    maxReplicaCount: 10
+    triggers:
+    - type: azure-servicebus
+      metadata:
+        topicName: sbtopic-app-example-service
+        subscriptionName: sbsub-app-example-service
+        namespace: servicebus-app-example-ns
+        messageCount: 5</code></pre><p>Using this Helm Chart, you can easily deploy your Service, Deployment, Scaled Object, AuthenticationTriggers and optionally all other resources (e.g. ingress, secretstore) your deployment requires. </p>]]></content:encoded></item><item><title><![CDATA[Deploying a fully configured AKS cluster in Azure using Terraform]]></title><description><![CDATA[<p>Setting up an Azure Kubernetes Service (AKS) using Terraform, is fairly easy. Setting up a full-fledged AKS cluster that can read images from Azure Container Registry (ACR), fetch secrets from Azure Key Vault using Pod Identity while all traffic is routed via an AKS managed Application Gateway is much harder.</p>]]></description><link>https://bart.je/deploying-a-fully-configured-aks-cluster-in-azure-using-terraform/</link><guid isPermaLink="false">67576bf5ff25d5000113408d</guid><category><![CDATA[azure]]></category><category><![CDATA[aks]]></category><category><![CDATA[terraform]]></category><category><![CDATA[application gateway]]></category><category><![CDATA[azure container registry]]></category><category><![CDATA[azure key vault]]></category><category><![CDATA[pod identity]]></category><dc:creator><![CDATA[Bart Jansen]]></dc:creator><pubDate>Tue, 23 Mar 2021 15:10:00 GMT</pubDate><media:content url="https://bart.je/content/images/2021/07/archdiagram_k8s.png" medium="image"/><content:encoded><![CDATA[<img src="https://bart.je/content/images/2021/07/archdiagram_k8s.png" alt="Deploying a fully configured AKS cluster in Azure using Terraform"><p>Setting up an Azure Kubernetes Service (AKS) using Terraform, is fairly easy. Setting up a full-fledged AKS cluster that can read images from Azure Container Registry (ACR), fetch secrets from Azure Key Vault using Pod Identity while all traffic is routed via an AKS managed Application Gateway is much harder.</p><p>To save others from all the trouble I encountered while creating this one-click-deployment, I&apos;ve published a <a href="https://github.com/bart-jansen/terraform-aks-appgw-acr-keyvault-loganalytics?ref=192.168.1.4">GitHub repository</a> that serves as a boilerplate for the scenario described above, and fully deploys and configures your Azure Kubernetes Service in the cloud using a single terraform deployment.</p><p>This blog post goes into the details of the different resources that are deployed, why these specific resources are chosen and how they tie into each other. A future blog post will build upon this and explain how Helm can be used to automate your container deployments to the AKS cluster.</p><h2 id="architecture-overview">Architecture Overview</h2><figure class="kg-card kg-image-card kg-width-wide"><img src="https://bart.je/content/images/2021/07/archdiagram_k8s-2.png" class="kg-image" alt="Deploying a fully configured AKS cluster in Azure using Terraform" loading="lazy" width="1438" height="943" srcset="https://bart.je/content/images/size/w600/2021/07/archdiagram_k8s-2.png 600w, https://bart.je/content/images/size/w1000/2021/07/archdiagram_k8s-2.png 1000w, https://bart.je/content/images/2021/07/archdiagram_k8s-2.png 1438w" sizes="(min-width: 1200px) 1200px"></figure><h3 id="azure-kubernetes-service">Azure Kubernetes Service</h3><p>Azure Kubernetes Service (AKS) makes it simple to deploy a managed Kubernetes cluster in Azure. Kubernetes is an open-source container orchestration platform that automates many of the manual processes involved in deploying, managing, and scaling containerized applications. Having this cluster is ideal when you want to run multiple containerized services and don&apos;t want to worry about managing and scaling them.</p><h3 id="azure-container-registry">Azure Container Registry</h3><p>Azure Container Registry (ACR) is a managed Docker registry service, and it allows you to store and manage images for all types of container deployments. Every service can be pushed to its own repository in Azure Container Registry and every codebase change in a specific service can trigger a pipeline that pushes a new version for that container to ACR with a unique tag.</p><p>AKS and ACR integration is setup during the deployment of the AKS cluster with Terraform. This allows the AKS cluster to interact with ACR, using an Azure Active Directory service principal. The Terraform deployment automatically configures RBAC permissions for the ACR resources with an appropriate <code>ACRPull</code> role for the service principal.</p><p>With this integration in place, AKS pods can fetch any of the Docker images that are pushed to ACR, even though ACR is setup as a private docker registry. Don&apos;t forget to add the azurecr.io prefix for the container and specify a tag. It is best practice to not use that <code>:latest</code> tag since this image always points to the latest image pushed to your repository and might introduce unwanted changes. Always pinpoint the container to a specific version and update that version in your <code>yaml</code> file when you want to upgrade.</p><p>A simple example for a pod that&apos;s running a container from the <code>youracrname.azurecr.io</code> container registry, the <code>test-container</code> repository with tag <code>20210301</code>, is shown below:</p><pre><code class="language-yaml">---
+apiVersion: v1  
+kind: Pod  
+metadata:  
+  name: test-container
+spec:  
+  containers:
+    - name: test-container
+      image: youracrname.azurecr.io/test-container:20210301
+</code></pre><h3 id="pod-identity">Pod Identity</h3><p>AAD Pod Identity enables Kubernetes applications to access cloud resources securely with Azure Active Directory. It&apos;s best practice to not use fixed credentials within pods or container images, as they are at risk of exposure or abuse. Instead, we&apos;re using pod identities to request access using Azure AD.</p><p>When a pod needs access to other Azure services, such as Cosmos DB, Key Vault, or Blob Storage, the pod needs access credentials. You don&apos;t manually define credentials for pods, instead they request an access token in real time, and can use it to only access their assigned services that are defined for that identity.</p><p>Pod Identity is fully configured on the AKS cluster when the Terraform script is deployed, and pods inside the AKS cluster can use the preconfigured pod identity by specifying the corresponding <code>aadpodidbinding</code> pod label.</p><p>Once the identity binding is deployed, any pod in the AKS cluster can use it by matching the pod label as follows:</p><pre><code class="language-yaml">apiVersion: v1  
+kind: Pod  
+metadata:  
+  name: demo
+  labels:
+    aadpodidbinding: $IDENTITY_NAME
+spec:  
+  containers:
+  - name: demo
+    image: mcr.microsoft.com/oss/azure/aad-pod-identity/demo:latest
+</code></pre><h3 id="azure-key-vault-secrets-store-csi-driver">Azure Key Vault Secrets Store CSI Driver</h3><p>Some of the services in the AKS cluster connect to external services. The connection strings and other secret values that are needed by the pods are stored in Azure Key Vault. By storing these variables in Key Vault, we ensure that these secrets are not versioned in the git repository as code, and not accessible to anyone that has access to the AKS cluster.</p><p>To securely mount these connection strings, pod identity is used to mount these secrets in the pods and make them available to the container as environment variables. The flow for a pod fetching these variables is shown in the diagram below:</p><figure class="kg-card kg-image-card kg-card-hascaption"><img src="https://bart.je/content/images/2021/07/aks-pod-identity-keyvault.png" class="kg-image" alt="Deploying a fully configured AKS cluster in Azure using Terraform" loading="lazy" width="1629" height="967" srcset="https://bart.je/content/images/size/w600/2021/07/aks-pod-identity-keyvault.png 600w, https://bart.je/content/images/size/w1000/2021/07/aks-pod-identity-keyvault.png 1000w, https://bart.je/content/images/size/w1600/2021/07/aks-pod-identity-keyvault.png 1600w, https://bart.je/content/images/2021/07/aks-pod-identity-keyvault.png 1629w" sizes="(min-width: 720px) 720px"><figcaption><span style="white-space: pre-wrap;">Flow for fetching Azure Key Vault secrets using Pod Identity</span></figcaption></figure><p>Luckily, there&apos;s no need to to worry about all these different data flows, and we can just use deploy the provided <a href="https://github.com/Azure/secrets-store-csi-driver-provider-azure?ref=192.168.1.4">Azure Key Vault Provider for Secrets Store CSI Driver</a> on the AKS cluster. This provider leverages pod identity on the cluster and provides a <code>SecretProviderClass</code> with all the secrets that you want to fetch from Azure Key Vault.</p><p>A basic example for setting up a SecretStore from KeyVault <code>kvname</code>, getting secret <code>secret1</code> and exposing these as a SecretStore named <code>kv-secrets</code>:</p><pre><code class="language-yaml">apiVersion: secrets-store.csi.x-k8s.io/v1alpha1  
+kind: SecretProviderClass  
+metadata:  
+  name: kv-secrets
+spec:  
+  provider: azure
+  parameters:
+    usePodIdentity: &quot;true&quot;        # set to &quot;true&quot; to enable Pod Identitiy
+    keyvaultName: &quot;kvname&quot;        # the name of the KeyVault
+    objects:  |
+      array:
+        - |
+          objectName: secret1     # name of the secret in KeyVault
+          objectType: secret
+    tenantId: &quot;&quot;                  # tenant ID of the KeyVault
+</code></pre><p>To use these secret <code>secret1</code> from <code>kv-secrets</code> in a pod and making it available in the nginx container with the environment variable <code>SECRET_ENV</code>:</p><pre><code class="language-yaml">spec:  
+  containers:
+  - image: nginx
+    name: nginx
+    env:
+    - name: SECRET_ENV
+      valueFrom:
+        secretKeyRef:
+          name: kv-secrets
+          key: secret1
+</code></pre><h3 id="application-gateway">Application Gateway</h3><p>All traffic that accesses the AKS cluster is routed via an <a href="https://docs.microsoft.com/en-us/azure/application-gateway/overview?ref=192.168.1.4">Azure Application Gateway</a>. The Application Gateway acts as a Load Balancer and routes the incoming traffic to the corresponding services in AKS.</p><p>Specifically, <a href="https://docs.microsoft.com/en-us/azure/application-gateway/ingress-controller-overview?ref=192.168.1.4">Application Gateway Ingress Controller</a> (AGIC) is used. This Ingress Controller is deployed on the AKS Cluster on its own pod. AGIC monitors the Kubernetes cluster it is hosted on and continuously updates an Application Gateway, so that selected services are exposed to the Internet on the specified URL paths &amp; ports straight from the Ingress rules defined in AKS. This flow is shown in the diagram below:</p><figure class="kg-card kg-image-card kg-width-wide"><img src="https://bart.je/content/images/2021/07/aks-appgw-deployment-architecture.png" class="kg-image" alt="Deploying a fully configured AKS cluster in Azure using Terraform" loading="lazy" width="1287" height="660" srcset="https://bart.je/content/images/size/w600/2021/07/aks-appgw-deployment-architecture.png 600w, https://bart.je/content/images/size/w1000/2021/07/aks-appgw-deployment-architecture.png 1000w, https://bart.je/content/images/2021/07/aks-appgw-deployment-architecture.png 1287w" sizes="(min-width: 1200px) 1200px"></figure><p>As shown in the overview diagram, the client reaches a Public IP endpoint before the request is forwarded to the Application Gateway. This Public IP is deployed as part of the Terraform deployment on an Azure-based FQDN (e.g. <a href="http://your-app.westeurope.cloudapp.azure.com/?ref=192.168.1.4" rel="nofollow"><code>your-app.westeurope.cloudapp.azure.com</code></a>).</p><h2 id="closing-remarks">Closing remarks</h2><p>Lots of details on the inner workings for some of these resources. Fortunately, all of these configurations happen for you and all you need to do is setup the <code>tfvars</code> variables for your environment. Keep an eye out for the upcoming blog post on setting up Helm to automate your container deployments.</p><p>What are you waiting for? Clone the <a href="https://github.com/bart-jansen/terraform-aks-appgw-acr-keyvault-loganalytics?ref=192.168.1.4">repo</a> and start deploying your fully configured AKS cluster.</p>]]></content:encoded></item><item><title><![CDATA[How do you pimp your festival? With a chat bot!]]></title><description><![CDATA[<p>Last week, we teamed up with 20 different developers for a hackathon to create a chat bot for the <a href="https://blog.bart.je/how-do-you-pimp-your-festival-with-a-chat-bot/www.esns.nl?ref=192.168.1.4">Eurosonic Noorderslag festival</a>. Eurosonic Noorderslag is an annual festival for new and upcoming artists with over 40,000 attendees. The purpose of our bot is to provide the attendees with near</p>]]></description><link>https://bart.je/how-do-you-pimp-your-festival-with-a-chat-bot/</link><guid isPermaLink="false">67576bf5ff25d5000113408c</guid><category><![CDATA[chat bot]]></category><category><![CDATA[LUIS]]></category><category><![CDATA[azure]]></category><category><![CDATA[Azure Bot Framework]]></category><dc:creator><![CDATA[Bart Jansen]]></dc:creator><pubDate>Thu, 26 Jan 2017 16:34:00 GMT</pubDate><media:content url="https://bart.je/content/images/2021/07/luis-diagram-Recovered.png" medium="image"/><content:encoded><![CDATA[<img src="https://bart.je/content/images/2021/07/luis-diagram-Recovered.png" alt="How do you pimp your festival? With a chat bot!"><p>Last week, we teamed up with 20 different developers for a hackathon to create a chat bot for the <a href="https://blog.bart.je/how-do-you-pimp-your-festival-with-a-chat-bot/www.esns.nl?ref=192.168.1.4">Eurosonic Noorderslag festival</a>. Eurosonic Noorderslag is an annual festival for new and upcoming artists with over 40,000 attendees. The purpose of our bot is to provide the attendees with near real-time answers to everything related to the festival. Together with these developers we built a fully functioning bot using the <a href="https://dev.botframework.com/?ref=192.168.1.4">Azure Bot Framework</a>.</p><p>In this blog I&apos;ll briefly introduce the technology we have used for the bot, and I&apos;ll go over our approach for getting the chat bot ready in two days without any prior experience with creating bots.</p><h3 id="bot-framework">Bot Framework</h3><p>The fundament of our bot is based on the Azure Bot Framework. This framework comes with several advantages:</p><ul><li>Easy integrations with all popular chat platforms (i.e. Skype, Messenger, Slack, etc.)</li><li>Serverless bot environment where you can easily scale and pay as you go (per execution)</li><li>Developer SDKs which expose easy-to-use bot functionalities available in both C# and Node.JS (e.g. <a href="https://blogs.msdn.microsoft.com/tsmatsuz/2016/08/31/microsoft-bot-framework-messages-howto-image-html-card-button-etc/?ref=192.168.1.4">Chat cards</a>)</li></ul><p>New bots can be either created via <a href="https://dev.botframework.com/?ref=192.168.1.4">botframework.com</a> or in the <a href="https://portal.azure.com/?ref=192.168.1.4">Azure Portal</a>. When you create a bot an easy walkthrough is provided to pick a programming language (C# or Node.JS), set up a basic template for your desired functionality, connect to the appropriate chat platforms and provide connectors to enabled external providers (e.g. LUIS).</p><h3 id="luis">LUIS</h3><p>The biggest reasons why bots are so powerful today is because of the newly trained language interpretation systems behind the bots. Microsoft&apos;s flavor for this is known as <a href="https://blog.bart.je/how-do-you-pimp-your-festival-with-a-chat-bot/www.luis.ai?ref=192.168.1.4">Language Understanding Intelligent Service (LUIS)</a> and it serves as the interpretation system between the text input and the data processing used to provide an output that makes sense. The different capabilities are explained in the remainder of this section and illustrated in the figure below: <br></p><figure class="kg-card kg-image-card kg-width-wide"><img src="https://bart.je/content/images/2021/07/luis-diagram-Recovered-1.png" class="kg-image" alt="How do you pimp your festival? With a chat bot!" loading="lazy" width="989" height="397" srcset="https://bart.je/content/images/size/w600/2021/07/luis-diagram-Recovered-1.png 600w, https://bart.je/content/images/2021/07/luis-diagram-Recovered-1.png 989w"></figure><h5 id="intent">Intent</h5><p>Whenever LUIS is queried with a sentence, it first tries to determine its intent. For example, if you have a GetFood intent to return food places, you want this functionality to trigger with a variety of sentences, like &apos;I am hungry&apos;, &apos;I want food&apos;, &apos;I am starving&apos; etc. Completely different sentences as you can see, but because of the built-in language interpretation, LUIS knows there&apos;s a relation between starving/hungry/want food and LUIS will trigger the GetFood intent for all three sentences.</p><h5 id="entities">Entities</h5><p>Another building block which LUIS provides are entities. Whenever a sentence is put through LUIS, it can extract certain keywords in these sentences and pass them to the BotFramework as separate entities. Think of the earlier example to get food. When a user for example asks &apos;I want pizza&apos; or &apos;I am looking for a restaurant that serves orange juice&apos;, LUIS can be trained to detect food entities and extract relatively pizza and orange juice from these two sentences.</p><h5 id="phrase-lists">Phrase lists</h5><p>Lastly, phrase lists in LUIS are ideal to link certain keywords to each other. Different food entities as described in the previous section, can be easily linked together with phrase lists so you don&apos;t have to train LUIS to detect every type of food. Instead, you can train LUIS to recognize e.g. pizza, and add a comma-seperated food phrase list with all the different types of food you wish to detect.</p><h3 id="code-collaboration">Code collaboration</h3><p>Since we only had two days to finish the bot, we didn&apos;t organize a traditional hackathon where each team competes with each other for the best idea. We decided to collaborate with each other and to split the group up into different teams for different features. We also had an additional team which went out on the street to ask the festival attendees what functionalities they would be looking for when talking with the festival bot.</p><p>Even though every team worked on different functionalities, every functionality got merged into the same <a href="https://github.com/bart-jansen/noorderslag-bot?ref=192.168.1.4">GitHub repository</a>. After 30 hours, +300 commits and a lot of last minute bug fixing we managed to create our chat bot: <em>Sonic</em>.</p><p>To experience the bot yourself, you can try out the bot on <a href="https://www.messenger.com/t/psychetude?ref=192.168.1.4">Facebook Messenger</a>. Or have a look at the video below showing most of its functionalities:</p><figure class="kg-card kg-embed-card"><iframe width="200" height="113" src="https://www.youtube.com/embed/vhIpm0wgczY?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></figure>]]></content:encoded></item><item><title><![CDATA[My journey from AWS to Azure]]></title><description><![CDATA[<p>Before joining Microsoft a little over three months ago, I was not familiar with the Azure Cloud whatsoever and I replaced my Windows machine with an Apple MacBook several years ago without ever looking back. I have been a software engineer for the last 10 years, but when working in</p>]]></description><link>https://bart.je/my-journey-from-aws-to-azure/</link><guid isPermaLink="false">67576bf5ff25d5000113408b</guid><category><![CDATA[azure]]></category><category><![CDATA[aws]]></category><category><![CDATA[experience]]></category><dc:creator><![CDATA[Bart Jansen]]></dc:creator><pubDate>Mon, 12 Dec 2016 13:13:00 GMT</pubDate><media:content url="https://bart.je/content/images/2021/07/excitement-graph-1.png" medium="image"/><content:encoded><![CDATA[<img src="https://bart.je/content/images/2021/07/excitement-graph-1.png" alt="My journey from AWS to Azure"><p>Before joining Microsoft a little over three months ago, I was not familiar with the Azure Cloud whatsoever and I replaced my Windows machine with an Apple MacBook several years ago without ever looking back. I have been a software engineer for the last 10 years, but when working in the cloud I have always developed in Amazon&apos;s AWS Cloud while working at various startups.</p><p>When I signed up to become a Technical Evangelist at Microsoft I knew this was about to change. I spent the last month and a half onboarding to Microsoft&apos;s Windows OS and Azure Cloud. Five years ago, I wouldn&apos;t have even considered joining MSFT, but due to Microsoft&apos;s new vision, focus on Cloud productivity and innovation I&apos;m proud to call myself a Technical Evangelist at Microsoft.</p><p>In this blog I will be sharing my Azure onboarding experiences while trying to stay unbiased ;)</p><h4 id="excitement-graph">Excitement Graph</h4><p>I think my ongoing journey can be described in a simple excitement-over-time graph shown below which I will try to explain in further detail in the remainder of this blog: </p><figure class="kg-card kg-image-card kg-width-wide"><img src="https://bart.je/content/images/2021/07/excitement-graph-1-1.png" class="kg-image" alt="My journey from AWS to Azure" loading="lazy" width="1774" height="886" srcset="https://bart.je/content/images/size/w600/2021/07/excitement-graph-1-1.png 600w, https://bart.je/content/images/size/w1000/2021/07/excitement-graph-1-1.png 1000w, https://bart.je/content/images/size/w1600/2021/07/excitement-graph-1-1.png 1600w, https://bart.je/content/images/2021/07/excitement-graph-1-1.png 1774w" sizes="(min-width: 1200px) 1200px"></figure><h4 id="first-impression">First impression</h4><p>When I first opened the Azure Portal, the first thing I noticed is the extensive amount of options, items and resources I could pick from which felt really overwhelming.</p><p>AWS focuses on getting everything done via the Command Line Interface (CLI), whereas Azure tends to put more focus on its UI-based Web Portal. Even though the latter is nice for less experienced developers, it takes some getting used to.</p><p>Luckily Azure fully functions via the Command Line Interface as well (<a href="https://github.com/Azure/azure-cli?ref=192.168.1.4">azure-cli</a>), but does not seem to promote it in the way that Amazon does. Every tutorial/webinar/blog seems to use the Portal-approach and guide you through their code with various Portal screenshots. This is why it actually took me a couple of days before I found out there was a CLI :)</p><h4 id="every-aws-service-has-its-azure-counterpart">Every AWS service has its Azure counterpart</h4><p>Yes, <em>Every</em>. It just takes some getting used to since they both use different naming conventions. A useful chart that helped me out a lot can be found <a href="https://docs.microsoft.com/en-us/azure/guidance/guidance-azure-for-aws-professionals-service-map?ref=192.168.1.4">here</a>. AWS&apos; EC2 and S3 can be found in Azure under respectively Virtual Machines and Azure Storage. And even more specific functionality, e.g. serverless computing where AWS uses Lambda can be found in Azure under Function Apps.</p><h4 id="microsoft-embraces-open-source-software">Microsoft embraces Open Source Software</h4><p>The biggest concern I had when I joined Microsoft was that I had no .NET/C# experience whatsoever. A language and environment that have been going hand-in-hand with the Microsoft ecosystem. Fortunately, this does not hold me back in my productivity and programming capabilities at all in these days at Microsoft. The time where you could only run your code in sandboxed Windows Machines supporting solely ASP.NET with SQL server is over. Microsoft embraces every kind of programming and honestly does not care whether you are running a .NET application with SQL or a NodeJS application with MongoDB as a backend.</p><p>Historically, the path that Microsoft took is rather surprising. Especially when we look at a quote of Microsoft&apos;s former CEO Steve Ballmer in 2001:</p><blockquote><em>&quot;Linux is a cancer that attaches itself in an intellectual property sense to everything it touches&quot;</em></blockquote><p>Times sure have changed and even Ballmer seems to <a href="https://www.zdnet.com/article/ballmer-i-may-have-called-linux-a-cancer-but-now-i-love-it/?ref=192.168.1.4">agree</a>. At the time, Microsoft was fighting against the open source Linux community but as of lately actually embraces the whole OSS scene. Being the <a href="http://thenextweb.com/microsoft/2016/09/15/in-your-face-google/?ref=192.168.1.4">largest open source contributor</a> on GitHub, <a href="https://www.microsoft.com/en-us/sql-server/sql-server-vnext-including-Linux?ref=192.168.1.4">SQL server running on Linux</a>, <a href="https://www.pcworld.com/article/3055403/windows/windows-10s-bash-shell-can-run-graphical-linux-applications-with-this-trick.html?ref=192.168.1.4">Ubuntu running on Windows 10</a> and the list goes on. And it does result in some crazy setups which were unthinkable a couple of years ago:</p><figure class="kg-card kg-embed-card"><iframe id="twitter-widget-0" scrolling="no" frameborder="0" allowtransparency="true" allowfullscreen="true" class title="Twitter Tweet" src="https://platform.twitter.com/embed/Tweet.html?creatorScreenName=bartjansn&amp;dnt=false&amp;embedId=twitter-widget-0&amp;features=eyJ0ZndfZXhwZXJpbWVudHNfY29va2llX2V4cGlyYXRpb24iOnsiYnVja2V0IjoxMjA5NjAwLCJ2ZXJzaW9uIjpudWxsfSwidGZ3X2hvcml6b25fdHdlZXRfZW1iZWRfOTU1NSI6eyJidWNrZXQiOiJodGUiLCJ2ZXJzaW9uIjpudWxsfSwidGZ3X3R3ZWV0X2VtYmVkX2NsaWNrYWJpbGl0eV8xMjEwMiI6eyJidWNrZXQiOiJjb250cm9sIiwidmVyc2lvbiI6bnVsbH19&amp;frame=false&amp;hideCard=false&amp;hideThread=false&amp;id=745303319162171394&amp;lang=en&amp;origin=https%3A%2F%2Fblog.bart.je%2Faws-to-azure%2F&amp;sessionId=c70c468da387c1a8d075748c19ba4d1cffc387c3&amp;siteScreenName=bartjansn&amp;theme=light&amp;widgetsVersion=82e1070%3A1619632193066&amp;width=550px" data-tweet-id="745303319162171394" style="display: block; margin: 1.75em 0px; position: static; visibility: visible; width: 550px; height: 601px; flex-grow: 1;"></iframe></figure><p>Of course there are still scenarios where you wish you grew up in the MSFT ecosystem. One of the interesting companies that Microsoft <a href="https://blogs.microsoft.com/blog/2016/02/24/microsoft-to-acquire-xamarin-and-empower-more-developers-to-build-apps-on-any-device/?ref=192.168.1.4#sm.0000wtu03y1z0fd1qet1odpyu0ih6">acquired</a> is Xamarin. Xamarin allows you to build cross platform mobile applications written in one programming language (instead of 3 different ones). Unfortunately for me, this language is C# ;)</p><h4 id="amen-to-azure-saas">Amen to Azure SaaS</h4><p>One thing that I was used to on Amazon&apos;s AWS cloud was setting up Virtual Machines to host my web services. Even though AWS fully supports PaaS services, I have never experimented with this. With Azure, the focus truly lies on PaaS and even SaaS and it&apos;s currently trying to win ground for IaaS solutions. That said, a frictionless migration is possible for all your VMs. Furthermore, Azure offers a lot of PaaS services, such as the App Service which automagically maintains, scales up/down and provides lots of insight for your web services.</p><p>Another great example of easy-to-use technology, are <a href="https://www.microsoft.com/cognitive-services?ref=192.168.1.4">Microsoft Cognitive Services</a>. This is an attempt to democratize the otherwise extremely complex AI and Machine Learning possibilities. Cognitive Services exposes simple APIs which developers can leverage to use extremely well-trained models to interpret &amp; analyze images, audio and video. The nice thing about this, is that it does not require a hardcore developer to use these services. Anyone with little programming experience can leverage these models.</p><h4 id="some-drawbacks">Some drawbacks</h4><p>One of the things that bothered me a lot in the beginning is that the Azure Portal tends to be slow at times. I however later found out that this is because I am using an internal Microsoft subscriptions which is known to be less fast. Not just the interface felt slow, but I also feel that deploying new instances in Azure takes a bit longer than necessary imho. Deploying a cluster of Azure Container Services easily takes up to 20mins which I don&apos;t fully understand because all they need to do is copy over a bunch of images, right?</p><p>Another thing which I noticed is that Azure does suffer from occasional <a href="https://www.zdnet.com/article/global-dns-outage-hits-microsoft-azure-customers/?ref=192.168.1.4">outages</a>. Even though these outages usually only affect specific regions, I believe this isn&apos;t something that should still happen anno 2016. With all that said, I do certainly think that these two cons outweigh the pros. With the PaaS/SaaS solutions, the openness in which you can use any language/toolset and the large amount of capabilities that Azure brings, I can definitely say I&apos;m hooked.</p><h4 id="final-thoughts">Final thoughts</h4><p>One big aspect which I do not consider in this blog, is the money aspect of it all which can be a really decisive argument for choosing a Cloud to build on.</p><p>Even more important is the actual cloud performance you are getting. Even though certain performance indicators are advertised, I have not analyzed whether both AWS and Azure live up to these standards.</p>]]></content:encoded></item></channel></rss>
