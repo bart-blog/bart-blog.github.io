@@ -75,6 +75,9 @@
 
     var vlak = document.createElement("div");
     vlak.className = "speelveld";
+    var grond = document.createElement("div");
+    grond.className = "speelveld__grond";
+    vlak.appendChild(grond);
     $("#spel-vlak").appendChild(vlak);
 
     var pool = woordenpool();
@@ -131,7 +134,7 @@
         var item = vallend[i];
         item.y += snelheid * dt;
         item.el.style.top = item.y + "px";
-        if (item.y > vlak.clientHeight - 30) {
+        if (item.y > vlak.clientHeight - 70) {
           verwijder(item);
           verliesLeven();
         }

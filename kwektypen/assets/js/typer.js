@@ -15,6 +15,7 @@
     this.onUpdate = opties.onUpdate || function () {};
     this.onKlaar = opties.onKlaar || function () {};
     this.onFout = opties.onFout || function () {};
+    this.autoFocus = opties.autoFocus !== false;
 
     this.tekst = "";
     this.index = 0;
@@ -89,9 +90,12 @@
     this._render();
     this._markeer();
     this.onUpdate(this.stats());
-    if (this.invoer) {
-      try { this.invoer.focus({ preventScroll: true }); } catch (e) { this.invoer.focus(); }
-    }
+    if (this.autoFocus) this.focus();
+  };
+
+  Typer.prototype.focus = function () {
+    if (!this.invoer) return;
+    try { this.invoer.focus({ preventScroll: true }); } catch (e) { /* oudere browser */ }
   };
 
   Typer.prototype.stop = function () {
@@ -199,7 +203,7 @@
     var seconden = this.actieveTijd / 1000;
     var minuten = seconden / 60;
     var aanslagen = this.goed;
-    var apm = minuten > 0.02 ? Math.round(aanslagen / minuten) : 0;
+    var apm = seconden > 0.4 ? Math.round(aanslagen / minuten) : 0;
     var totaal = this.goed + this.fouten;
     var nauwkeurig = totaal > 0 ? Math.round((this.goed / totaal) * 100) : 100;
     return {

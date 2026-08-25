@@ -139,11 +139,11 @@ img { max-width: 100%; display: block; }
 .hero h1 { color: var(--navy); text-shadow: 0 3px 0 rgba(255, 255, 255, .6); }
 .hero .lead { font-size: clamp(1.05rem, 2.2vw, 1.35rem); max-width: 44ch; margin-inline: auto; color: var(--navy-zacht); }
 .hero__knoppen { display: flex; gap: .8rem; justify-content: center; flex-wrap: wrap; margin-top: 1.4rem; }
-.hero__scene { position: relative; z-index: 2; height: 250px; margin-top: -.5rem; }
+.hero__scene { position: relative; z-index: 2; height: 300px; margin-top: -.5rem; }
 .hero__scene > * { position: absolute; bottom: 0; }
 .scene-stad { left: 0; right: 0; width: 100%; }
-.scene-eend { right: 6%; width: min(230px, 34vw); bottom: 18px; animation: dobber 3.5s ease-in-out infinite; }
-.scene-boot { left: 4%; width: min(180px, 28vw); bottom: 6px; animation: dobber 4.6s ease-in-out infinite; }
+.scene-eend { right: 7%; width: min(300px, 40vw); bottom: 18px; animation: dobber 3.5s ease-in-out infinite; }
+.scene-boot { left: 5%; width: min(210px, 30vw); bottom: 10px; animation: dobber 4.6s ease-in-out infinite; }
 .wolk { position: absolute; z-index: 1; opacity: .95; animation: drijf 40s linear infinite; }
 .wolk--1 { top: 12%; left: -12%; width: 160px; }
 .wolk--2 { top: 26%; left: -30%; width: 110px; animation-duration: 55s; }
@@ -271,7 +271,7 @@ img { max-width: 100%; display: block; }
 .tekst {
   font-family: var(--mono); font-size: clamp(1.3rem, 3.2vw, 2rem); line-height: 1.9;
   background: #fff; border-radius: var(--radius-l); padding: 1.4rem 1.6rem;
-  box-shadow: var(--schaduw); word-break: break-word; letter-spacing: .04em;
+  box-shadow: var(--schaduw); word-break: break-word; letter-spacing: .04em; text-align: center;
   border: 3px solid rgba(23, 38, 63, .06);
 }
 .tekst .teken { position: relative; padding: .05em .02em; border-radius: 4px; }
@@ -287,7 +287,10 @@ img { max-width: 100%; display: block; }
 .tekst.schud { animation: schud .2s; }
 @keyframes schud { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 
-.verborgen-invoer { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; }
+.verborgen-invoer {
+  position: fixed; top: 0; left: 0; opacity: 0; pointer-events: none;
+  width: 1px; height: 1px; border: 0; padding: 0; z-index: -1;
+}
 
 .tiphulp { text-align: center; margin-top: 1rem; color: var(--navy-zacht); min-height: 1.6em; }
 .klik-hint {
@@ -367,7 +370,7 @@ img { max-width: 100%; display: block; }
 .game-kaart .emoji { font-size: 3rem; }
 
 .speelveld {
-  position: relative; height: min(62vh, 520px); overflow: hidden;
+  position: relative; height: min(58vh, 460px); overflow: hidden;
   background: linear-gradient(180deg, #bdeaff, #e8f8ff);
   border-radius: var(--radius-l); border: 3px solid rgba(23, 38, 63, .08);
   box-shadow: var(--schaduw);
@@ -380,6 +383,14 @@ img { max-width: 100%; display: block; }
 .regenwoord .hit { color: var(--groen-donker); }
 .regenwoord.actief { border-color: var(--geel-donker); background: #fffbe9; }
 .spel-hud { display: flex; gap: 1rem; justify-content: center; margin-bottom: .8rem; flex-wrap: wrap; }
+.speelveld__grond {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 46px;
+  background: #4fc26b; border-top: 5px solid #3ba757;
+}
+.speelveld__grond::after {
+  content: "🌷 🌻 🌼 🌷 🌻 🌼 🌷 🌻 🌼 🌷"; position: absolute; top: -4px; left: 0; right: 0;
+  text-align: center; font-size: 1.1rem; letter-spacing: .6rem; opacity: .9;
+}
 .levens { font-size: 1.3rem; letter-spacing: 3px; }
 
 .racebaan { background: #fff; border-radius: var(--radius-l); padding: 1rem; box-shadow: var(--schaduw); }
@@ -388,7 +399,7 @@ img { max-width: 100%; display: block; }
 .racer--jij { top: 4px; }
 .racebaan__label { font-size: .85rem; color: var(--navy-zacht); }
 
-.jacht-vak { display: grid; grid-template-columns: repeat(5, 1fr); gap: .6rem; }
+.jacht-vak { display: grid; grid-template-columns: repeat(5, 1fr); gap: .7rem; max-width: 520px; margin-inline: auto; }
 .jacht-gat {
   aspect-ratio: 1; border-radius: 50%; background: #e2d6bd; display: grid; place-items: center;
   font-family: var(--mono); font-weight: 700; font-size: clamp(1.2rem, 4vw, 2rem); color: transparent;

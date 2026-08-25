@@ -265,12 +265,14 @@
     if (!level) return [];
 
     if (level.examen) {
+      var hoofd = mengeling(HOOFDLETTERZINNEN);
+      var gewoon = mengeling(ZINNEN);
       return [
-        { type: "zin", uitleg: "Examen deel 1 – schrijf de kop van de krant.", tekst: kies(HOOFDLETTERZINNEN) },
-        { type: "zin", uitleg: "Examen deel 2 – het nieuwsbericht.", tekst: kies(ZINNEN) + ". " + kies(ZINNEN) + "." },
+        { type: "zin", uitleg: "Examen deel 1 – schrijf de kop van de krant.", tekst: hoofd[0] },
+        { type: "zin", uitleg: "Examen deel 2 – het nieuwsbericht.", tekst: gewoon[0] + ". " + gewoon[1] + "." },
         { type: "zin", uitleg: "Examen deel 3 – cijfers in het nieuws.", tekst: kies(CIJFERZINNEN) },
-        { type: "zin", uitleg: "Examen deel 4 – de laatste alinea.", tekst: kies(HOOFDLETTERZINNEN) + " " + kies(HOOFDLETTERZINNEN) },
-        { type: "zin", uitleg: "Examen deel 5 – zet de krant op de pers!", tekst: "Kwekstad Koerier: " + kies(ZINNEN) + "!" }
+        { type: "zin", uitleg: "Examen deel 4 – de laatste alinea.", tekst: hoofd[1] + " " + hoofd[2] },
+        { type: "zin", uitleg: "Examen deel 5 – zet de krant op de pers!", tekst: "Kwekstad Koerier: " + gewoon[2] + "!" }
       ];
     }
 

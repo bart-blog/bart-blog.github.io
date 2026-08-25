@@ -143,7 +143,7 @@
 
     // Level afgerond: gemiddelde over alle stappen
     var minuten = levelStats.seconden / 60;
-    var apm = minuten > 0.02 ? Math.round(levelStats.goed / minuten) : 0;
+    var apm = levelStats.seconden > 0.4 ? Math.round(levelStats.goed / minuten) : 0;
     var totaal = levelStats.goed + levelStats.fouten;
     var nauwkeurig = totaal ? Math.round((levelStats.goed / totaal) * 100) : 100;
     var eind = { apm: apm, wpm: Math.round(apm / 5), nauwkeurig: nauwkeurig, fouten: levelStats.fouten, goed: levelStats.goed };

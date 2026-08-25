@@ -24,6 +24,7 @@
       toetsenbord: toetsenbord,
       handen: handen,
       tipEl: $("#demo-tip"),
+      autoFocus: false,
       onUpdate: function (s) {
         $("#demo-apm").textContent = s.apm;
         $("#demo-goed").textContent = s.nauwkeurig + "%";
@@ -57,9 +58,8 @@
       typer.actief = true;
       hint.hidden = true;
       $("#demo-uitleg").textContent = "Typ de tekst na. Kijk naar het scherm, niet naar je handen!";
-      if (typer.invoer) {
-        try { typer.invoer.focus({ preventScroll: true }); } catch (e) { typer.invoer.focus(); }
-      }
+      typer.autoFocus = true;
+      typer.focus();
     }
 
     tekstEl.addEventListener("click", aanzetten);
