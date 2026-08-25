@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" role="img" aria-label="Wolk">
+  <g fill="#ffffff">
+    <circle cx="60" cy="55" r="32"/>
+    <circle cx="100" cy="42" r="40"/>
+    <circle cx="145" cy="58" r="28"/>
+    <rect x="52" y="58" width="102" height="30" rx="15"/>
+  </g>
+</svg>

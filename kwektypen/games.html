@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Typegames – KwekType | gratis typespelletjes</title>
+<meta name="description" content="Drie gratis typespelletjes: Woordenregen, de Kwekrace en Letterjacht. Oefen blind typen met woorden die bij jouw level passen.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="icon" href="assets/img/eend.svg" type="image/svg+xml">
+</head>
+<body>
+<div data-header></div>
+
+<main>
+  <section class="cursus-kop">
+    <div class="container">
+      <h1>🎮 Typegames</h1>
+      <p>Oefenen zonder dat het voelt als oefenen. De games gebruiken alleen de letters die jij al geleerd hebt.</p>
+      <p id="niveau-tekst" style="font-weight:700"></p>
+    </div>
+  </section>
+
+  <section class="sectie sectie--room" id="keuze">
+    <div class="container">
+      <div class="game-keuze">
+        <div class="kaart game-kaart">
+          <div class="emoji">🌧️</div>
+          <h3>Woordenregen</h3>
+          <p>Woorden vallen uit de lucht boven Kwekstad. Typ ze weg voordat ze de grond raken. Drie levens!</p>
+          <button class="knop knop--blauw" id="start-regen">Spelen →</button>
+        </div>
+        <div class="kaart game-kaart">
+          <div class="emoji">🏁</div>
+          <h3>Kwekrace</h3>
+          <p>Race tegen Kwek de eend. Typ de zin foutloos en jij komt als eerste over de finish.</p>
+          <button class="knop knop--groen" id="start-race">Spelen →</button>
+        </div>
+        <div class="kaart game-kaart">
+          <div class="emoji">🔦</div>
+          <h3>Letterjacht</h3>
+          <p>Letters springen uit hun holen. Tik ze snel weg met de juiste vinger. 45 seconden lang!</p>
+          <button class="knop knop--roze" id="start-jacht">Spelen →</button>
+        </div>
+      </div>
+
+      <div class="kaart" style="margin-top:2rem;max-width:460px">
+        <h3>🏆 Jouw records</h3>
+        <ul id="records" class="lijst-vink" style="list-style:none"></ul>
+      </div>
+
+      <div class="midden" style="margin-top:1.5rem">
+        <a class="knop knop--geel" href="cursus.html">← Terug naar de cursus</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="sectie sectie--room" id="spel" hidden>
+    <div class="container">
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem">
+        <button class="knop knop--wit" id="stop-knop">← Stoppen</button>
+        <h2 id="spel-titel" style="margin:0"></h2>
+      </div>
+      <p id="spel-uitleg"></p>
+      <div class="spel-hud" id="spel-hud"></div>
+      <div id="spel-vlak"></div>
+    </div>
+  </section>
+</main>
+
+<div class="overlay" id="overlay" hidden><div class="paneel" id="paneel"></div></div>
+
+<div data-footer></div>
+
+<script src="assets/js/kwek.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/toetsenbord.js"></script>
+<script src="assets/js/typer.js"></script>
+<script src="assets/js/games.js"></script>
+</body>
+</html>

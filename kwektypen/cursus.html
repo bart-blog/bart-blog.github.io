@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>De cursus – KwekType | gratis leren blind typen</title>
+<meta name="description" content="17 levels van de startrij tot het grote examen. Gratis leren blind typen met sterren, verhalen uit Kwekstad en een echt diploma.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="icon" href="assets/img/eend.svg" type="image/svg+xml">
+</head>
+<body>
+<div data-header></div>
+
+<main>
+  <!-- ================= OVERZICHT ================= -->
+  <section id="overzicht">
+    <div class="cursus-kop">
+      <div class="container">
+        <div class="speler-balk">
+          <div class="avatar">🦆</div>
+          <div style="flex:1;min-width:220px">
+            <h1 id="welkom" style="margin-bottom:.2rem">Hoi verslaggever!</h1>
+            <label for="naam-invoer" style="font-size:.9rem">Hoe heet je? (blijft op je eigen computer)</label>
+            <input id="naam-invoer" type="text" placeholder="Typ hier je naam"
+                   style="display:block;width:min(320px,100%);padding:.5rem .8rem;border-radius:12px;border:3px solid #fff;font-family:inherit;font-size:1rem">
+          </div>
+          <div style="text-align:right">
+            <div id="sterren-totaal" style="font-size:1.2rem;font-weight:700">⭐ 0 sterren</div>
+            <button class="knop knop--groen" id="doorgaan-knop">▶ Verder waar ik was</button>
+          </div>
+        </div>
+
+        <div style="margin-top:1.2rem">
+          <div class="voortgang"><div class="voortgang__balk" id="voortgangsbalk"></div></div>
+          <p id="voortgang-tekst" style="margin:.4rem 0 0;font-size:.95rem"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="sectie sectie--room" style="padding-top:2rem">
+      <div class="container">
+        <h2>Alle levels</h2>
+        <p class="slot-uitleg">Elk level heeft vijf korte stapjes. Haal een level en het volgende gaat open. 🔒 betekent: eerst het level ervoor afmaken.</p>
+        <div class="levels" id="levels"></div>
+
+        <div class="midden" style="margin-top:2rem">
+          <a class="knop knop--roze" href="games.html">🎮 Even een game spelen</a>
+          <a class="knop knop--geel" href="diploma.html" id="diploma-knop" hidden>🏅 Bekijk mijn diploma</a>
+          <button class="knop knop--wit" id="wis-knop">🗑️ Voortgang wissen</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LES ================= -->
+  <section id="les" class="oefening" hidden>
+    <div class="oefen-top">
+      <div class="container">
+        <button class="knop knop--wit" id="terug-knop">← Overzicht</button>
+        <span class="oefen-titel" id="les-titel"></span>
+        <div class="meters" style="margin-left:auto">
+          <div class="meter"><b id="meter-apm">0</b><small>aanslagen/min</small></div>
+          <div class="meter"><b id="meter-goed">100%</b><small>goed</small></div>
+          <div class="meter"><b id="meter-fouten">0</b><small>foutjes</small></div>
+        </div>
+        <div class="oefen-stappen" id="stappen"></div>
+      </div>
+    </div>
+
+    <div class="typevlak">
+      <div class="container">
+        <p class="opdracht-uitleg" id="les-verhaal" style="font-style:italic"></p>
+        <p class="opdracht-uitleg" id="oefen-uitleg"></p>
+        <div class="tekst" id="tekst"></div>
+        <p class="tiphulp" id="tip"></p>
+        <div class="midden">
+          <button class="knop knop--wit" id="opnieuw-knop">↻ Stap opnieuw</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="toetsenbord" id="toetsenbord"></div>
+      <div id="handen" style="margin-bottom:2rem"></div>
+    </div>
+  </section>
+</main>
+
+<div class="overlay" id="overlay" hidden><div class="paneel" id="paneel"></div></div>
+
+<div data-footer></div>
+
+<script src="assets/js/kwek.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/toetsenbord.js"></script>
+<script src="assets/js/typer.js"></script>
+<script src="assets/js/cursus.js"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mijn typediploma – KwekType</title>
+<meta name="description" content="Haal het grote examen van KwekType en print gratis je eigen typediploma uit.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="icon" href="assets/img/eend.svg" type="image/svg+xml">
+</head>
+<body>
+<div data-header></div>
+
+<main>
+  <section class="sectie sectie--room">
+    <div class="container-smal">
+      <div id="melding" class="melding niet-printen" hidden></div>
+
+      <div class="diploma" id="diploma">
+        <div class="zegel">🏅</div>
+        <h2>Typediploma</h2>
+        <p>De Kwekstad Koerier verklaart dat</p>
+        <div class="naam" id="diploma-naam">…</div>
+        <p id="diploma-tekst">met succes de typecursus van KwekType heeft afgerond en voortaan blind kan typen.</p>
+        <div class="raster raster--3" style="margin:1.5rem 0">
+          <div><b id="stat-apm">–</b><br><small>aanslagen per minuut</small></div>
+          <div><b id="stat-goed">–</b><br><small>goed getypt</small></div>
+          <div><b id="stat-sterren">–</b><br><small>sterren verdiend</small></div>
+        </div>
+        <p class="handtekening">Kwek Kwakkelaar</p>
+        <p><small>Hoofdredacteur Kwekstad Koerier · <span id="diploma-datum"></span></small></p>
+      </div>
+
+      <div class="midden niet-printen" style="margin-top:1.5rem">
+        <label for="naam-veld">Naam op het diploma:</label>
+        <input id="naam-veld" type="text" placeholder="Je naam"
+               style="padding:.5rem .8rem;border-radius:12px;border:3px solid var(--grijs);font-family:inherit;font-size:1rem">
+        <div style="margin-top:1rem">
+          <button class="knop knop--groen knop--groot" id="print-knop">🖨️ Diploma printen</button>
+          <a class="knop knop--geel" href="cursus.html">← Naar de cursus</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div data-footer></div>
+
+<script src="assets/js/kwek.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/diploma.js"></script>
+</body>
+</html>

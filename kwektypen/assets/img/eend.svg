@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 260" role="img" aria-label="Kwek de verslaggever-eend met notitieblok">
+  <!-- staart -->
+  <path d="M56 168c-16-6-30 2-38 12 12 6 26 8 38 4z" fill="#ffd75e" stroke="#e2a71b" stroke-width="4" stroke-linejoin="round"/>
+  <!-- lijf -->
+  <ellipse cx="132" cy="176" rx="76" ry="60" fill="#ffffff" stroke="#e0d6c2" stroke-width="4"/>
+  <!-- vleugel -->
+  <path d="M104 168c30-18 62-12 76 6-14 22-52 30-76 14z" fill="#f3ecdd" stroke="#e0d6c2" stroke-width="4"/>
+  <!-- nek -->
+  <path d="M120 130c-4-22 4-40 22-48l24 34z" fill="#ffd75e" stroke="#e2a71b" stroke-width="4" stroke-linejoin="round"/>
+  <!-- kop -->
+  <circle cx="160" cy="86" r="46" fill="#ffd75e" stroke="#e2a71b" stroke-width="4"/>
+  <!-- pers-hoedje -->
+  <path d="M116 66c8-26 32-40 56-36 20 4 32 18 34 34z" fill="#2fa8e8" stroke="#1b7fb8" stroke-width="4" stroke-linejoin="round"/>
+  <rect x="112" y="60" width="98" height="14" rx="7" fill="#1b7fb8"/>
+  <rect x="136" y="40" width="44" height="18" rx="4" fill="#fff8ea" stroke="#1b7fb8" stroke-width="3"/>
+  <text x="158" y="54" font-family="Trebuchet MS, sans-serif" font-size="12" font-weight="bold" fill="#1b7fb8" text-anchor="middle">PERS</text>
+  <!-- ogen -->
+  <circle cx="150" cy="90" r="8" fill="#17263f"/>
+  <circle cx="153" cy="87" r="2.6" fill="#fff"/>
+  <circle cx="178" cy="90" r="8" fill="#17263f"/>
+  <circle cx="181" cy="87" r="2.6" fill="#fff"/>
+  <!-- snavel -->
+  <path d="M196 96c18 0 30 6 30 12s-12 12-30 12c-8 0-14-4-14-12s6-12 14-12z" fill="#ff8a3d" stroke="#dd6a20" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M186 108h38" stroke="#dd6a20" stroke-width="3"/>
+  <!-- notitieblok -->
+  <g transform="rotate(-10 70 200)">
+    <rect x="34" y="176" width="60" height="46" rx="6" fill="#fff8ea" stroke="#17263f" stroke-width="4"/>
+    <path d="M42 190h44M42 200h44M42 210h30" stroke="#c9c0ad" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <!-- potlood -->
+  <g transform="rotate(35 210 190)">
+    <rect x="200" y="160" width="12" height="52" rx="3" fill="#ffc93c" stroke="#e2a71b" stroke-width="3"/>
+    <path d="M200 212h12l-6 12z" fill="#ff8a3d" stroke="#dd6a20" stroke-width="3" stroke-linejoin="round"/>
+  </g>
+  <!-- pootjes -->
+  <path d="M112 232l-10 14h26zM152 232l-10 14h26z" fill="#ff8a3d" stroke="#dd6a20" stroke-width="4" stroke-linejoin="round"/>
+</svg>
