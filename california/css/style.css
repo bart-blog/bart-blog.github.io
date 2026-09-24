@@ -1,0 +1,132 @@
+:root {
+  --ink: #1d1d1f;
+  --mute: #86868b;
+  --phi: 1.618;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #fff;
+  overflow: hidden;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+body.intro { cursor: pointer; }
+body.idle { cursor: none; }
+
+/* No overflow on the stage: it would flatten preserve-3d. */
+#stage {
+  position: fixed;
+  inset: 0;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.dot {
+  position: absolute;
+  left: -32px;
+  top: -32px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #000;
+  opacity: 0;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* ------------------------------------------------------------ captions */
+.caption {
+  position: fixed;
+  left: 6vw;
+  right: 6vw;
+  top: 76.4%;
+  text-align: center;
+  font-size: clamp(17px, 2.25vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  line-height: 1.24;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate3d(0, -50%, 0);
+  will-change: opacity, transform;
+  text-wrap: balance;
+}
+.caption .w { display: inline-block; opacity: 0; will-change: opacity, transform; }
+.caption.sig { font-size: clamp(20px, 2.8vw, 40px); letter-spacing: -0.028em; }
+.caption .swap { display: inline-block; position: relative; white-space: nowrap; text-align: left; vertical-align: baseline; }
+.caption .swap .old { display: inline-block; position: relative; will-change: transform, opacity; }
+.caption .swap .new { position: absolute; left: 0; top: 0; opacity: 0; will-change: transform, opacity; }
+.caption .strike { position: absolute; left: -0.04em; right: -0.04em; top: 0.56em; height: 0.075em; border-radius: 0.04em; background: currentColor; transform: scaleX(0); transform-origin: 0 50%; }
+.caption .probe { display: inline-block; width: 0.26em; height: 0; vertical-align: baseline; }
+.caption.link { font-size: clamp(14px, 1.2vw, 17px); font-weight: 400; letter-spacing: 0; pointer-events: auto; }
+.caption.link a { color: var(--mute); text-decoration: none; transition: color .3s; }
+.caption.link a:hover { color: var(--ink); }
+
+/* ------------------------------------------------------------ intro hint */
+#hint {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 76.4%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5em;
+  text-align: center;
+  transition: opacity .7s ease, transform .7s ease;
+  pointer-events: none;
+}
+.hint-title { font-size: clamp(17px, 2.25vw, 32px); font-weight: 600; letter-spacing: -0.022em; }
+.hint-sub { font-size: clamp(13px, 1.1vw, 15px); color: var(--mute); letter-spacing: 0.01em; }
+body.debug #hint { display: none; }
+body:not(.intro) #hint { opacity: 0; transform: translateY(calc(-50% + 10px)); }
+
+/* ------------------------------------------------------------ controls */
+#controls {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  display: flex;
+  gap: 6px;
+  transition: opacity .6s ease;
+}
+body.intro #controls, body.idle #controls { opacity: 0; pointer-events: none; }
+body.ended #controls { opacity: 1; pointer-events: auto; }
+#controls button {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.045);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.72;
+  transition: opacity .25s, background .25s, transform .25s;
+}
+#controls button:hover { opacity: 1; background: rgba(0, 0, 0, 0.08); }
+#controls button:active { transform: scale(0.94); }
+#controls svg { width: 18px; height: 18px; fill: currentColor; }
+.i-play, .i-muted { display: none; }
+body.paused .i-play, body.muted .i-muted { display: block; }
+body.paused .i-pause, body.muted .i-sound { display: none; }
+
+#progress { position: fixed; left: 0; right: 0; bottom: 0; height: 2px; pointer-events: none; }
+#bar { height: 100%; background: var(--ink); opacity: 0.12; transform-origin: 0 50%; transform: scaleX(0); }
+body.intro #progress { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  #hint { transition: none; }
+}
