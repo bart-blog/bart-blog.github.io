@@ -35,6 +35,15 @@
     inQuart: (t) => t * t * t * t,
     // Snappy: most of the travel happens in the first fifth, then a ~4% overshoot settles.
     snap: (t) => (t <= 0 ? 0 : t >= 1 ? 1 : 1 - Math.exp(-8 * t) * Math.cos(t * Math.PI * 2.2)),
+    // Formation changes: a touch of anticipation, a smooth flight, ~2% settle.
+    glide: (t) => {
+      const c = 0.6 * 1.525;
+      if (t <= 0) return 0;
+      if (t >= 1) return 1;
+      return t < 0.5
+        ? (Math.pow(2 * t, 2) * ((c + 1) * 2 * t - c)) / 2
+        : (Math.pow(2 * t - 2, 2) * ((c + 1) * (t * 2 - 2) + c) + 2) / 2;
+    },
     // Bouncier cousin (~9% overshoot) for things on strings and springs.
     spring: (t) => (t <= 0 ? 0 : t >= 1 ? 1 : 1 - Math.exp(-6.5 * t) * Math.cos(t * Math.PI * 2.5)),
   };
@@ -160,4 +169,36 @@
   };
 
   BJ.Dots = Dots;
+
+  // Minimum-total-travel pairing (Hungarian algorithm): every dot takes the nearest free slot,
+  // so one formation morphs into the next without dots crossing the screen.
+  BJ.assign = function (n, cost) {
+    const INF = 1e18, u = new Float64Array(n + 1), v = new Float64Array(n + 1);
+    const p = new Int32Array(n + 1), way = new Int32Array(n + 1);
+    for (let i = 1; i <= n; i++) {
+      p[0] = i;
+      let j0 = 0;
+      const minv = new Float64Array(n + 1).fill(INF), used = new Uint8Array(n + 1);
+      do {
+        used[j0] = 1;
+        const i0 = p[j0];
+        let delta = INF, j1 = 0;
+        for (let j = 1; j <= n; j++) {
+          if (used[j]) continue;
+          const cur = cost(i0 - 1, j - 1) - u[i0] - v[j];
+          if (cur < minv[j]) { minv[j] = cur; way[j] = j0; }
+          if (minv[j] < delta) { delta = minv[j]; j1 = j; }
+        }
+        for (let j = 0; j <= n; j++) {
+          if (used[j]) { u[p[j]] += delta; v[j] -= delta; } else minv[j] -= delta;
+        }
+        j0 = j1;
+      } while (p[j0] !== 0);
+      do { const j1 = way[j0]; p[j0] = p[j1]; j0 = j1; } while (j0);
+    }
+    const out = new Int32Array(n);
+    for (let j = 1; j <= n; j++) out[p[j] - 1] = j - 1;
+    return out;
+  };
+
 })();

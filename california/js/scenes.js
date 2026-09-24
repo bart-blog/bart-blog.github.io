@@ -148,7 +148,7 @@
   const S3 = {
     name: 'signal',
     beats: 20,
-    blend: { dur: 1.1, stagger: 0.6, ease: E.snap, arc: 0.12 },
+    blend: { dur: 1.5, stagger: 0.6, ease: E.glide, arc: 0.12 },
     camera: (b) => ({ zoom: 1 + 0.05 * (hit(b, 10, 5) + hit(b, 12, 5) + hit(b, 14.6, 5)) }),
     pose(i, t, b, o) {
       const u = i / 149 - 0.5, Lw = Math.min(G.W * 0.88, G.R * 3.4);
@@ -239,7 +239,7 @@
   const S4 = {
     name: 'world',
     beats: 12,
-    blend: { dur: 1.2, stagger: 0.9, ease: E.snap, arc: 0.2 },
+    blend: { dur: 1.6, stagger: 0.8, ease: E.glide, arc: 0.18 },
     camera: (b) => ({ zoom: 1 + 0.06 * hit(b, 5.5, 3) + 0.06 * hit(b, 10, 3) }),
     pose(i, t, b, o) {
       const T = travel(b), Rs = G.R * 0.8;
@@ -294,37 +294,7 @@
     const cp = Math.cos(pit), sp = Math.sin(pit);
     return [x, Y * cp - z * sp, Y * sp + z * cp];
   }
-  // Minimum-total-travel pairing (Hungarian algorithm): every dot takes the nearest free slot,
-  // so one formation morphs into the next without dots crossing the screen.
-  function assign(n, cost) {
-    const INF = 1e18, u = new Float64Array(n + 1), v = new Float64Array(n + 1);
-    const p = new Int32Array(n + 1), way = new Int32Array(n + 1);
-    for (let i = 1; i <= n; i++) {
-      p[0] = i;
-      let j0 = 0;
-      const minv = new Float64Array(n + 1).fill(INF), used = new Uint8Array(n + 1);
-      do {
-        used[j0] = 1;
-        const i0 = p[j0];
-        let delta = INF, j1 = 0;
-        for (let j = 1; j <= n; j++) {
-          if (used[j]) continue;
-          const cur = cost(i0 - 1, j - 1) - u[i0] - v[j];
-          if (cur < minv[j]) { minv[j] = cur; way[j] = j0; }
-          if (minv[j] < delta) { delta = minv[j]; j1 = j; }
-        }
-        for (let j = 0; j <= n; j++) {
-          if (used[j]) { u[p[j]] += delta; v[j] -= delta; } else minv[j] -= delta;
-        }
-        j0 = j1;
-      } while (p[j0] !== 0);
-      do { const j1 = way[j0]; p[j0] = p[j1]; j0 = j1; } while (j0);
-    }
-    const out = new Int32Array(n);
-    for (let j = 1; j <= n; j++) out[p[j] - 1] = j - 1;
-    return out;
-  }
-  const CELL = new Int32Array(N).map((_, i) => i), MEM = new Int32Array(N).map((_, i) => i);
+  const MEM = new Int32Array(N).map((_, i) => i);
   const latSpacing = () => G.R * 0.24;
   const memSpacing = () => Math.min((G.R * 2.9) / 14, (G.W * 0.84) / 14);
   const MEM_TILT = 0.95;
@@ -347,20 +317,17 @@
   const S5 = {
     name: 'motion',
     beats: 20,
-    blend: { dur: 1.9, ease: E.inOutCubic, start: (i) => frac(i * 0.618034) * 0.35 },
+    blend: { dur: 1.9, ease: E.glide, start: (i) => frac(i * 0.618034) * 0.35 },
     camera: (b) => ({ zoom: 1 + (b >= 2 && b < 8 ? 0.02 * hit(b, Math.floor(b), 6) : 0) }),
-    enter(prev) {
-      const sp = latSpacing(), T = [];
-      for (let j = 0; j < N; j++) T.push(latticeAt(j, 1, sp));
-      const d2 = (ax, ay, az, q) => (ax - q[0]) ** 2 + (ay - q[1]) ** 2 + (az - q[2]) ** 2;
-      CELL.set(assign(N, (i, j) => d2(prev.x[i], prev.y[i], prev.z[i], T[j])));
-      // and pair each cube slot with the membrane slot nearest to where it will be when the cube unfolds
-      const L = [], M = [];
+    enter() {
+      // pair each cube slot with the membrane slot nearest to where it will be when the cube unfolds
+      const sp = latSpacing(), L = [], M = [];
       for (let j = 0; j < N; j++) { L.push(latticeAt(j, 7.6, sp)); M.push(membraneRest(j)); }
-      MEM.set(assign(N, (j, m) => d2(L[j][0], L[j][1], L[j][2], M[m])));
+      const d2 = (a, q) => (a[0] - q[0]) ** 2 + (a[1] - q[1]) ** 2 + (a[2] - q[2]) ** 2;
+      MEM.set(BJ.assign(N, (j, m) => d2(L[j], M[m])));
     },
     pose(i, t, b, o) {
-      const j = CELL[i];
+      const j = i;
       const kick = b >= 2 && b < 8 ? hit(b, Math.floor(b), 5) : 0;
       const sp = latSpacing() * (1 + 0.08 * kick);
       const L = latticeAt(j, b, sp);
@@ -415,7 +382,7 @@
   const S6 = {
     name: 'connect',
     beats: 12,
-    blend: { dur: 1.1, stagger: 0.7, ease: E.snap, arc: 0.2, order: (i) => (i < 120 ? (i % 60) / 59 : 1) },
+    blend: { dur: 1.5, stagger: 0.6, ease: E.glide, arc: 0.18, order: (i) => (i < 120 ? (i % 60) / 59 : 1) },
     pose(i, t, b, o) {
       const Rx = Math.min(G.R * 1.1, G.W * 0.27), rr = Math.min(G.R * 0.46, G.W * 0.15);
       if (i < 120) {
@@ -435,11 +402,12 @@
         o.x = side * Rx * (1 - 0.07 * lean) + Math.cos(ang) * r; o.y = Math.sin(ang) * r;
         o.sx = o.sy = 0.75 * (1 + 0.8 * e);
       } else {
-        const k = i - 120, lr = k < 15, u = frac(b / 2 + (k % 15) / 15);
+        // packets start flowing once they've arrived, so no packet loops back mid-transition
+        const k = i - 120, lr = k < 15, u = frac(Math.max(0, b - 1.8) / 2 + (k % 15) / 15);
         const x0 = -Rx + rr * 1.2, x1 = Rx - rr * 1.2, a = lr ? x0 : x1, c = lr ? x1 : x0;
         o.x = (1 - u) * (1 - u) * a + u * u * c;
         o.y = 2 * u * (1 - u) * (lr ? -1 : 1) * G.R * 0.55;
-        const w = Math.sqrt(Math.sin(Math.PI * u));
+        const w = Math.sin(Math.PI * u);
         o.sx = o.sy = 0.55 * w; o.o = w;
       }
     },
@@ -467,7 +435,7 @@
   const S7 = {
     name: 'scale',
     beats: 12,
-    blend: { dur: 1.5, stagger: 0.8, ease: E.inOutCubic, arc: 0.15, order: (i) => Math.floor(i / 15) / 9 },
+    blend: { dur: 1.5, stagger: 0.8, ease: E.glide, arc: 0.15, order: (i) => Math.floor(i / 15) / 9 },
     pose(i, t, b, o) {
       const c = Math.floor(i / 15), m = i % 15;
       const spX = Math.min(G.W * 0.18, G.R * 0.66), spY = G.R * 0.75, rc = Math.min(spX * 0.32, G.R * 0.19);
@@ -544,7 +512,7 @@
   const S8 = {
     name: 'share',
     beats: 12,
-    blend: { dur: 1.1, ease: E.snap, arc: 0.25, start: (i) => RING[i] * 0.25 },
+    blend: { dur: 1.4, ease: E.glide, arc: 0.22, start: (i) => RING[i] * 0.2 },
     pose(i, t, b, o) {
       const k = RING[i], gap = G.R * 0.155;
       const e = maxHit(b, EMIT.map((em) => em + k * 0.25), 3.5);
@@ -708,6 +676,7 @@
   const S10 = {
     name: 'intention',
     beats: 20,
+    remap: false,
     blend: { dur: 1, ease: E.inOutQuint, arc: 0.4, start: (i) => landAt(ctxShared.kOf[i]) - 1 },
     camera: (b) => ({ zoom: 1 + 0.035 * (hit(b, 10, 4) + hit(b, 15.5, 4) + hit(b, 19, 3)), rot: 0.03 * (wob(b, 10, 1, 2.5) - wob(b, 15.5, 1, 2.5)) }),
     enter(prev) {
@@ -745,6 +714,7 @@
   const S11 = {
     name: 'signature',
     beats: 20,
+    remap: false,
     blend: { dur: 0.01 },
     pose(i, t, b, o) {
       const k = ctxShared.kOf[i];
@@ -787,7 +757,7 @@
           n.style.transform = 'translate3d(0,' + (0.35 * (1 - inn)).toFixed(3) + 'em,0)';
         },
       },
-      { at: 11, to: Infinity, html: '<a href="https://me.bartj.blog" target="_blank" rel="noopener">me.bartj.blog</a>', cls: 'link' },
+      { at: 11, to: Infinity, html: '<a href="https://bart.je" target="_blank" rel="noopener">www.bart.je</a>', cls: 'link' },
     ],
     music(M) {
       M.whoosh(0, 4, 0.24, 200, 6000);
