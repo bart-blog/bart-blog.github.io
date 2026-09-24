@@ -42,9 +42,9 @@
   const sigCap = caps.find((c) => c.cls === 'sig');
 
   function fade(bt, start, end) {
-    const i = E.outCubic(clamp((bt - start) / 0.9));
-    const o = end === Infinity ? 1 : E.inOutSine(clamp((end - bt) / 0.6));
-    return { a: i * o, y: (1 - i) * 12 };
+    const i = E.outQuint(clamp((bt - start) / 0.6));
+    const o = end === Infinity ? 1 : E.inOutSine(clamp((end - bt) / 0.4));
+    return { a: i * o, y: (1 - i) * 10 };
   }
   function setCap(el, a, y, cache) {
     const key = Math.round(a * 200) + Math.round(y * 10) * 1000;
@@ -129,7 +129,9 @@
     }
     const b = bt - sc.start, t = b * BEAT;
     if (sc.update) sc.update(t, b, dtSong);
-    const bl = sc.blend || {}, dur = bl.dur || 0.01, ease = bl.ease || E.inOutCubic, arc = bl.arc || 0;
+    const bl = sc.blend || {}, dur = bl.dur || 0.01, ease = bl.ease || E.snap, arc = bl.arc || 0;
+    const cam = sc.camera ? sc.camera(b) : null;
+    const cz = cam ? cam.zoom || 1 : 1, cr = cam ? cam.rot || 0 : 0, cc = Math.cos(cr), cs = Math.sin(cr);
     for (let i = 0; i < N; i++) {
       resetO();
       sc.pose(i, t, b, o);
@@ -137,7 +139,7 @@
       const raw = clamp((b - st) / dur);
       if (raw < 1) {
         const p = ease(raw);
-        const dx = o.x - prev.x[i], dy = o.y - prev.y[i], off = Math.sin(Math.PI * raw) * arc;
+        const dx = o.x - prev.x[i], dy = o.y - prev.y[i], off = Math.sin(Math.PI * clamp(p)) * arc;
         o.x = lerp(prev.x[i], o.x, p) - dy * off;
         o.y = lerp(prev.y[i], o.y, p) + dx * off;
         o.z = lerp(prev.z[i], o.z, p);
@@ -145,6 +147,11 @@
         o.sy = Math.max(0, lerp(prev.sy[i], o.sy, p));
         o.rot = lerp(prev.rot[i], o.rot, p);
         o.o = clamp(lerp(prev.o[i], o.o, clamp(p)));
+      }
+      if (cam) {
+        const x = o.x, y = o.y;
+        o.x = (x * cc - y * cs) * cz; o.y = (x * cs + y * cc) * cz; o.z *= cz;
+        o.sx *= cz; o.sy *= cz; o.rot += cr;
       }
       write(i);
     }

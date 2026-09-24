@@ -7,6 +7,7 @@
 (function () {
   'use strict';
   const BJ = window.BJ, G = BJ.G, E = BJ.ease, hit = BJ.hit, clamp = BJ.clamp, lerp = BJ.lerp;
+  const wob = BJ.wobble, antic = BJ.antic;
   const N = BJ.N, GA = BJ.GA, TAU = BJ.TAU, frac = BJ.frac, ms = BJ.ms;
 
   const hide = (o) => { o.sx = o.sy = 0; o.o = 0; };
@@ -20,9 +21,13 @@
     blend: { dur: 0.01 },
     pose(i, t, b, o) {
       if (i) return hide(o);
-      const big = hit(b, 1, 2.6) + hit(b, 5, 2.6) + hit(b, 9, 2.6);
-      const small = hit(b, 3, 4) + hit(b, 7, 4) + hit(b, 11, 4);
-      o.sx = o.sy = HERO * (1 + 0.45 * big + 0.16 * small);
+      const BIG = [1, 5, 9], SMALL = [3, 7, 11];
+      let big = 0, small = 0, pre = 0, jel = 0;
+      for (const at of BIG) { big += hit(b, at, 3.2, 0.02); pre += antic(b, at, 0.35); jel += wob(b, at, 2.2, 4.5); }
+      for (const at of SMALL) { small += hit(b, at, 6, 0.02); jel += 0.4 * wob(b, at, 3, 7); }
+      const s = HERO * (1 + 0.5 * big + 0.16 * small - 0.14 * pre);
+      o.sx = s * (1 + 0.16 * jel + 0.06 * pre); o.sy = s * (1 - 0.16 * jel - 0.08 * pre);
+      o.y = -G.R * 0.04 * big + G.R * 0.012 * pre;
     },
     captions: [{ at: 1.6, to: 11.4, text: 'It starts with a single point.' }],
     music(M) {
@@ -78,6 +83,7 @@
   })();
   const rowStart = (row) => 9 + row * 0.75;
   const charStart = (sl) => rowStart(sl.row) + sl.col * 0.05;
+  const KEY = 0.22; // beats a character spends in flight
   function codePos(sl) {
     const cw = Math.min(lineL() / CODE.W, (G.R * 2.2) / (CODE.H * 1.75));
     return { x: (sl.xc - (CODE.W - 1) / 2) * cw, y: (sl.row - (CODE.H - 1) / 2) * cw * 1.75, s: (cw * 0.62) / G.dot };
@@ -91,7 +97,7 @@
       let x = 0, s = 0;
       if (mm === 0) { s = i === 0 ? lvlScale(0) : 0; }
       else {
-        const p = E.outBack(clamp((b - mm) / 0.55));
+        const p = E.snap(clamp((b - mm) / 0.7));
         const cur = LV.cnt[mm], pc = LV.cnt[mm - 1];
         if (i < cur) {
           const from = i < pc ? linePos(mm - 1, i) : linePos(mm - 1, parentOf(i));
@@ -100,14 +106,22 @@
         } else { x = linePos(mm, anc(i, mm)); s = 0; }
       }
       o.x = x; o.y = 0; o.sx = o.sy = Math.max(0, s); o.o = s > 0 ? 1 : 0;
+      if (mm >= 1) {
+        const sq = wob(b, mm + 0.08, 2.6, 6);
+        o.sx *= 1 + 0.25 * sq; o.sy *= 1 - 0.25 * sq;
+      }
       if (b > 8.6) {
-        const sl = CODE.slots[LV.rank[8][i]];
-        const q = E.inOutCubic(clamp((b - charStart(sl)) / 0.7));
+        const sl = CODE.slots[LV.rank[8][i]], c0 = charStart(sl);
+        const lift = antic(b, c0, 0.2);
+        o.y += G.R * 0.03 * lift;
+        const q = E.inOutCubic(clamp((b - c0) / KEY));
         if (q > 0) {
-          const cp = codePos(sl);
+          const cp = codePos(sl), land = wob(b, c0 + KEY, 3, 7);
           o.x = lerp(linePos(8, i), cp.x, q);
-          o.y = cp.y * q - Math.sin(Math.PI * q) * G.R * 0.12;
-          o.sx = o.sy = lerp(lvlScale(8), cp.s, q);
+          o.y = cp.y * q - Math.sin(Math.PI * q) * G.R * 0.2;
+          const s = lerp(lvlScale(8), cp.s, q);
+          o.sx = s * (1 + 0.45 * land); o.sy = s * (1 - 0.45 * land);
+          o.y += cp.s * G.dot * 0.25 * Math.max(0, land);
         }
       }
     },
@@ -121,7 +135,7 @@
       M.bass(8, 'D2', 1, 0.45);
       const mel = ms('F#5 E5 D5 B4 D5 B4 A4 G4 A4 B4 C#5 E5 D5');
       CODE_ROWS.forEach((r, row) => M.ep(rowStart(row), mel[row], 0.34, 0));
-      CODE.slots.forEach((sl) => M.tick(charStart(sl) + 0.7, 0.03, (sl.xc / CODE.W - 0.5) * 0.8));
+      CODE.slots.forEach((sl) => M.tick(charStart(sl) + KEY, 0.035, (sl.xc / CODE.W - 0.5) * 0.8));
       M.bass(9, 'B1', 3, 0.42); M.bass(12, 'G1', 3, 0.42); M.bass(15, 'A1', 3, 0.42); M.bass(18, 'D2', 2, 0.42);
       M.pad(9, 'B2 F#3 D4', 3, 0.32); M.pad(12, 'G2 D3 B3', 3, 0.32); M.pad(15, 'A2 E3 C#4', 3, 0.32); M.pad(18, 'D3 A3 F#4', 2.5, 0.32);
     },
@@ -134,7 +148,8 @@
   const S3 = {
     name: 'signal',
     beats: 20,
-    blend: { dur: 1.6, stagger: 0.8, ease: E.inOutCubic, arc: 0.12 },
+    blend: { dur: 1.1, stagger: 0.6, ease: E.snap, arc: 0.12 },
+    camera: (b) => ({ zoom: 1 + 0.05 * (hit(b, 10, 5) + hit(b, 12, 5) + hit(b, 14.6, 5)) }),
     pose(i, t, b, o) {
       const u = i / 149 - 0.5, Lw = Math.min(G.W * 0.88, G.R * 3.4);
       const A = G.R * 0.32 * E.inOutCubic(clamp(b / 3));
@@ -144,16 +159,18 @@
       let y = -A * Math.sin(th), z = A * Math.cos(th) * h, s = 0.85, op = 1;
       if (h > 0) op = lerp(1, 0.4 + 0.6 * (Math.cos(th) + 1) / 2, h);
       if (b < 14) s *= 1 + 1.1 * hit(b, Math.floor(b * 2) / 2, 5) * Math.exp(-Math.pow(u / 0.045, 2));
-      const d = E.inOutCubic(clamp((b - 13.8) / 1.2));
+      const q = Math.min(15, Math.floor((i / N) * 16));
+      const d = E.snap(clamp((b - 13.8 - q * 0.05) / 1));
       if (d > 0) {
-        const q = Math.min(15, Math.floor((i / N) * 16)), bit = BITS[q], lvl = bit ? 1 : -1;
-        const e = hit(b, 15 + q * 0.25, 3.5);
+        const bit = BITS[q], lvl = bit ? 1 : -1;
+        const e = hit(b, 15 + q * 0.25, 4, 0.02), w = wob(b, 15 + q * 0.25, 3, 6);
         const yd = -lvl * G.R * 0.17 - e * G.R * 0.07;
         y = lerp(y, yd, d); z = lerp(z, 0, d);
         s = lerp(s, (bit ? 1.05 : 0.5) * (1 + 0.8 * e), d);
         op = lerp(op, bit ? 1 : 0.3 + 0.7 * e, d);
-      }
-      o.x = u * Lw; o.y = y; o.z = z; o.sx = o.sy = s; o.o = op;
+        o.sx = s * (1 - 0.3 * w * d); o.sy = s * (1 + 0.3 * w * d);
+      } else o.sx = o.sy = s;
+      o.x = u * Lw; o.y = y; o.z = z; o.o = op;
     },
     captions: [
       { at: 0.6, to: 9.5, text: 'In Delft, I learned that everything is a signal.' },
@@ -201,10 +218,11 @@
   }
   function travel(b) {
     let v, lift = 1.08;
-    if (b < 3) v = AMS;
-    else if (b < 5.5) { const p = E.inOutCubic((b - 3) / 2.5); v = slerp(AMS, PA, p); lift += 0.25 * Math.sin(Math.PI * p); }
-    else if (b < 7) v = PA;
-    else if (b < 10) { const p = E.inOutCubic((b - 7) / 3); v = slerp(PA, SYD, p); lift += 0.3 * Math.sin(Math.PI * p); }
+    const hop = (b0, b1) => E.inOutQuint(clamp((b - b0) / (b1 - b0)));
+    if (b < 3) { v = AMS; lift -= 0.05 * antic(b, 3.6, 0.6); }
+    else if (b < 5.5) { const p = hop(3, 5.5); v = slerp(AMS, PA, p); lift += 0.3 * Math.sin(Math.PI * p); }
+    else if (b < 7) { v = PA; lift -= 0.05 * antic(b, 7.5, 0.5); }
+    else if (b < 10) { const p = hop(7, 10); v = slerp(PA, SYD, p); lift += 0.35 * Math.sin(Math.PI * p); }
     else v = SYD;
     let lon = Math.atan2(v[0], v[2]);
     if (b > 7 && lon > 0) lon -= TAU; // unwrap across the date line
@@ -216,15 +234,39 @@
     const x = p[0] * cy + p[2] * sy, z = -p[0] * sy + p[2] * cy, y = p[1];
     return [x, y * ca - z * sa, y * sa + z * ca];
   }
+  const angTo = (a, c) => Math.acos(clamp(a[0] * c[0] + a[1] * c[1] + a[2] * c[2], -1, 1));
+  const RIPS = [[AMS, 3, 0.5], [PA, 5.5, 1], [PA, 7, 0.5], [SYD, 10, 1]];
   const S4 = {
     name: 'world',
     beats: 12,
-    blend: { dur: 2, stagger: 1.2, ease: E.inOutCubic, arc: 0.2 },
+    blend: { dur: 1.2, stagger: 0.9, ease: E.snap, arc: 0.2 },
+    camera: (b) => ({ zoom: 1 + 0.06 * hit(b, 5.5, 3) + 0.06 * hit(b, 10, 3) }),
     pose(i, t, b, o) {
       const T = travel(b), Rs = G.R * 0.8;
       let p, s;
-      if (i === 0) { p = T.v.map((c) => c * T.lift); s = 1.5 * (1 + 0.6 * hit(b, 5.5, 3) + 0.6 * hit(b, 10, 3)); }
-      else { p = SPH[i]; s = 0.72; }
+      if (i === 0) {
+        p = T.v.map((c) => c * T.lift);
+        const w = wob(b, 5.5, 2.5, 4) + wob(b, 10, 2.5, 4);
+        s = 1.5 * (1 + 0.6 * hit(b, 5.5, 3) + 0.6 * hit(b, 10, 3));
+        const q = globe(p, b, T);
+        o.x = q[0] * Rs; o.y = q[1] * Rs; o.z = q[2] * Rs; o.sx = s * (1 + 0.3 * w); o.sy = s * (1 - 0.3 * w);
+        return;
+      } else {
+        // a ring travels over the surface from every take-off and landing
+        let lift = 1, glow = 0;
+        for (const [c, at, amp] of RIPS) {
+          const x = b - at;
+          if (x <= 0 || x > 4) continue;
+          const f = (angTo(SPH[i], c) - x * 0.9) / 0.22;
+          const w = amp * Math.exp(-f * f) * Math.exp(-x * 0.8);
+          lift += 0.12 * w; glow += w;
+        }
+        if ((b > 3 && b < 5.5) || (b > 7 && b < 10)) {
+          const d = angTo(SPH[i], T.v);
+          if (d < 0.35) { const w = 1 - d / 0.35; lift += 0.1 * w * w; glow += 0.8 * w * w; }
+        }
+        p = SPH[i].map((c) => c * lift); s = 0.72 * (1 + 0.9 * glow);
+      }
       const q = globe(p, b, T);
       o.x = q[0] * Rs; o.y = q[1] * Rs; o.z = q[2] * Rs; o.sx = o.sy = s;
       o.o = i === 0 ? 1 : 0.16 + 0.84 * clamp((q[2] + 1) / 2);
@@ -252,19 +294,80 @@
     const cp = Math.cos(pit), sp = Math.sin(pit);
     return [x, Y * cp - z * sp, Y * sp + z * cp];
   }
+  // Minimum-total-travel pairing (Hungarian algorithm): every dot takes the nearest free slot,
+  // so one formation morphs into the next without dots crossing the screen.
+  function assign(n, cost) {
+    const INF = 1e18, u = new Float64Array(n + 1), v = new Float64Array(n + 1);
+    const p = new Int32Array(n + 1), way = new Int32Array(n + 1);
+    for (let i = 1; i <= n; i++) {
+      p[0] = i;
+      let j0 = 0;
+      const minv = new Float64Array(n + 1).fill(INF), used = new Uint8Array(n + 1);
+      do {
+        used[j0] = 1;
+        const i0 = p[j0];
+        let delta = INF, j1 = 0;
+        for (let j = 1; j <= n; j++) {
+          if (used[j]) continue;
+          const cur = cost(i0 - 1, j - 1) - u[i0] - v[j];
+          if (cur < minv[j]) { minv[j] = cur; way[j] = j0; }
+          if (minv[j] < delta) { delta = minv[j]; j1 = j; }
+        }
+        for (let j = 0; j <= n; j++) {
+          if (used[j]) { u[p[j]] += delta; v[j] -= delta; } else minv[j] -= delta;
+        }
+        j0 = j1;
+      } while (p[j0] !== 0);
+      do { const j1 = way[j0]; p[j0] = p[j1]; j0 = j1; } while (j0);
+    }
+    const out = new Int32Array(n);
+    for (let j = 1; j <= n; j++) out[p[j] - 1] = j - 1;
+    return out;
+  }
+  const CELL = new Int32Array(N).map((_, i) => i), MEM = new Int32Array(N).map((_, i) => i);
+  const latSpacing = () => G.R * 0.24;
+  const memSpacing = () => Math.min((G.R * 2.9) / 14, (G.W * 0.84) / 14);
+  const MEM_TILT = 0.95;
+  // The cube holds still while it forms, then turns a sixth of a revolution on every kick:
+  // fast on the beat, gliding to rest before the next one.
+  function latYaw(b) {
+    if (b < 2) return 0.4;
+    const n = Math.floor(b);
+    return 0.4 + (Math.PI / 6) * (n - 2 + E.outCubic(clamp((b - n) / 0.9)));
+  }
+  const latPitch = (b) => 0.5 + 0.16 * Math.sin(b * 0.45);
+  function latticeAt(j, b, sp) {
+    const a = (j % 5) - 2, c = (Math.floor(j / 5) % 6) - 2.5, d = Math.floor(j / 30) - 2;
+    return rotYX(a * sp, c * sp, d * sp, latYaw(b), latPitch(b));
+  }
+  function membraneRest(m) {
+    const gs = memSpacing(), u = ((m % 15) - 7) * gs, v = (Math.floor(m / 15) - 4.5) * gs;
+    return [u, v * Math.cos(MEM_TILT), v * Math.sin(MEM_TILT)];
+  }
   const S5 = {
     name: 'motion',
     beats: 20,
-    blend: { dur: 1.6, stagger: 0.6, ease: E.outBack, arc: 0.1 },
+    blend: { dur: 1.9, ease: E.inOutCubic, start: (i) => frac(i * 0.618034) * 0.35 },
+    camera: (b) => ({ zoom: 1 + (b >= 2 && b < 8 ? 0.02 * hit(b, Math.floor(b), 6) : 0) }),
+    enter(prev) {
+      const sp = latSpacing(), T = [];
+      for (let j = 0; j < N; j++) T.push(latticeAt(j, 1, sp));
+      const d2 = (ax, ay, az, q) => (ax - q[0]) ** 2 + (ay - q[1]) ** 2 + (az - q[2]) ** 2;
+      CELL.set(assign(N, (i, j) => d2(prev.x[i], prev.y[i], prev.z[i], T[j])));
+      // and pair each cube slot with the membrane slot nearest to where it will be when the cube unfolds
+      const L = [], M = [];
+      for (let j = 0; j < N; j++) { L.push(latticeAt(j, 7.6, sp)); M.push(membraneRest(j)); }
+      MEM.set(assign(N, (j, m) => d2(L[j][0], L[j][1], L[j][2], M[m])));
+    },
     pose(i, t, b, o) {
-      const a = (i % 5) - 2, c = (Math.floor(i / 5) % 6) - 2.5, d = Math.floor(i / 30) - 2;
-      const kick = b < 8 ? hit(b, Math.floor(b), 5) : 0;
-      const sp = G.R * 0.24 * (1 + 0.1 * kick);
-      const L = rotYX(a * sp, c * sp, d * sp, b * 0.55 + 0.4, 0.5 + 0.25 * Math.sin(b * 0.35));
+      const j = CELL[i];
+      const kick = b >= 2 && b < 8 ? hit(b, Math.floor(b), 5) : 0;
+      const sp = latSpacing() * (1 + 0.08 * kick);
+      const L = latticeAt(j, b, sp);
       let x = L[0], y = L[1], z = L[2], s = 0.8, op = clamp(0.55 + (z / (G.R * 1.2)) * 0.45, 0.2, 1);
       if (b > 7.4) {
-        const gi = i % 15, gj = Math.floor(i / 15);
-        const gs = Math.min((G.R * 2.9) / 14, (G.W * 0.84) / 14);
+        const m = MEM[j], gi = m % 15, gj = Math.floor(m / 15);
+        const gs = memSpacing();
         let u = (gi - 7) * gs, v = (gj - 4.5) * gs;
         const dist = Math.sqrt(u * u + v * v);
         const psi = (b - 8) * 0.05, cps = Math.cos(psi), sps = Math.sin(psi);
@@ -278,8 +381,8 @@
           hh += G.R * 0.22 * w * Math.cos((f / lam) * 2.2);
           amp += w;
         }
-        const ta = 0.95, gx = u, gy = v * Math.cos(ta) - hh * Math.sin(ta), gz = v * Math.sin(ta) + hh * Math.cos(ta);
-        const g = E.inOutCubic(clamp((b - 7.6 - ((gi + gj) / 23) * 0.9) / 1.2));
+        const ta = MEM_TILT, gx = u, gy = v * Math.cos(ta) - hh * Math.sin(ta), gz = v * Math.sin(ta) + hh * Math.cos(ta);
+        const g = E.inOutCubic(clamp((b - 7.6 - ((gi + gj) / 23) * 0.9) / 1.4));
         x = lerp(x, gx, g); y = lerp(y, gy, g); z = lerp(z, gz, g);
         s = lerp(s, 0.8 * (1 + 0.35 * amp), g);
         op = lerp(op, clamp(0.6 + (gz / (G.R * 1.5)) * 0.6, 0.25, 1), g);
@@ -312,15 +415,25 @@
   const S6 = {
     name: 'connect',
     beats: 12,
-    blend: { dur: 1.8, stagger: 0.8, ease: E.inOutCubic, arc: 0.2 },
+    blend: { dur: 1.1, stagger: 0.7, ease: E.snap, arc: 0.2, order: (i) => (i < 120 ? (i % 60) / 59 : 1) },
     pose(i, t, b, o) {
       const Rx = Math.min(G.R * 1.1, G.W * 0.27), rr = Math.min(G.R * 0.46, G.W * 0.15);
       if (i < 120) {
-        const side = i < 60 ? -1 : 1, k = i % 60, spk = side < 0 ? SPEAK_L : SPEAK_R;
-        let e = 0, er = 0;
-        for (const at of spk) { er = Math.max(er, hit(b, at, 3)); e = Math.max(e, hit(b, at + (k / 60) * 0.45, 4.5)); }
-        const ang = (TAU * k) / 60 + side * b * 0.12 - Math.PI / 2, r = rr * (1 + 0.1 * er);
-        o.x = side * Rx + Math.cos(ang) * r; o.y = Math.sin(ang) * r; o.sx = o.sy = 0.75 * (1 + 0.8 * e);
+        const side = i < 60 ? -1 : 1, k = i % 60, spk = side < 0 ? SPEAK_L : SPEAK_R, oth = side < 0 ? SPEAK_R : SPEAK_L;
+        let e = 0, er = 0, voice = 0, lean = 0;
+        for (const at of spk) {
+          er = Math.max(er, hit(b, at, 3, 0.02));
+          e = Math.max(e, hit(b, at + (k / 60) * 0.45, 4.5));
+          voice = Math.max(voice, hit(b, at, 1.6, 0.03));
+        }
+        for (const at of oth) lean = Math.max(lean, hit(b, at, 2.2) * 0.6 + antic(b, at, 0.3) * 0.4);
+        const ang = (TAU * k) / 60 + side * b * 0.12 - Math.PI / 2;
+        // the speaker's ring becomes a voice: a waveform wrapped around a circle
+        const vf = Math.sin(5 * ang + b * 9) * 0.6 + Math.sin(3 * ang - b * 6 + side) * 0.4;
+        const r = rr * (1 + 0.12 * er + 0.2 * voice * vf);
+        // the listener leans in
+        o.x = side * Rx * (1 - 0.07 * lean) + Math.cos(ang) * r; o.y = Math.sin(ang) * r;
+        o.sx = o.sy = 0.75 * (1 + 0.8 * e);
       } else {
         const k = i - 120, lr = k < 15, u = frac(b / 2 + (k % 15) / 15);
         const x0 = -Rx + rr * 1.2, x1 = Rx - rr * 1.2, a = lr ? x0 : x1, c = lr ? x1 : x0;
@@ -359,7 +472,10 @@
       const c = Math.floor(i / 15), m = i % 15;
       const spX = Math.min(G.W * 0.18, G.R * 0.66), spY = G.R * 0.75, rc = Math.min(spX * 0.32, G.R * 0.19);
       const e = Math.max(hit(b, ACTS[c][0], 3.5), hit(b, ACTS[c][1], 4));
-      const th = m * GA + b * 0.3 * (c % 2 ? 1 : -1), r = rc * Math.sqrt((m + 0.5) / 15) * (1 + 0.35 * e);
+      // each machine spins up like a drive when it's given work, then coasts
+      let boost = 0;
+      for (const at of ACTS[c]) if (b > at) boost += 1.4 * (1 - Math.exp(-(b - at) * 1.8));
+      const th = m * GA + (b * 0.3 + boost) * (c % 2 ? 1 : -1), r = rc * Math.sqrt((m + 0.5) / 15) * (1 + 0.35 * e);
       let x = clusterX(c) + Math.cos(th) * r, y = (Math.floor(c / 5) - 0.5) * spY + Math.sin(th) * r, s = 0.7 * (1 + 0.5 * e);
       const g = E.inOutCubic(clamp((b - 8.5 - (c / 9) * 0.3) / 1.5));
       if (g > 0) {
@@ -428,7 +544,7 @@
   const S8 = {
     name: 'share',
     beats: 12,
-    blend: { dur: 1.6, stagger: 0.6, ease: E.inOutCubic, arc: 0.25, order: (i) => RING[i] / 6 },
+    blend: { dur: 1.1, ease: E.snap, arc: 0.25, start: (i) => RING[i] * 0.25 },
     pose(i, t, b, o) {
       const k = RING[i], gap = G.R * 0.155;
       const e = maxHit(b, EMIT.map((em) => em + k * 0.25), 3.5);
@@ -436,7 +552,7 @@
       let x = Math.cos(ang) * r, y = Math.sin(ang) * r, z = 0, s = k === 0 ? 1.7 * (1 + 0.5 * e) : 0.7 * (1 + 0.8 * e);
       const cell = MAP.cells[MAP.of[i]];
       const st = i === 0 ? 8 : 8 + ((cell.lon + 180) / 360) * 0.9;
-      const g = E.inOutCubic(clamp((b - st) / (i === 0 ? 1 : 1.2)));
+      const g = E.snap(clamp((b - st) / (i === 0 ? 1 : 1.1)));
       if (g > 0) {
         const Wm = Math.min(G.W * 0.92, G.R * 3.6), kp = Wm / 360, sp = MAP.d * kp;
         const mx = cell.lon * kp, my = -(cell.lat - MAP.latC) * kp;
@@ -502,6 +618,8 @@
     return { cells, letters };
   })();
   const CUT = 6;
+  const dropAt = (L) => 0.5 + L * 0.25; // one letter every eighth: B A R T  J A N S E N
+  const DROP_NOTES = ['D5', 'E5', 'F#5', 'A5', 'B4', 'D5', 'E5', 'F#5', 'A5', 'D6'];
   const cellSize = () => Math.min((G.W * 0.86) / 35, (G.R * 2.9) / 35);
   const floorY = () => Math.min(G.R * 1.15, G.textY - G.cy - G.H * 0.06);
   const wallX = () => Math.min(G.W / 2 - G.dot, G.R * 2.4);
@@ -509,15 +627,19 @@
     const cs = cellSize(), cl = WORD.cells[i], lt = WORD.letters[cl.L];
     const px = lt.cx * cs, py = (lt.top - 5.6 - 2.6) * cs - G.R * 0.2;
     let x = cl.c * cs, y = (cl.r - 5.6) * cs - G.R * 0.2;
-    const th = 0.05 * Math.sin((TAU * b) / 4 + cl.L * 0.9);
+    const dq = clamp((b - dropAt(cl.L)) / 1.4);
+    const fall = (1 - E.spring(dq)) * G.R * 0.55;
+    // the drop kicks the letter into a swing that then settles into the idle sway
+    const th = 0.05 * Math.sin((TAU * b) / 4 + cl.L * 0.9) + 0.12 * wob(b, dropAt(cl.L) + 0.2, 0.9, 1.6) * (cl.L % 2 ? 1 : -1);
     const dx = x - px, dy = y - py, c = Math.cos(th), s = Math.sin(th);
-    return { x: px + dx * c - dy * s, y: py + dx * s + dy * c, rot: th, s: (cs * cl.s) / G.dot };
+    return { x: px + dx * c - dy * s, y: py + dx * s + dy * c - fall, rot: th, s: (cs * cl.s) / G.dot };
   }
   const world = new BJ.World(N);
   const S9 = {
     name: 'gravity',
     beats: 20,
-    blend: { dur: 2, stagger: 1.5, ease: E.inOutCubic, arc: 0.25, order: (i) => WORD.cells[i].L / 9 },
+    // each letter's dots zip up into place just as that letter is let go
+    blend: { dur: 0.5, ease: E.inOutCubic, arc: 0.3, start: (i) => dropAt(WORD.cells[i].L) - 0.5 },
     enter() { world.active = false; },
     update(t, b, dt) {
       if (b < CUT) return;
@@ -557,7 +679,8 @@
     ],
     music(M) {
       M.pad(0, 'D3 G3 A3 D4', 4.5, 0.32);
-      M.ep(0, 'A4', 0.24); M.ep(2, 'D5', 0.22); M.ep(4, 'E5', 0.2);
+      DROP_NOTES.forEach((n, L) => { M.marimba(dropAt(L) + 0.2, n, 0.34, ((WORD.letters[L].cx) / 17) * 0.8); M.tick(dropAt(L) + 0.2, 0.04); });
+      M.ep(4, 'E5', 0.2);
       M.whoosh(4, 2, 0.16, 400, 5000);
       M.snip(CUT);
       M.sub(8.5, 'D2', 10, 0.3);
@@ -585,14 +708,17 @@
   const S10 = {
     name: 'intention',
     beats: 20,
-    blend: { dur: 1.8, ease: E.inOutCubic, arc: 0.35, start: (i) => landAt(ctxShared.kOf[i]) - 1.8 },
+    blend: { dur: 1, ease: E.inOutQuint, arc: 0.4, start: (i) => landAt(ctxShared.kOf[i]) - 1 },
+    camera: (b) => ({ zoom: 1 + 0.035 * (hit(b, 10, 4) + hit(b, 15.5, 4) + hit(b, 19, 3)), rot: 0.03 * (wob(b, 10, 1, 2.5) - wob(b, 15.5, 1, 2.5)) }),
     enter(prev) {
       const idx = [...Array(N).keys()].sort((a, c) => Math.abs(prev.x[a]) - Math.abs(prev.x[c]) || prev.y[c] - prev.y[a]);
       idx.forEach((i, k) => (ctxShared.kOf[i] = k));
     },
     pose(i, t, b, o) {
-      const k = ctxShared.kOf[i], p = spiral(k, b);
-      o.x = p.x; o.y = p.y; o.sx = o.sy = p.s * (1 + 0.5 * hit(b, landAt(k), 3));
+      const k = ctxShared.kOf[i], p = spiral(k, b), la = landAt(k), w = wob(b, la, 3, 6);
+      const s = p.s * (1 + 0.5 * hit(b, la, 4, 0.02));
+      // squash along the radius as each seed lands
+      o.x = p.x; o.y = p.y; o.rot = p.th; o.sx = s * (1 - 0.35 * w); o.sy = s * (1 + 0.35 * w);
     },
     captions: [
       { at: 0.6, to: 9.5, text: 'Twenty years of shipping software.' },
@@ -636,8 +762,9 @@
       o.x = 2 * q * (1 - q) * c1x + q * q * P.x + G.periodShift[0] * sw;
       o.y = 2 * q * (1 - q) * c1y + q * q * P.y + G.periodShift[1] * sw;
       const s = lerp(HERO * (1 + 0.4 * hit(b, 4, 2)), P.d / G.dot, q), e = hit(b, 9, 5);
-      const e2 = hit(b, SWAP.end, 4);
-      o.sx = s * (1 + 0.45 * e + 0.18 * e2); o.sy = s * (1 - 0.35 * e - 0.12 * e2);
+      const e2 = hit(b, SWAP.end, 4), pre = antic(b, 8, 0.5), w = wob(b, 9, 2.5, 5);
+      o.y += G.dot * s * 0.2 * pre;
+      o.sx = s * (1 + 0.45 * e + 0.18 * e2 + 0.25 * pre + 0.2 * w); o.sy = s * (1 - 0.35 * e - 0.12 * e2 - 0.3 * pre - 0.2 * w);
     },
     captions: [
       {

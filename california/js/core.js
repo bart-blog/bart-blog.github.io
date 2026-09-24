@@ -32,6 +32,22 @@
       return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
     },
     outExpo: (t) => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t)),
+    inQuart: (t) => t * t * t * t,
+    // Snappy: most of the travel happens in the first fifth, then a ~4% overshoot settles.
+    snap: (t) => (t <= 0 ? 0 : t >= 1 ? 1 : 1 - Math.exp(-8 * t) * Math.cos(t * Math.PI * 2.2)),
+    // Bouncier cousin (~9% overshoot) for things on strings and springs.
+    spring: (t) => (t <= 0 ? 0 : t >= 1 ? 1 : 1 - Math.exp(-6.5 * t) * Math.cos(t * Math.PI * 2.5)),
+  };
+
+  // Damped oscillation after an impulse at beat `at`: squash-and-stretch jelly.
+  BJ.wobble = function (b, at, freq = 2.5, decay = 5) {
+    const x = b - at;
+    return x < 0 ? 0 : Math.exp(-x * decay) * Math.sin(Math.PI * 2 * freq * x);
+  };
+  // Anticipation: 0 → 1 over `len` beats leading into `at`, then 0.
+  BJ.antic = function (b, at, len = 0.3) {
+    const x = (b - (at - len)) / len;
+    return x <= 0 || x >= 1 ? 0 : x * x * x;
   };
 
   // Percussive envelope in beats: fast attack, exponential decay. Used to lock
