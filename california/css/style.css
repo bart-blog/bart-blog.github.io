@@ -16,7 +16,12 @@ html, body {
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-text-size-adjust: 100%;
+  touch-action: none;
+  overscroll-behavior: none;
 }
+html { position: fixed; inset: 0; }
 body.intro { cursor: pointer; }
 body.idle { cursor: none; }
 

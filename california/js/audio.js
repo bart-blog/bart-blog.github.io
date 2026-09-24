@@ -20,14 +20,18 @@
     if (A.ctx) return A.ctx.resume();
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return Promise.resolve();
-    const ctx = A.setup(new AC({ latencyHint: 'interactive' }));
+    // iOS: play through the ringer/silent switch like a video would
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+    let raw;
+    try { raw = new AC({ latencyHint: 'interactive' }); } catch (e) { try { raw = new AC(); } catch (e2) { return Promise.resolve(); } }
+    const ctx = A.setup(raw);
 
     // unlock iOS
     const b = ctx.createBuffer(1, 1, 22050), s = ctx.createBufferSource();
     s.buffer = b;
     s.connect(ctx.destination);
     s.start(0);
-    return ctx.resume();
+    return ctx.resume ? ctx.resume() : Promise.resolve();
   };
 
   A.setup = function (ctx) {
@@ -99,6 +103,8 @@
   // ------------------------------------------------------------ clock
   // ctx.currentTime advances in audio-callback sized steps; we low-pass it against
   // performance.now() to get a smooth, monotonic, latency-compensated song time.
+  // While the context isn't running (e.g. audio still locked on a phone) the film
+  // free-runs on performance.now(), and re-anchors the audio once it starts.
   A.clock = {
     off: 0, last: 0, paused: true, has: false, pt: 0, base: 0,
     reset(start) { this.has = false; this.last = start || 0; this.base = start || 0; this.pt = performance.now() / 1000; },
@@ -106,15 +112,16 @@
       const perf = performance.now() / 1000;
       if (this.paused) return this.last;
       let t;
-      if (A.ok && A.run) {
+      if (A.ok && A.run && A.ctx.state === 'running') {
         const lat = (A.ctx.outputLatency || 0) + (A.ctx.baseLatency || 0);
+        if (!this.has) { A.run.t0 = A.ctx.currentTime - lat - this.last; this.has = true; this.off = this.last - perf; }
         const ct = A.ctx.currentTime - lat - A.run.t0;
-        if (!this.has) { this.off = ct - perf; this.has = true; }
         const err = ct - (perf + this.off);
         if (Math.abs(err) > 0.08) this.off = ct - perf;
         else this.off += err * 0.04;
         t = perf + this.off;
       } else {
+        if (this.has) { this.has = false; this.base = this.last; this.pt = perf; }
         t = this.base + (perf - this.pt);
       }
       if (t < this.last) t = this.last;
@@ -131,7 +138,7 @@
     A.ptr = 0;
   };
   A.pump = function (songTime) {
-    if (!A.ok || !A.run || A.clock.paused) return;
+    if (!A.ok || !A.run || A.clock.paused || A.ctx.state !== 'running') return;
     const ahead = songTime + 0.25;
     while (A.ptr < A.events.length && A.events[A.ptr].t < ahead) {
       const e = A.events[A.ptr++];
@@ -339,7 +346,7 @@
   const PENTA = BJ.ms('D4 E4 F#4 A4 B4 D5 E5 F#5 A5 B5 D6 E6 F#6 A6 B6');
   const recent = [];
   A.impact = function (xn, strength) {
-    if (!A.ok || !A.run || A.clock.paused) return;
+    if (!A.ok || !A.run || A.clock.paused || A.ctx.state !== 'running') return;
     const now = A.ctx.currentTime;
     while (recent.length && recent[0] < now - 0.07) recent.shift();
     if (recent.length >= 4 && strength < 0.85) return;

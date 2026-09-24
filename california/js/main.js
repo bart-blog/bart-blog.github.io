@@ -202,8 +202,15 @@
       setMode('play');
       poke();
     };
-    if (A.ok && A.ctx.state !== 'running') Promise.resolve(p).then(go, go);
+    // never let a stuck audio unlock block the film
+    if (A.ok && A.ctx.state !== 'running') once(p, go, 400);
     else go();
+  }
+  function once(p, fn, ms) {
+    let done = false;
+    const f = () => { if (!done) { done = true; fn(); } };
+    Promise.resolve(p).then(f, f);
+    setTimeout(f, ms);
   }
   function pause() {
     if (mode !== 'play') return;
@@ -214,12 +221,12 @@
   function resume() {
     if (mode !== 'paused') return;
     const go = () => { A.clock.resume(); setMode('play'); };
-    if (A.ok) A.ctx.resume().then(go, go); else go();
+    if (A.ok) once(A.ctx.resume(), go, 400); else go();
   }
   function toggle() { if (mode === 'intro') start(); else if (mode === 'play') pause(); else resume(); }
   function replay() {
     if (mode === 'intro') return start();
-    if (A.ok && A.ctx.state !== 'running') A.ctx.resume().then(start, start);
+    if (A.ok && A.ctx.state !== 'running') once(A.ctx.resume(), start, 400);
     else start();
   }
   function toggleMute() {
@@ -230,7 +237,21 @@
   document.getElementById('btn-play').addEventListener('click', (e) => { e.stopPropagation(); toggle(); });
   document.getElementById('btn-replay').addEventListener('click', (e) => { e.stopPropagation(); replay(); });
   document.getElementById('btn-mute').addEventListener('click', (e) => { e.stopPropagation(); toggleMute(); });
-  window.addEventListener('click', (e) => { if (!e.target.closest('a, button')) toggle(); });
+  // pointerup rather than click: iOS doesn't fire click on non-interactive elements
+  window.addEventListener('pointerup', (e) => {
+    if (e.button > 0 || e.target.closest('a, button')) return;
+    toggle();
+  });
+  // keep trying to unlock audio on any gesture, in case the first one didn't take
+  const unlock = () => { if (A.ok && A.ctx.state !== 'running' && mode === 'play') A.ctx.resume(); };
+  window.addEventListener('touchend', unlock, { passive: true });
+  // no pinch / double-tap zoom (iOS ignores user-scalable=no)
+  ['gesturestart', 'gesturechange', 'dblclick'].forEach((ev) => document.addEventListener(ev, (e) => e.preventDefault(), { passive: false }));
+  document.addEventListener('touchmove', (e) => { if (e.touches.length > 1 || e.scale !== undefined && e.scale !== 1) e.preventDefault(); }, { passive: false });
+  if (window.matchMedia && matchMedia('(hover: none)').matches) {
+    const sub = document.querySelector('.hint-sub');
+    if (sub) sub.innerHTML = 'Tap to play &middot; sound on';
+  }
   window.addEventListener('keydown', (e) => {
     if (e.code === 'Space') { e.preventDefault(); toggle(); }
     else if (e.key === 'm' || e.key === 'M') toggleMute();
