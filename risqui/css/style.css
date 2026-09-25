@@ -1,0 +1,174 @@
+/* Montserrat (variable), self-hosted like on risqui.nl. SIL Open Font License. */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../fonts/montserrat-latin.woff2') format('woff2');
+}
+
+:root {
+  --navy: #001752;
+  --yellow: #fcba04;
+  --light: #f0f5ff;
+  --sea: #d2e0ff;
+  --mute: #4a5b82;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--light);
+  overflow: hidden;
+  color: var(--navy);
+  font-family: "Montserrat", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-text-size-adjust: 100%;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+html { position: fixed; inset: 0; }
+body.intro { cursor: pointer; }
+body.idle { cursor: none; }
+
+/* The sea: everything below the waterline. */
+#sea {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 100%;
+  background: var(--sea);
+  opacity: 0;
+  transform: translate3d(0, 100vh, 0);
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+/* No overflow on the stage: it would flatten preserve-3d. */
+#stage {
+  position: fixed;
+  inset: 0;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.dot {
+  position: absolute;
+  left: -64px;
+  top: -64px;
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background: var(--navy);
+  opacity: 0;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* ------------------------------------------------------------ captions */
+.caption {
+  position: fixed;
+  left: 6vw;
+  right: 6vw;
+  top: 76.4%;
+  text-align: center;
+  font-size: clamp(17px, 2.1vw, 30px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.28;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate3d(0, -50%, 0);
+  will-change: opacity, transform;
+  text-wrap: balance;
+}
+.caption .w { display: inline-block; opacity: 0; will-change: opacity, transform; }
+.caption.link { font-size: clamp(13px, 1.15vw, 16px); font-weight: 500; letter-spacing: 0; pointer-events: auto; }
+.caption.score { font-size: clamp(12px, 1vw, 14px); font-weight: 500; letter-spacing: 0; text-wrap: nowrap; }
+.caption.score .lab { display: block; text-transform: uppercase; letter-spacing: 0.14em; color: var(--mute); }
+.caption.score .num { display: block; font-size: clamp(34px, 4.4vw, 64px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.caption.score .pill { display: inline-block; margin-top: 0.4em; padding: 0.3em 0.8em; border-radius: 999px; background: var(--yellow); font-weight: 700; font-size: 1.7em; opacity: 0; transform-origin: 0 50%; }
+@media (max-aspect-ratio: 23/20) {
+  .caption.score .lab { display: inline; margin-right: 0.7em; }
+  .caption.score .num { display: inline; font-size: clamp(26px, 7vw, 40px); vertical-align: middle; }
+  .caption.score .pill { margin: 0 0 0 0.7em; vertical-align: middle; transform-origin: 50% 50%; }
+}
+.caption.link a {
+  display: inline-block;
+  color: var(--navy);
+  text-decoration: none;
+  padding: 0.55em 1.2em;
+  border: 2px solid var(--navy);
+  border-radius: 6px;
+  transition: background .25s, color .25s, border-color .25s;
+}
+.caption.link a:hover, .caption.link a:focus { background: var(--yellow); border-color: var(--yellow); }
+.caption.link small { display: block; margin-top: 0.8em; font-size: 0.86em; font-weight: 400; color: var(--mute); }
+
+/* ------------------------------------------------------------ intro hint */
+#hint {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 76.4%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5em;
+  text-align: center;
+  transition: opacity .7s ease, transform .7s ease;
+  pointer-events: none;
+}
+.hint-title { font-size: clamp(17px, 2.1vw, 30px); font-weight: 600; letter-spacing: -0.01em; }
+.hint-sub { font-size: clamp(13px, 1.1vw, 15px); color: var(--mute); letter-spacing: 0.01em; }
+body.debug #hint { display: none; }
+body:not(.intro) #hint { opacity: 0; transform: translateY(calc(-50% + 10px)); }
+
+/* ------------------------------------------------------------ controls */
+#controls {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  display: flex;
+  gap: 6px;
+  transition: opacity .6s ease;
+}
+body.intro #controls, body.idle #controls { opacity: 0; pointer-events: none; }
+body.ended #controls { opacity: 1; pointer-events: auto; }
+#controls button {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 23, 82, 0.06);
+  color: var(--navy);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.75;
+  transition: opacity .25s, background .25s, transform .25s;
+}
+#controls button:hover { opacity: 1; background: rgba(0, 23, 82, 0.1); }
+#controls button:active { transform: scale(0.94); }
+#controls svg { width: 18px; height: 18px; fill: currentColor; }
+.i-play, .i-muted { display: none; }
+body.paused .i-play, body.muted .i-muted { display: block; }
+body.paused .i-pause, body.muted .i-sound { display: none; }
+
+#progress { position: fixed; left: 0; right: 0; bottom: 0; height: 3px; pointer-events: none; }
+#bar { height: 100%; background: var(--yellow); opacity: 0.8; transform-origin: 0 50%; transform: scaleX(0); }
+body.intro #progress { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  #hint { transition: none; }
+}
