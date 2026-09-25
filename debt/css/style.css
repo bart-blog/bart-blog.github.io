@@ -1,0 +1,202 @@
+/* Inter (variable), as on fullcircleit.nl. SIL Open Font License. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('../fonts/inter-latin.woff2') format('woff2');
+}
+
+:root {
+  --azure: #0078d4;
+  --bright: #2563eb;
+  --teal: #06b6d4;
+  --glow: #60a5fa;
+  --ink: #f8fafc;
+  --mute: #94a3b8;
+  --bg: #050d1a;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  overflow: hidden;
+  color: var(--ink);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-text-size-adjust: 100%;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+html { position: fixed; inset: 0; }
+body.intro { cursor: pointer; }
+body.idle { cursor: none; }
+
+html, body { transition: none; }
+
+/* Flat stage with perspective: stacking follows DOM order (the orange shape is last). */
+/* the site's faint 60px grid, with a soft azure glow */
+#grid {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 60% 50% at 50% 40%, rgba(0, 120, 212, 0.09), transparent 70%),
+    linear-gradient(rgba(255, 255, 255, .03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, .03) 1px, transparent 1px);
+  background-size: 100% 100%, 60px 60px, 60px 60px;
+  background-position: 0 0, center center, center center;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.sh {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+  box-sizing: border-box;
+  background: var(--azure);
+  opacity: 0;
+  will-change: transform, opacity;
+  contain: layout style;
+}
+
+/* ------------------------------------------------------------ kinetic type */
+#type { position: fixed; inset: 0; pointer-events: none; }
+.line {
+  position: absolute;
+  left: 50%;
+  top: 80%;
+  width: max-content;
+  max-width: 88vw;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--ink);
+  opacity: 0;
+  transform: translate3d(-50%, -50%, 0);
+  will-change: opacity, transform;
+  text-wrap: balance;
+  white-space: normal;
+}
+.line .w { display: inline-block; opacity: 0; will-change: opacity, transform, filter; }
+/* the site's .text-gradient; padding keeps descenders inside the clipped background */
+.line .w.g, .wm .g {
+  background: linear-gradient(135deg, #60a5fa, #0078d4, #06b6d4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding: 0 0.04em 0.16em;
+  margin: 0 -0.04em -0.16em;
+}
+.line.heavy { font-weight: 900; letter-spacing: -0.035em; line-height: 1.02; }
+.line.brand { font-weight: 900; letter-spacing: -0.05em; }
+.line.num { font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.04em; }
+.line.name { font-weight: 600; letter-spacing: -0.01em; color: var(--mute); white-space: nowrap; }
+.pill, .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7em;
+  white-space: nowrap;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  border-radius: 999px;
+}
+.line.eyebrow { font-size: clamp(10px, 0.95vw, 14px) !important; }
+.pill { color: #3b9ae6; padding: 0.55em 1.25em; border: 1px solid rgba(0, 120, 212, 0.4); background: rgba(0, 120, 212, 0.08); }
+.pill i { width: 0.5em; height: 0.5em; border-radius: 50%; background: var(--azure); }
+.tag { color: var(--glow); padding: 0.5em 1em; border: 1px solid rgba(96, 165, 250, 0.35); background: rgba(5, 13, 26, 0.86); font-size: 0.8em; }
+/* the wordmark: the icon between the words is built from shapes */
+.wm { display: flex; align-items: center; font-weight: 300; letter-spacing: 0.07em; line-height: 1; color: #fff; white-space: nowrap; }
+.wm .gap { display: inline-block; width: 3.1em; height: 1px; }
+.line.wmline { white-space: nowrap; }
+.line.link { font-size: clamp(15px, 1.4vw, 21px) !important; font-weight: 600; letter-spacing: 0; pointer-events: auto; line-height: 1.25; }
+.line.link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  color: #fff;
+  text-decoration: none;
+  padding: 0.8em 1.6em;
+  background: var(--azure);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 120, 212, .35);
+  transition: background .25s, box-shadow .25s, transform .25s;
+}
+.line.link a:hover, .line.link a:focus { background: var(--bright); box-shadow: 0 12px 34px rgba(37, 99, 235, .45); transform: translateY(-1px); }
+.line.link small { display: block; margin-top: 1.1em; font-size: 0.78em; font-weight: 400; letter-spacing: 0; color: var(--mute); }
+
+/* ------------------------------------------------------------ intro hint */
+#hint {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 80%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45em;
+  text-align: center;
+  transition: opacity .7s ease, transform .7s ease;
+  pointer-events: none;
+}
+.hint-title { font-size: clamp(20px, 2.6vw, 36px); font-weight: 700; letter-spacing: -0.02em; }
+.hint-sub { font-size: clamp(13px, 1.1vw, 15px); color: var(--mute); letter-spacing: 0.02em; }
+body.debug #hint, body.debug #controls { display: none; }
+body:not(.intro) #hint { opacity: 0; transform: translateY(calc(-50% + 10px)); }
+
+/* ------------------------------------------------------------ controls */
+#controls {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  display: flex;
+  gap: 6px;
+  transition: opacity .6s ease;
+}
+body.intro #controls, body.idle #controls { opacity: 0; pointer-events: none; }
+body.ended #controls { opacity: 1; pointer-events: auto; }
+#controls button {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  color: #cbd5e1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.8;
+  transition: opacity .25s, background .25s, transform .25s;
+}
+#controls button:hover { opacity: 1; background: rgba(255, 255, 255, 0.13); }
+#controls button:active { transform: scale(0.94); }
+#controls svg { width: 18px; height: 18px; fill: currentColor; }
+.i-play, .i-muted { display: none; }
+body.paused .i-play, body.muted .i-muted { display: block; }
+body.paused .i-pause, body.muted .i-sound { display: none; }
+
+#progress { position: fixed; left: 0; right: 0; bottom: 0; height: 3px; pointer-events: none; }
+#bar { height: 100%; background: linear-gradient(90deg, var(--glow), var(--azure), var(--teal)); opacity: 0.85; transform-origin: 0 50%; transform: scaleX(0); }
+body.intro #progress { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  #hint { transition: none; }
+}
