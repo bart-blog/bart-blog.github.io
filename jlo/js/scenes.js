@@ -1,7 +1,7 @@
 /* Jannie — "Papa is weer op reis." A short film in 150 shapes.
    The coral dot is Jannie. The four below her are the kids (🩷💙💙🩷), the navy one is papa.
    Papa grabs his suitcase and flies off, again. The plane's contrail becomes his calendar,
-   the calendar becomes the chaos, the chaos becomes a bakfiets with four heads in the box,
+   the calendar becomes the chaos, the chaos becomes four sleepless nights, then a bakfiets with four heads in the box,
    and Jannie runs anyway: all the way from Amsterdam to Zaandam, into a medal and a heart.
    Every scene defines:
      pose(i, b, p)  shape i at local beat b: p.x, p.y (from G.cx/G.cy), p.w, p.h, p.r,
@@ -287,7 +287,7 @@
       hide(p);
     },
     type: [
-      { at: 0.6, to: 3.2, text: 'Dus: solo.' },
+      { at: 0.6, to: 3.2, text: 'Dus: alles | alleen.' },
       { at: 3.6, to: 6.8, text: 'Vier kinderen. | Twee handen.' },
       { at: BURST5, to: 9.7, text: 'Chaos.', size: 1.5, stagger: 0 },
     ],
@@ -299,6 +299,110 @@
       for (let k = 0; k < 8; k++) M.tick(4 + k * 0.4, 0.06, (k % 2 ? 0.5 : -0.5));
       M.boom(BURST5, 0.45); M.splash(BURST5, 0.2); M.bell(BURST5, 'D6', 0.14);
       M.whoosh(DROP5, 1.2, 0.07, 2400, 200);
+    },
+  };
+
+  // =========================================================== 5½ · en 's nachts?
+  // Four little beds. One by one they wake up, and one mama flies from bed to bed.
+  // Then all four at once. Papa? Different time zone.
+  const NIGHT = () => mix(C.navy, C.ink, 0.45);
+  const WAKE_N = [2.2, 3.2, 4.2, 5.2], ALL_N = 6.3, FLOP_N = 8.1, DAWN_N = [10.9, 11.8];
+  const TIME_N = [[0, '23:58'], [WAKE_N[0], '01:12'], [WAKE_N[1], '02:37'], [WAKE_N[2], '03:51'], [WAKE_N[3], '04:44'], [ALL_N, '05:30'], [9.9, '06:30']];
+  const clockN = (b) => { let s = TIME_N[0][1]; for (const [t, v] of TIME_N) if (b >= t) s = v; return s; };
+  const nightK = (b) => E.inOutSine(clamp(b / 0.9)) * (1 - E.inOutSine(clamp((b - DAWN_N[0]) / (DAWN_N[1] - DAWN_N[0]))));
+  const bedX = (k) => (k - 1.5) * gw() * 0.25, bedY = () => G.R * 0.42;
+  const STAR = [];
+  { const rr = BJ.rng(31); for (let j = 0; j < 22; j++) STAR.push({ x: rr() - 0.5, y: rr(), s: 0.02 + rr() * 0.025, ph: rr() * TAU, w: 1.5 + rr() * 2 }); }
+  const S5n = {
+    name: 'nights',
+    beats: 12,
+    blend: { start: (i) => (i <= 4 ? 0.3 + i * 0.12 : i >= 110 ? (i - 110) * 0.03 : 0), dur: 1.0, arc: 0.12 },
+    bg: (b) => mix(C.bg, NIGHT(), nightK(b)),
+    dark: (b) => nightK(b) > 0.5,
+    pose(i, b, p) {
+      const nk = nightK(b), all = clamp((b - ALL_N) / 0.2) * (1 - clamp((b - FLOP_N) / 0.4));
+      const awake = (k) => Math.max(clamp((b - WAKE_N[k]) / 0.15) * (1 - clamp((b - WAKE_N[k] - 1.1) / 0.5)), all);
+      if (i === 0) {
+        // Jannie: waiting above the beds, then bed to bed, then to all of them, then flat on her back
+        const hx = G.R * 0, hy = -G.R * 0.12;
+        let x = hx, y = hy;
+        for (let k = 0; k < 4; k++) {
+          const u = E.inOutCubic(clamp((b - WAKE_N[k] - 0.05) / 0.35));
+          if (u > 0) { const lift = Math.sin(PI * u) * G.R * 0.25; x = lerp(x, bedX(k), u); y = lerp(y, bedY() - G.R * 0.5, u) - lift; }
+        }
+        if (b > ALL_N) {
+          const z = clamp((b - ALL_N) / 0.3) * (1 - clamp((b - FLOP_N + 0.2) / 0.4));
+          x = lerp(x, Math.sin((b - ALL_N) * PI * 2.6) * gw() * 0.38, z);
+          y = lerp(y, bedY() - G.R * 0.5 - Math.abs(Math.sin((b - ALL_N) * PI * 5.2)) * G.R * 0.12, z);
+        }
+        const fl = E.inOutCubic(clamp((b - FLOP_N) / 0.6));
+        x = lerp(x, 0, fl); y = lerp(y, -G.R * 0.12, fl);
+        circle(p, x, y, G.R * 0.28, C.coral);
+        squash(p, fl * (0.9 + 0.15 * Math.sin(b * 2.2)) + 0.4 * maxHit(b, WAKE_N.map((t) => t + 0.4), 6), 0.3);
+        return;
+      }
+      if (i <= 4) {
+        const k = i - 1, d = G.R * KD[k] * 0.7, a = awake(k);
+        const bob = Math.abs(Math.sin(b * PI * (3 + k * 0.4))) * G.R * 0.05 * a;
+        circle(p, bedX(k), bedY() - d / 2 - G.R * 0.02 - a * G.R * 0.05 - bob, d, KC()[k]);
+        squash(p, (1 - a) * (0.9 + 0.08 * Math.sin(b * 1.6 + k)) - a * 0.4, 0.22);
+        return;
+      }
+      if (i >= 10 && i < 14) {
+        const k = i - 10, g = E.outBack(clamp((b - 0.3 - k * 0.1) / 0.5));
+        if (g <= 0) return hide(p);
+        rect(p, bedX(k), bedY() + G.R * 0.04, gw() * 0.2 * g, G.R * 0.08 * g, G.R * 0.04, mix(C.slate, C.bg, 0.35 * (1 - nk)));
+        return;
+      }
+      if (i >= 20 && i < 44) {
+        // little "wah!" bursts over whoever is awake
+        const j = i - 20, k = j % 4, r = Math.floor(j / 4) % 3, set = j < 12 ? 0 : 1;
+        const t0 = set ? ALL_N + (k * 0.07) : WAKE_N[k], t = b - t0;
+        if (t < 0 || t > 0.9) return hide(p);
+        const d = G.R * KD[k] * 0.7, ang = -PI / 2 + (r - 1) * 0.7, rad = d * 0.55 + t * G.R * 0.28;
+        const cx = bedX(k), cy = bedY() - d - G.R * 0.05;
+        pill(p, cx + Math.cos(ang) * rad, cy + Math.sin(ang) * rad * 0.9, G.R * 0.09, G.R * 0.025, ang - PI / 2, C.gold);
+        p.o = 1 - t / 0.9;
+        return;
+      }
+      if (i === 100 || i === 101) {
+        const s = (1 - E.inCubic(clamp((b - DAWN_N[0]) / 0.9))) * E.outBack(clamp((b - 0.4) / 0.8)), d = G.R * 0.34 * s;
+        if (s <= 0) return hide(p);
+        const mx = gw() * 0.36, my = topY(0.17) + (1 - s) * G.R * 0.4;
+        if (i === 100) return circle(p, mx, my, d, C.blush);
+        return circle(p, mx + d * 0.32, my - d * 0.18, d * 0.86, mix(C.bg, NIGHT(), nk));
+      }
+      if (i >= 110 && i < 132) {
+        const S = STAR[i - 110], g = clamp((b - 0.4 - (i - 110) * 0.03) / 0.4) * nk;
+        if (g <= 0) return hide(p);
+        circle(p, S.x * G.W * 0.9, lerp(topY(0.06), -G.R * 0.75, S.y), G.R * S.s, C.white);
+        p.o = g * (0.45 + 0.4 * Math.sin(b * S.w + S.ph));
+        return;
+      }
+      hide(p);
+    },
+    type: [
+      { at: 0.5, to: 2.1, text: 'En ’s nachts?', color: '#fff' },
+      { at: 1.9, to: 10.9, fn: clockN, y: yF(() => -G.R * 0.62), size: 1.1, cls: 'num', stagger: 0, color: '#fff' },
+      { at: 2.5, to: 6.1, text: 'Vier keer | wakker.', color: '#fff' },
+      { at: ALL_N + 0.05, to: 7.9, text: 'Tegelijk.', size: 1.4, stagger: 0, color: '#fff' },
+      { at: 8.2, to: 10.8, text: 'Papa? | Andere tijdzone.', cls: 'it', color: '#fff' },
+    ],
+    music(M) {
+      M.pad(0, 'D3 A3 F4 C5', 6.3, 0.2); M.sub(0, 'D2', 6.3, 0.16);
+      M.whoosh(0, 1.0, 0.04, 1800, 300);
+      const lull = ['A5', 'F5', 'D5', 'F5', 'A5', 'G5', 'E5', 'C5'];
+      for (let k = 0; k < 8; k++) M.bell(0.4 + k * 0.25, lull[k], 0.05, (k % 2 ? 0.3 : -0.3));
+      WAKE_N.forEach((t, k) => { M.beep(t, ['A5', 'C6', 'D6', 'F6'][k], 0.12, (k / 3 - 0.5) * 0.8); M.beep(t + 0.14, ['A5', 'C6', 'D6', 'F6'][k], 0.1, (k / 3 - 0.5) * 0.8); M.thump(t + 0.4, 0.3); });
+      M.boom(ALL_N, 0.35); M.splash(ALL_N, 0.16);
+      for (let k = 0; k < 4; k++) M.beep(ALL_N + k * 0.05, ['A5', 'C6', 'D6', 'F6'][k], 0.1, (k / 3 - 0.5) * 0.8);
+      const rr = BJ.rng(9);
+      for (let k = 0; k < 18; k++) M.marimba(ALL_N + 0.1 + k * 0.095, penta(Math.floor(rr() * 12), 4), 0.08, rr() * 1.6 - 0.8);
+      M.pad(FLOP_N, 'A2 E3 C4 G4', DAWN_N[0] - FLOP_N, 0.24); M.sub(FLOP_N, 'A1', DAWN_N[0] - FLOP_N, 0.18);
+      M.thump(FLOP_N + 0.3, 0.4);
+      M.ep(8.4, 'E5', 0.14); M.ep(8.9, 'D#5', 0.13); M.ep(9.4, 'D5', 0.14);
+      M.pad(DAWN_N[0], 'G3 D4 B4 E5', 12 - DAWN_N[0], 0.26); M.sub(DAWN_N[0], 'G2', 12 - DAWN_N[0], 0.18);
+      M.bell(DAWN_N[0] + 0.3, 'B5', 0.1); M.bell(DAWN_N[0] + 0.55, 'D6', 0.08);
     },
   };
 
@@ -404,7 +508,7 @@
     },
     type: [
       { at: 0.6, to: 3.9, text: 'En tóch rent ze.' },
-      { at: 4.3, to: 7.7, text: 'Tussen de luiers door.' },
+      { at: 4.3, to: 7.7, text: 'Op drie uur slaap.' },
     ],
     music(M) {
       M.pad(0, 'E3 B3 G4 D5', 8, 0.24); M.sub(0, 'E2', 8, 0.18);
@@ -583,5 +687,5 @@
     },
   };
 
-  BJ.scenes = [S1, S2, S3, S4, S5, S6, S7, S8, S9, S10];
+  BJ.scenes = [S1, S2, S3, S4, S5, S5n, S6, S7, S8, S9, S10];
 })();
