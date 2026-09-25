@@ -1,0 +1,167 @@
+/* Jost for the small print, DM Serif Display for the headlines. Both SIL Open Font License. */
+@font-face { font-family: 'DM Serif Display'; font-style: normal; font-weight: 400; font-display: swap; src: url('../fonts/dmserif.woff2') format('woff2'); }
+@font-face { font-family: 'DM Serif Display'; font-style: italic; font-weight: 400; font-display: swap; src: url('../fonts/dmserif-italic.woff2') format('woff2'); }
+@font-face {
+  font-family: 'Jost';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('../fonts/jost-latin.woff2') format('woff2');
+}
+
+:root {
+  --blue: #4d8df6;
+  --navy: #23305a;
+  --pink: #f58fb3;
+  --rose: #e2477f;
+  --rose-600: #c93570;
+  --coral: #ff5a4f;
+  --ink: #2a1b24;
+  --mute: #7a6570;
+  --bg: #fff7f3;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  overflow: hidden;
+  color: var(--ink);
+  font-family: "Jost", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-text-size-adjust: 100%;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+html { position: fixed; inset: 0; }
+body.intro { cursor: pointer; }
+body.idle { cursor: none; }
+
+html, body { transition: none; }
+
+/* Flat stage with perspective: stacking follows DOM order (the orange shape is last). */
+#stage {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.sh {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+  background: var(--blue);
+  opacity: 0;
+  will-change: transform, opacity;
+  contain: layout style;
+}
+
+/* ------------------------------------------------------------ kinetic type */
+#type { position: fixed; inset: 0; pointer-events: none; }
+.line {
+  position: absolute;
+  left: 50%;
+  top: 80%;
+  width: max-content;
+  max-width: 88vw;
+  text-align: center;
+  font-family: "DM Serif Display", Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.012em;
+  line-height: 1.06;
+  color: var(--ink);
+  opacity: 0;
+  transform: translate3d(-50%, -50%, 0);
+  will-change: opacity, transform;
+  text-wrap: balance;
+  white-space: normal;
+}
+.line .w { display: inline-block; opacity: 0; will-change: opacity, transform, filter; }
+.line.num { font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.line.it { font-style: italic; }
+.line.soft { font-weight: 450; letter-spacing: -0.01em; }
+.line.logo img { display: block; height: 1em; width: auto; }
+.line.link { font-family: "Jost", -apple-system, sans-serif; font-size: clamp(16px, 1.55vw, 23px) !important; font-weight: 500; letter-spacing: 0.01em; pointer-events: auto; line-height: 1.25; }
+.line.link a {
+  display: inline-block;
+  color: #fff;
+  text-decoration: none;
+  padding: 0.8em 1.7em;
+  background: var(--rose);
+  border-radius: 999px;
+  box-shadow: 0 10px 24px rgba(226, 71, 127, .28);
+  transition: background .25s, box-shadow .25s, transform .25s;
+}
+.line.link a:hover, .line.link a:focus { background: var(--rose-600); box-shadow: 0 12px 28px rgba(226, 71, 127, .36); transform: translateY(-1px); }
+.line.link small { display: block; margin-top: 1em; font-size: 0.86em; font-weight: 400; letter-spacing: 0; color: var(--mute); }
+
+/* ------------------------------------------------------------ intro hint */
+#hint {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 80%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45em;
+  text-align: center;
+  transition: opacity .7s ease, transform .7s ease;
+  pointer-events: none;
+}
+.hint-title { font-family: "DM Serif Display", Georgia, serif; font-size: clamp(24px, 3vw, 40px); font-weight: 400; letter-spacing: -0.01em; }
+.hint-sub { font-size: clamp(13px, 1.1vw, 15px); color: var(--mute); letter-spacing: 0.02em; }
+body.debug #hint, body.debug #controls { display: none; }
+body:not(.intro) #hint { opacity: 0; transform: translateY(calc(-50% + 10px)); }
+
+/* ------------------------------------------------------------ controls */
+#controls {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  display: flex;
+  gap: 6px;
+  transition: opacity .6s ease;
+}
+body.intro #controls, body.idle #controls { opacity: 0; pointer-events: none; }
+body.ended #controls { opacity: 1; pointer-events: auto; }
+#controls button {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(226, 71, 127, 0.08);
+  color: var(--rose);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.8;
+  transition: opacity .25s, background .25s, transform .25s;
+}
+#controls button:hover { opacity: 1; background: rgba(226, 71, 127, 0.14); }
+#controls button:active { transform: scale(0.94); }
+#controls svg { width: 18px; height: 18px; fill: currentColor; }
+.i-play, .i-muted { display: none; }
+body.paused .i-play, body.muted .i-muted { display: block; }
+body.paused .i-pause, body.muted .i-sound { display: none; }
+
+#progress { position: fixed; left: 0; right: 0; bottom: 0; height: 3px; pointer-events: none; }
+#bar { height: 100%; background: linear-gradient(90deg, var(--pink), var(--blue), var(--blue), var(--pink)); opacity: 0.85; transform-origin: 0 50%; transform: scaleX(0); }
+body.intro #progress { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  #hint { transition: none; }
+}
+
+/* on the Dam tot Dam orange the controls turn white */
+body.dark #controls button { background: rgba(255, 255, 255, 0.18); color: #fff; }
