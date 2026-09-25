@@ -1,0 +1,170 @@
+/* Jost (variable), self-hosted like on livelong.nl. SIL Open Font License. */
+@font-face {
+  font-family: 'Jost';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('../fonts/jost-latin.woff2') format('woff2');
+}
+
+:root {
+  --blue: #0053a2;
+  --blue-dark: #001c3b;
+  --blue-50: #eaf2fb;
+  --orange: #f18700;
+  --orange-600: #d47700;
+  --ink: #0b1220;
+  --mute: #55627a;
+  --bg: #ffffff;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  overflow: hidden;
+  color: var(--ink);
+  font-family: "Jost", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-text-size-adjust: 100%;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+html { position: fixed; inset: 0; }
+body.intro { cursor: pointer; }
+body.idle { cursor: none; }
+
+/* A pale band behind the dots: the inside of a blood vessel. Positioned and sized per frame. */
+#band {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 100px;
+  background: linear-gradient(180deg, var(--blue-50), #f4f8fd 50%, var(--blue-50));
+  opacity: 0;
+  transform-origin: 0 0;
+  transform: translate3d(0, 100vh, 0);
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+/* No overflow on the stage: it would flatten preserve-3d. */
+#stage {
+  position: fixed;
+  inset: 0;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.dot {
+  position: absolute;
+  left: -64px;
+  top: -64px;
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background: var(--blue);
+  opacity: 0;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* ------------------------------------------------------------ captions */
+.caption {
+  position: fixed;
+  left: 6vw;
+  right: 6vw;
+  top: 76.4%;
+  text-align: center;
+  font-size: clamp(18px, 2.2vw, 32px);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  line-height: 1.25;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate3d(0, -50%, 0);
+  will-change: opacity, transform;
+  text-wrap: balance;
+}
+.caption .w { display: inline-block; opacity: 0; will-change: opacity, transform; }
+.caption.link { font-size: clamp(14px, 1.2vw, 17px); font-weight: 500; letter-spacing: 0.01em; pointer-events: auto; }
+.caption.link a {
+  display: inline-block;
+  color: #fff;
+  text-decoration: none;
+  padding: 0.7em 1.5em;
+  background: var(--orange);
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(241, 135, 0, .28);
+  transition: background .25s, box-shadow .25s, transform .25s;
+}
+.caption.link a:hover, .caption.link a:focus { background: var(--orange-600); box-shadow: 0 12px 28px rgba(241, 135, 0, .36); transform: translateY(-1px); }
+.caption.link small { display: block; margin-top: 0.9em; font-size: 0.86em; font-weight: 400; letter-spacing: 0; color: var(--mute); }
+
+/* ------------------------------------------------------------ intro hint */
+#hint {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 76.4%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45em;
+  text-align: center;
+  transition: opacity .7s ease, transform .7s ease;
+  pointer-events: none;
+}
+.hint-title { font-size: clamp(18px, 2.2vw, 32px); font-weight: 500; letter-spacing: -0.005em; }
+.hint-sub { font-size: clamp(13px, 1.1vw, 15px); color: var(--mute); letter-spacing: 0.02em; }
+body.debug #hint { display: none; }
+body:not(.intro) #hint { opacity: 0; transform: translateY(calc(-50% + 10px)); }
+
+/* ------------------------------------------------------------ controls */
+#controls {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  display: flex;
+  gap: 6px;
+  transition: opacity .6s ease;
+}
+body.intro #controls, body.idle #controls { opacity: 0; pointer-events: none; }
+body.ended #controls { opacity: 1; pointer-events: auto; }
+#controls button {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 83, 162, 0.07);
+  color: var(--blue);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.8;
+  transition: opacity .25s, background .25s, transform .25s;
+}
+#controls button:hover { opacity: 1; background: rgba(0, 83, 162, 0.12); }
+#controls button:active { transform: scale(0.94); }
+#controls svg { width: 18px; height: 18px; fill: currentColor; }
+.i-play, .i-muted { display: none; }
+body.paused .i-play, body.muted .i-muted { display: block; }
+body.paused .i-pause, body.muted .i-sound { display: none; }
+
+#progress { position: fixed; left: 0; right: 0; bottom: 0; height: 3px; pointer-events: none; }
+#bar { height: 100%; background: linear-gradient(90deg, var(--blue), var(--orange)); opacity: 0.85; transform-origin: 0 50%; transform: scaleX(0); }
+body.intro #progress { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  #hint { transition: none; }
+}
