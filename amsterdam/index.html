@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Gemeente Amsterdam — IT / data: digitaal werken aan de stad van morgen</title>
+  <meta name="description" content="Een korte film over IT / data bij de gemeente Amsterdam, gemaakt van 150 vormen, matrix3d-transformaties, bewegende typografie en een gesynthetiseerde soundtrack.">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="preload" href="fonts/figtree-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="intro">
+  <div id="field" aria-hidden="true"></div>
+  <div id="stage" aria-hidden="true"></div>
+  <div id="type" aria-live="polite"></div>
+
+  <div id="hint">
+    <span class="hint-title">Een korte film over IT bij de gemeente Amsterdam</span>
+    <span class="hint-sub">Klik om af te spelen &middot; geluid aan</span>
+  </div>
+
+  <div id="controls">
+    <button id="btn-play" aria-label="Afspelen / pauzeren (spatie)">
+      <svg class="i-pause" viewBox="0 0 24 24"><rect x="7" y="5" width="3.2" height="14"/><rect x="13.8" y="5" width="3.2" height="14"/></svg>
+      <svg class="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+    <button id="btn-mute" aria-label="Geluid uit (m)">
+      <svg class="i-sound" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 19V5L7.5 9.5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+      <svg class="i-muted" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 19V5L7.5 9.5z"/><path d="M16 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+    </button>
+    <button id="btn-replay" aria-label="Opnieuw (r)">
+      <svg viewBox="0 0 24 24"><path d="M5.5 12a6.5 6.5 0 1 0 2-4.7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 4.5v4.3h4.3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+    </button>
+  </div>
+  <div id="progress"><div id="bar"></div></div>
+
+  <script src="js/core.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/scenes.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
