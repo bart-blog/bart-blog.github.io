@@ -3,16 +3,17 @@
      group  gx gy gz · grx gry grz · gs      (the formation: where it is, how it is turned)
      local  x y z · rx ry rz · w h           (the element inside it; w, h in px)
      look   o (opacity) · r g b (colour) · clip (visible fraction from the top) · f (Lottie frame)
+          cut (Lottie actors only: visible fraction from the top, e.g. something pulled under water)
    world = T(centre + g) · Rx · Ry · Rz · S(gs) · T(x, y, z) · Rz · Ry · Rx · S(w/bw, h/bh)
    Blending two poses field by field is what makes every transition continuous. */
 (function () {
   'use strict';
   const BJ = window.BJ, G = BJ.G;
-  const F = (BJ.FIELDS = ['gx', 'gy', 'gz', 'grx', 'gry', 'grz', 'gs', 'x', 'y', 'z', 'rx', 'ry', 'rz', 'w', 'h', 'o', 'r', 'g', 'b', 'clip', 'f']);
+  const F = (BJ.FIELDS = ['gx', 'gy', 'gz', 'grx', 'gry', 'grz', 'gs', 'x', 'y', 'z', 'rx', 'ry', 'rz', 'w', 'h', 'o', 'r', 'g', 'b', 'clip', 'f', 'cut']);
   BJ.GROUP = { gx: 1, gy: 1, gz: 1, grx: 1, gry: 1, grz: 1, gs: 1 };
   BJ.resetPose = function (q) {
     for (let k = 0; k < F.length; k++) q[F[k]] = 0;
-    q.gs = 1; q.o = 1; q.g = 23; q.b = 82; q.clip = 1;
+    q.gs = 1; q.o = 1; q.g = 23; q.b = 82; q.clip = 1; q.cut = 1;
     return q;
   };
 
@@ -50,6 +51,7 @@
     this.lastO = new Array(n).fill(-1);
     this.lastC = new Array(n).fill('');
     this.lastClip = new Array(n).fill(-1);
+    this.lastCut = new Array(n).fill(-1);
     this.vis = new Uint8Array(n);
     this.m = new Float64Array(16);
     this.anim = [];
@@ -114,6 +116,10 @@
           const se = this.subEl[i] || (this.subEl[i] = el.querySelector(s.sub));
           const so = Math.round(Math.max(0, Math.min(1, p.clip[i])) * 100) / 100;
           if (se && so !== this.lastClip[i]) { se.style.opacity = so; this.lastClip[i] = so; }
+        }
+        if (s.cut) {
+          const cl = Math.round((1 - Math.max(0, Math.min(1, p.cut[i]))) * 400) / 4;
+          if (cl !== this.lastCut[i]) { el.style.clipPath = el.style.webkitClipPath = cl > 0 ? 'inset(0 0 ' + cl + '% 0)' : ''; this.lastCut[i] = cl; }
         }
       } else if (s.clip) {
         const cl = Math.round((1 - Math.max(0, Math.min(1, p.clip[i]))) * 400) / 4;

@@ -78,19 +78,32 @@
     return buf;
   }
 
-  // A run owns its own bus so "replay" can instantly silence everything already queued.
+  // A run owns its own buses so "replay" can instantly silence everything already queued.
+  // pump: chords and pads, ducked by every kick (sidechain). echo: a dotted-eighth delay.
+  A.buses = function (ctx) {
+    const dry = ctx.createGain(), send = ctx.createGain(), pump = ctx.createGain(), echo = ctx.createGain();
+    dry.connect(A.master);
+    send.connect(A.reverb);
+    pump.connect(dry);
+    const dl = ctx.createDelay(2), fb = ctx.createGain(), lp = ctx.createBiquadFilter(), ret = ctx.createGain();
+    dl.delayTime.value = BJ.BEAT * 0.75;
+    fb.gain.value = 0.34;
+    lp.type = 'lowpass';
+    lp.frequency.value = 2800;
+    ret.gain.value = 0.6;
+    echo.connect(dl); dl.connect(lp); lp.connect(fb); fb.connect(dl); lp.connect(ret); ret.connect(dry);
+    const rs = ctx.createGain(); rs.gain.value = 0.3; ret.connect(rs); rs.connect(send);
+    return { dry, send, pump, echo, all: [dry, send, pump, echo, ret] };
+  };
   A.newRun = function () {
     const ctx = A.ctx;
     if (A.run) {
       const old = A.run;
       old.dry.gain.setTargetAtTime(0, ctx.currentTime, 0.03);
       old.send.gain.setTargetAtTime(0, ctx.currentTime, 0.03);
-      setTimeout(() => { old.dry.disconnect(); old.send.disconnect(); }, 400);
+      setTimeout(() => old.all.forEach((n) => n.disconnect()), 400);
     }
-    const dry = ctx.createGain(), send = ctx.createGain();
-    dry.connect(A.master);
-    send.connect(A.reverb);
-    A.run = { dry, send, t0: ctx.currentTime + 0.15 };
+    A.run = Object.assign(A.buses(ctx), { t0: ctx.currentTime + 0.15 });
     A.clock.reset(-0.15);
     return A.run;
   };
@@ -149,20 +162,17 @@
   A.songNow = () => (A.ok && A.run ? A.ctx.currentTime - A.run.t0 : 0);
 
   // ------------------------------------------------------------ voices
-  function out(time, pan, sendAmt) {
+  function out(time, pan, sendAmt, echoAmt, pumped) {
     const ctx = A.ctx;
     let node;
     if (ctx.createStereoPanner) {
       node = ctx.createStereoPanner();
       node.pan.value = Math.max(-1, Math.min(1, pan || 0));
     } else node = ctx.createGain();
-    node.connect(A.run.dry);
-    if (sendAmt) {
-      const s = ctx.createGain();
-      s.gain.value = sendAmt;
-      node.connect(s);
-      s.connect(A.run.send);
-    }
+    node.connect(pumped ? A.run.pump : A.run.dry);
+    const tap = (amt, bus) => { const g = ctx.createGain(); g.gain.value = amt; node.connect(g); g.connect(bus); };
+    if (sendAmt) tap(sendAmt, A.run.send);
+    if (echoAmt) tap(echoAmt, A.run.echo);
     return node;
   }
   function osc(type, f, t0, t1, dest) {
@@ -211,7 +221,7 @@
     const o = out(t, pan, 0.28);
     osc('sine', f, t, t + 0.9, env(t, vel * 0.42, 0.003, 0.7, o));
     osc('sine', f * 3.93, t, t + 0.2, env(t, vel * 0.12, 0.002, 0.09, o));
-    osc('sine', f * 9.8, t, t + 0.08, env(t, vel * 0.04, 0.001, 0.03, o));
+    if (f * 9.8 < 18000) osc('sine', f * 9.8, t, t + 0.08, env(t, vel * 0.04, 0.001, 0.03, o));
   };
 
   A.bell = function (t, midi, vel = 0.35, pan = 0) {
@@ -221,12 +231,12 @@
     for (const [r, a, d] of parts) osc('sine', f * r, t, t + d + 0.1, env(t, vel * 0.22 * a, 0.002, d, o));
   };
 
-  A.pad = function (t, midis, dur, vel = 0.4) {
+  A.pad = function (t, midis, dur, vel = 0.4, pumped = false) {
     const ctx = A.ctx;
     const att = Math.min(1.6, dur * 0.4), rel = 2.2;
     midis.forEach((midi, k) => {
       const f = mtof(midi);
-      const o = out(t, (k / Math.max(1, midis.length - 1) - 0.5) * 0.7, 0.7);
+      const o = out(t, (k / Math.max(1, midis.length - 1) - 0.5) * 0.7, 0.7, 0, pumped);
       const lp = ctx.createBiquadFilter();
       lp.type = 'lowpass';
       lp.Q.value = 0.4;
@@ -266,47 +276,6 @@
     tri.gain.value = 0.35;
     tri.connect(lp);
     osc('triangle', f * 2, t, t + dur + 0.4, tri);
-  };
-
-  // Low strings: detuned saws through a bowed filter, a short "dum" with bite.
-  A.cello = function (t, midi, dur, vel = 0.4, pan = 0) {
-    const ctx = A.ctx, f = mtof(midi), o = out(t, pan, 0.18);
-    const lp = ctx.createBiquadFilter();
-    lp.type = 'lowpass';
-    lp.Q.value = 1.2;
-    lp.frequency.setValueAtTime(220, t);
-    lp.frequency.exponentialRampToValueAtTime(1400 + vel * 900, t + 0.05);
-    lp.frequency.exponentialRampToValueAtTime(420, t + dur + 0.2);
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(vel * 0.22, t + 0.03);
-    g.gain.exponentialRampToValueAtTime(vel * 0.12, t + Math.max(0.06, dur));
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.3);
-    lp.connect(g);
-    g.connect(o);
-    for (const det of [-9, 0, 8]) osc('sawtooth', f, t, t + dur + 0.35, lp).detune.value = det;
-    const sg = ctx.createGain();
-    sg.gain.value = 0.6;
-    sg.connect(g);
-    osc('sine', f / 2, t, t + dur + 0.35, sg);
-  };
-
-  // Water parting: a short swell of filtered noise, panned with what moves it.
-  A.swish = function (t, dur, vel = 0.1, pan = 0) {
-    const ctx = A.ctx, o = out(t, pan, 0.5);
-    const bp = ctx.createBiquadFilter();
-    bp.type = 'bandpass';
-    bp.Q.value = 0.9;
-    bp.frequency.setValueAtTime(700, t);
-    bp.frequency.exponentialRampToValueAtTime(1800, t + dur * 0.3);
-    bp.frequency.exponentialRampToValueAtTime(500, t + dur);
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(vel, t + dur * 0.25);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    bp.connect(g);
-    g.connect(o);
-    noiseSrc(t, dur + 0.05).connect(bp);
   };
 
   A.sub = function (t, midi, dur, vel = 0.3) {
@@ -382,46 +351,6 @@
     s.frequency.exponentialRampToValueAtTime(36, t + 1.4);
   };
 
-  // A cinematic impact: a noise burst closing down, a sine thump falling to the floor and
-  // a low, dissonant saw cluster for grit.
-  A.hit = function (t, vel = 0.6) {
-    const ctx = A.ctx, o = out(t, 0, 0.6);
-    const lp = ctx.createBiquadFilter();
-    lp.type = 'lowpass';
-    lp.Q.value = 0.7;
-    lp.frequency.setValueAtTime(6000, t);
-    lp.frequency.exponentialRampToValueAtTime(160, t + 0.8);
-    lp.connect(env(t, vel * 0.8, 0.002, 0.9, o));
-    noiseSrc(t, 1.1).connect(lp);
-    const s = osc('sine', 75, t, t + 1.9, env(t, vel * 0.95, 0.002, 1.7, o));
-    s.frequency.setValueAtTime(80, t);
-    s.frequency.exponentialRampToValueAtTime(28, t + 0.7);
-    const lp2 = ctx.createBiquadFilter();
-    lp2.type = 'lowpass';
-    lp2.frequency.setValueAtTime(1100, t);
-    lp2.frequency.exponentialRampToValueAtTime(110, t + 1.4);
-    lp2.connect(env(t, vel * 0.22, 0.004, 1.5, o));
-    for (const f of [36.7, 38.9, 55.1]) osc('sawtooth', f, t, t + 1.7, lp2);
-  };
-
-  // Dread: a low detuned cluster that swells while its filter slowly opens.
-  A.drone = function (t, dur, vel = 0.3) {
-    const ctx = A.ctx, o = out(t, 0, 0.35);
-    const lp = ctx.createBiquadFilter();
-    lp.type = 'lowpass';
-    lp.Q.value = 5;
-    lp.frequency.setValueAtTime(140, t);
-    lp.frequency.exponentialRampToValueAtTime(520, t + dur);
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.linearRampToValueAtTime(vel * 0.2, t + Math.min(0.6, dur * 0.3));
-    g.gain.setValueAtTime(vel * 0.2, t + dur);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.8);
-    lp.connect(g);
-    g.connect(o);
-    for (const [f, det] of [[36.7, -6], [36.7, 7], [38.9, 0], [55, 4]]) osc('sawtooth', f, t, t + dur + 0.9, lp).detune.value = det;
-  };
-
   // A water drop: a sine that bends upward — the "bloop" of something surfacing.
   A.drop = function (t, midi, vel = 0.3, pan = 0) {
     const f = mtof(midi), o = out(t, pan, 0.45);
@@ -441,9 +370,272 @@
     noiseSrc(t, 0.7).connect(bp);
   };
 
+  // A heartbeat: a soft, low double-bend sine, felt more than heard.
+  A.thump = function (t, vel = 0.5) {
+    const ctx = A.ctx, o = out(t, 0, 0.12);
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 220;
+    lp.connect(env(t, vel * 0.9, 0.006, 0.26, o));
+    const s = osc('sine', 70, t, t + 0.4, lp);
+    s.frequency.setValueAtTime(78, t);
+    s.frequency.exponentialRampToValueAtTime(38, t + 0.18);
+  };
+
+  // A patient-monitor beep: a pure sine with a short, clean envelope.
+  A.beep = function (t, midi, vel = 0.2, pan = 0) {
+    const ctx = A.ctx, o = out(t, pan, 0.35), g = ctx.createGain(), f = mtof(midi);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vel * 0.3, t + 0.008);
+    g.gain.setValueAtTime(vel * 0.3, t + 0.09);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+    g.connect(o);
+    osc('sine', f, t, t + 0.25, g);
+  };
+
+
+  // ------------------------------------------------------------ the groove
+  // Sidechain: every kick pulls the chord bus down and lets it breathe back up.
+  A.duck = function (t, depth = 0.72) {
+    const g = A.run.pump.gain;
+    g.cancelScheduledValues(t);
+    g.setValueAtTime(1, t);
+    g.linearRampToValueAtTime(1 - depth, t + 0.012);
+    g.setTargetAtTime(1, t + 0.03, 0.085);
+  };
+
+  A.kick2 = function (t, vel = 0.7) {
+    const ctx = A.ctx, o = out(t, 0, 0.02);
+    const g = env(t, vel * 0.95, 0.002, 0.42, o);
+    const k = osc('sine', 160, t, t + 0.5, g);
+    k.frequency.setValueAtTime(170, t);
+    k.frequency.exponentialRampToValueAtTime(48, t + 0.09);
+    k.frequency.exponentialRampToValueAtTime(40, t + 0.4);
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 2500;
+    hp.connect(env(t, vel * 0.18, 0.001, 0.014, o));
+    noiseSrc(t, 0.03).connect(hp);
+    A.duck(t);
+  };
+
+  A.clap = function (t, vel = 0.4, pan = 0) {
+    const ctx = A.ctx, o = out(t, pan, 0.35);
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = 1250;
+    bp.Q.value = 1.1;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    [0, 0.011, 0.022].forEach((d) => {
+      g.gain.setValueAtTime(vel * 0.7, t + d);
+      g.gain.exponentialRampToValueAtTime(vel * 0.12, t + d + 0.009);
+    });
+    g.gain.setValueAtTime(vel * 0.6, t + 0.031);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+    bp.connect(g);
+    g.connect(o);
+    noiseSrc(t, 0.25).connect(bp);
+  };
+
+  A.hat = function (t, vel = 0.1, open = false, pan = 0.25) {
+    const ctx = A.ctx, o = out(t, pan, 0.08);
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = open ? 7000 : 8500;
+    hp.connect(env(t, vel, 0.001, open ? 0.24 : 0.035, o));
+    noiseSrc(t, open ? 0.3 : 0.06).connect(hp);
+  };
+
+  A.crash = function (t, vel = 0.3) {
+    const ctx = A.ctx, o = out(t, 0, 0.4);
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 4200;
+    hp.connect(env(t, vel * 0.5, 0.003, 1.8, o));
+    noiseSrc(t, 2).connect(hp);
+  };
+
+  // A pluck: saw + square through a snapping low-pass, fed into the echo.
+  A.pluck = function (t, midi, vel = 0.3, pan = 0, echo = 0.32) {
+    const ctx = A.ctx, f = mtof(midi), o = out(t, pan, 0.18, echo);
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.Q.value = 4;
+    lp.frequency.setValueAtTime(Math.min(12000, f * 9), t);
+    lp.frequency.exponentialRampToValueAtTime(Math.max(300, f * 1.2), t + 0.22);
+    const g = env(t, vel * 0.3, 0.003, 0.36, o);
+    lp.connect(g);
+    osc('sawtooth', f, t, t + 0.45, lp);
+    const sq = ctx.createGain();
+    sq.gain.value = 0.5;
+    sq.connect(lp);
+    osc('square', f * 1.003, t, t + 0.45, sq).detune.value = -8;
+  };
+
+  // Supersaw chord on the pumping bus.
+  A.saws = function (t, midis, dur, vel = 0.3, cutoff = 2400) {
+    const ctx = A.ctx;
+    midis.forEach((midi, k) => {
+      const f = mtof(midi), o = out(t, (k / Math.max(1, midis.length - 1) - 0.5) * 0.8, 0.3, 0, true);
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = cutoff;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(vel * 0.05, t + 0.02);
+      g.gain.setValueAtTime(vel * 0.05, t + dur);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.35);
+      lp.connect(g);
+      g.connect(o);
+      for (const det of [-14, 0, 13]) osc('sawtooth', f, t, t + dur + 0.4, lp).detune.value = det;
+    });
+  };
+
+  // Plucky mono bass for the off-beat eighths.
+  A.pbass = function (t, midi, vel = 0.45) {
+    const ctx = A.ctx, f = mtof(midi), o = out(t, 0, 0.02);
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.Q.value = 3;
+    lp.frequency.setValueAtTime(1400, t);
+    lp.frequency.exponentialRampToValueAtTime(220, t + 0.16);
+    const g = env(t, vel * 0.55, 0.004, 0.2, o);
+    lp.connect(g);
+    osc('sawtooth', f, t, t + 0.3, lp);
+    const s = ctx.createGain(); s.gain.value = 0.8; s.connect(g);
+    osc('sine', f, t, t + 0.3, s);
+  };
+
+  // ------------------------------------------------------------ foley, all synthesized
+  // A small petrol engine: two saws a fifth apart, a combustion flutter, a rev and an idle.
+  A.engine = function (t, dur, vel = 0.3) {
+    const ctx = A.ctx, o = out(t, -0.2, 0.08);
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.Q.value = 2;
+    lp.frequency.setValueAtTime(300, t);
+    lp.frequency.exponentialRampToValueAtTime(1600, t + 0.35);
+    lp.frequency.exponentialRampToValueAtTime(500, t + dur);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vel * 0.5, t + 0.05);
+    g.gain.setValueAtTime(vel * 0.45, t + dur * 0.6);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    const am = ctx.createGain();
+    am.gain.value = 0.6;
+    lp.connect(am);
+    am.connect(g);
+    g.connect(o);
+    const lfo = ctx.createOscillator(), ld = ctx.createGain();
+    lfo.frequency.setValueAtTime(18, t);
+    lfo.frequency.exponentialRampToValueAtTime(46, t + 0.35);
+    lfo.frequency.exponentialRampToValueAtTime(22, t + dur);
+    ld.gain.value = 0.4;
+    lfo.connect(ld); ld.connect(am.gain); lfo.start(t); lfo.stop(t + dur);
+    for (const r of [1, 1.5]) {
+      const s = osc('sawtooth', 45 * r, t, t + dur, lp);
+      s.frequency.setValueAtTime(40 * r, t);
+      s.frequency.exponentialRampToValueAtTime(120 * r, t + 0.35);
+      s.frequency.exponentialRampToValueAtTime(55 * r, t + Math.min(dur, 1.1));
+    }
+  };
+
+  // A friendly two-tone car horn, tuned to the chord.
+  A.horn = function (t, dur, midi, vel = 0.25) {
+    const ctx = A.ctx, o = out(t, 0.25, 0.25);
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 2200;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vel * 0.14, t + 0.012);
+    g.gain.setValueAtTime(vel * 0.14, t + dur);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.05);
+    lp.connect(g);
+    g.connect(o);
+    for (const m of [midi, midi + 4]) osc('square', mtof(m), t, t + dur + 0.1, lp);
+  };
+
+  // Gas boiler: a couple of igniter clicks, then the flame catches with a soft "whump".
+  A.ignite = function (t, vel = 0.4) {
+    const ctx = A.ctx, o = out(t, 0, 0.3);
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.Q.value = 1.5;
+    lp.frequency.setValueAtTime(150, t);
+    lp.frequency.exponentialRampToValueAtTime(1400, t + 0.12);
+    lp.frequency.exponentialRampToValueAtTime(260, t + 0.7);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vel * 0.9, t + 0.06);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.8);
+    lp.connect(g);
+    g.connect(o);
+    noiseSrc(t, 0.9).connect(lp);
+    const s = osc('sine', 70, t, t + 0.4, env(t, vel * 0.5, 0.01, 0.3, o));
+    s.frequency.exponentialRampToValueAtTime(40, t + 0.3);
+  };
+
+  // Paper tearing: a band of noise that sweeps up and crackles.
+  A.rip = function (t, dur = 0.35, vel = 0.4) {
+    const ctx = A.ctx, o = out(t, 0.1, 0.2);
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.Q.value = 2.5;
+    bp.frequency.setValueAtTime(900, t);
+    bp.frequency.exponentialRampToValueAtTime(4200, t + dur);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vel * 0.6, t + 0.02);
+    g.gain.setValueAtTime(vel * 0.5, t + dur * 0.8);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.05);
+    const am = ctx.createGain(), lfo = ctx.createOscillator(), ld = ctx.createGain();
+    am.gain.value = 0.5;
+    lfo.type = 'square';
+    lfo.frequency.value = 55;
+    ld.gain.value = 0.5;
+    lfo.connect(ld); ld.connect(am.gain); lfo.start(t); lfo.stop(t + dur + 0.1);
+    bp.connect(am); am.connect(g); g.connect(o);
+    noiseSrc(t, dur + 0.1).connect(bp);
+  };
+
+  // A rubber stamp landing.
+  A.stamp = function (t, vel = 0.5) {
+    const ctx = A.ctx, o = out(t, 0, 0.15);
+    const s = osc('sine', 200, t, t + 0.2, env(t, vel * 0.7, 0.002, 0.13, o));
+    s.frequency.exponentialRampToValueAtTime(70, t + 0.07);
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 1600;
+    lp.connect(env(t, vel * 0.35, 0.001, 0.05, o));
+    noiseSrc(t, 0.08).connect(lp);
+  };
+
+  // Build-up: a rising detuned saw and a noise sweep.
+  A.riser = function (t, dur, vel = 0.3) {
+    const ctx = A.ctx, o = out(t, 0, 0.5);
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(400, t);
+    lp.frequency.exponentialRampToValueAtTime(7000, t + dur);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vel * 0.09, t + dur * 0.97);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.02);
+    lp.connect(g);
+    g.connect(o);
+    for (const det of [-18, 0, 17]) {
+      const s = osc('sawtooth', mtof(50), t, t + dur + 0.05, lp);
+      s.detune.value = det;
+      s.frequency.exponentialRampToValueAtTime(mtof(86), t + dur);
+    }
+    A.whoosh(t, dur, vel * 0.8, 300, 8000);
+  };
+
   // Physics collisions are sonified live: pitch follows horizontal position
-  // on an F-major pentatonic, loudness follows impact speed.
-  const PENTA = BJ.ms('F4 G4 A4 C5 D5 F5 G5 A5 C6 D6 F6 G6 A6 C7 D7');
+  // on a G-major pentatonic, loudness follows impact speed.
+  const PENTA = BJ.ms('G4 A4 B4 D5 E5 G5 A5 B5 D6 E6 G6 A6 B6 D7 E7');
   const recent = [];
   A.impact = function (xn, strength) {
     if (!A.ok || !A.run || A.clock.paused || A.ctx.state !== 'running') return;

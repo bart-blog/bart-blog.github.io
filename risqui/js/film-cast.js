@@ -56,7 +56,7 @@
   const EL = [];
   for (let i = 0; i < NB; i++) EL.push(bar());
   EL.push(bar()); // HOR
-  EL.push({ cls: 'lot', w: 520, h: 520, lottie: 'float', sub: '.ripple' }); // RING
+  EL.push({ cls: 'lot', w: 520, h: 520, lottie: 'float', sub: '.ripple', cut: true }); // RING
   EL.push({ cls: 'lot', w: 744, h: 252, lottie: 'shark' }); // FIN
   EL.push({ cls: 'img', w: 400, h: 450.4, html: '<img src="img/q.svg" alt="" draggable="false">' });
   EL.push({ cls: 'img', w: 880, h: 358.8, html: '<img src="img/ris-ui.svg" alt="" draggable="false">' });
@@ -65,10 +65,12 @@
   BJ.ELEMENTS = EL;
 
   // ------------------------------------------------------------ static story data
-  // Cold open: the sea is there from the first frame, the float lands within a second,
-  // and the fin is up by ~2.3 s, so the hook lands before a feed scrolls past.
-  K.DROP = 0.1; K.A_LAND = 1.3; K.FIN_UP = 3.8; K.PULSE = [4.6, 5.7, 6.6, 7.3, 7.85, 8.3, 8.65]; K.DIVE = 8.9; K.SEA_BEATS = 9.5;
-  K.EDITS = [[4, 1, 2.9], [7, 2, 3.7], [3, 3, 4.5], [9, 1, 5.3]]; // [row, column, beat]
+  // Cold open: the sea is there from the first frame and the float lands inside a second.
+  // The fin is up at ~0.9 s and charges on a Jaws pulse that keeps speeding up; it slips under,
+  // one held breath, then it takes the float (~3.7 s) and the lights go out.
+  K.DROP = 0; K.A_LAND = 0.75; K.FIN_UP = 1.4; K.PULSE = [2.1, 2.9, 3.5, 4.0, 4.4, 4.7, 4.95, 5.15]; K.DIVE = 5.3;
+  K.ATTACK = 6.0; K.DARK = 6.6; K.SEA_BEATS = 9.2;
+  K.EDITS = [[4, 1, 2.5], [7, 2, 3.2], [3, 3, 3.9], [9, 1, 4.6]]; // [row, column, beat]
 
   // Risk board: INIT/FINAL[I][L], I = impact 0..4, L = likelihood 0..4. 95 plates.
   const INIT = [[0, 1, 2, 2, 1], [1, 2, 4, 4, 4], [1, 3, 6, 7, 5], [2, 3, 6, 9, 8], [1, 2, 5, 8, 8]];
@@ -112,6 +114,7 @@
     G.P = Math.max(900, 1.25 * Math.max(W, H));
     G.hc = (0.93 * H - G.cy) / 2.1;
     const S = G.S, P = G.P;
+    G.slamY = 0.25 * H;
 
     // A · the sea: 20 rows × 6 dashes on a real 3D plane, spaced like a flat pattern
     let rnd = BJ.rng(7);
@@ -134,11 +137,28 @@
     RA.S = Math.min(0.2 * W, 0.13 * H); RA.T = 0.75;
     RA.zRest = RA.S * RA.k * 0.5 * Math.cos(RA.T) * 0.8;
     RA.zTop = G.hc + (G.cy + RA.S * 2) / RA.ys;
-    K.FINW.h = (0.15 * H) / 0.62; K.FINW.w = K.FINW.h * 1.2;
+    K.FINW.h = (0.17 * H) / 0.62; K.FINW.w = K.FINW.h * 1.2;
+    // where the fin slips under: just behind the float, a little to its right
+    K.FIN_END = { ys: 0.64, fx: RA.fx + 0.13 * W };
+    const fk = 1 / K.FIN_END.ys;
     K.RIPPLES = [
       { at: K.A_LAND, X: RA.X, Z: RA.Z, v: 0.45 * W * RA.k, w: 0.06 * W * RA.k, amp: 7 },
-      { at: K.DIVE + 0.1, X: -0.05 * W / 0.62, Z: P * (1 - 1 / 0.62), v: 0.45 * W / 0.62, w: 0.06 * W / 0.62, amp: 8 },
+      { at: K.DIVE + 0.1, X: K.FIN_END.fx * fk, Z: P * (1 - fk), v: 0.4 * W * fk, w: 0.05 * W * fk, amp: 6 },
+      { at: K.ATTACK, X: RA.X, Z: RA.Z, v: 0.75 * W * RA.k, w: 0.09 * W * RA.k, amp: 20 },
     ];
+    // the attack: the sea dashes nearest the float are thrown up as spray and debris
+    rnd = BJ.rng(31);
+    const near = K.SEA.map((d, i) => ({ i, dd: Math.hypot(d.xs * d.k - RA.X, (d.Z - RA.Z) * 0.6) })).sort((a, c) => a.dd - c.dd);
+    K.SPRAY = {};
+    near.slice(0, 44).forEach(({ i }, n) => {
+      const col = n < 12, a = (rnd() - 0.5) * (col ? 0.7 : 2.6);
+      K.SPRAY[i] = {
+        ox: (rnd() - 0.5) * 0.06 * W, oz: (rnd() - 0.5) * 0.04 * P,
+        vx: Math.sin(a) * (0.3 + 0.55 * rnd()) * W, vz: (col ? 1.5 + 0.6 * rnd() : 0.7 + 0.8 * rnd()) * H, vy: (rnd() - 0.5) * 0.3 * P,
+        size: (0.009 + 0.02 * rnd()) * Math.min(W, H), spin: (rnd() - 0.5) * 18, delay: rnd() * 0.07,
+        c: n % 7 === 3 ? K.YEL : n % 3 === 1 ? K.NAVY : K.MID,
+      };
+    });
 
     // B · the spreadsheet, drawn like the real thing: formula bar, column letters, row numbers,
     //   gridlines, a title row, nine risks with heat-coloured scores, and sheet tabs.

@@ -12,6 +12,7 @@
   const capRoot = document.getElementById('captions');
   const hint = document.getElementById('hint');
   const sea = document.getElementById('sea');
+  const dark = document.getElementById('dark');
   const bar = document.getElementById('bar');
   const stage = new BJ.Stage(stageEl, BJ.ELEMENTS);
   const NEL = stage.n;
@@ -21,7 +22,7 @@
   scenes.forEach((sc) => (sc.captions || []).forEach((c) => {
     const el = document.createElement('div');
     el.className = 'caption' + (c.cls ? ' ' + c.cls : '');
-    const cap = { el, start: sc.start + c.at, end: sc.start + c.to, cls: c.cls, words: [], last: -1, s0: sc.start, update: c.update, place: c.place, uc: {} };
+    const cap = { el, start: sc.start + c.at, end: sc.start + c.to, cls: c.cls, snap: !!c.snap, slam: c.cls === 'slam', words: [], last: -1, s0: sc.start, update: c.update, place: c.place, uc: {} };
     if (c.words) {
       c.words.forEach(([txt, at, hl], k) => {
         if (k) el.appendChild(document.createTextNode(' '));
@@ -55,10 +56,18 @@
       const f = fade(bt, c.start, c.end);
       if (c.update && f.a > 0.001) c.update(c.el, bt - c.s0, c.uc);
       if (!c.words.length) { setCap(c.el, f.a, f.y, c); continue; }
-      const out = c.end === Infinity ? 1 : E.inOutSine(clamp((c.end - bt) / 0.4));
+      // snap captions are cut on their end beat (a hard cut on a hit), the rest fade out
+      const out = c.end === Infinity ? 1 : c.snap ? (bt < c.end ? 1 : 0) : E.inOutSine(clamp((c.end - bt) / 0.4));
       const on = bt >= c.start - 0.01 && out > 0 ? out : 0;
       setCap(c.el, on, 0, c);
       for (const w of c.words) {
+        if (c.slam) {
+          // slammed titles land hard: in on the beat, from 2.2× down to size in a fifth of a beat
+          const x = bt - w.start, a = clamp(x / 0.03), k = 1 + 1.2 * (1 - E.outExpo(clamp(x / 0.22)));
+          const key = Math.round(a * 50) * 10000 + Math.round(k * 1000);
+          if (w.last !== key) { w.last = key; w.el.style.opacity = a; w.el.style.transform = 'scale(' + k.toFixed(3) + ')'; }
+          continue;
+        }
         const fw = fade(bt, w.start, Infinity);
         const key = Math.round(fw.a * 200);
         if (w.last !== key) {
@@ -101,28 +110,33 @@
   // ------------------------------------------------------------ backdrop + camera
   // A scene may move the whole camera (a punch-in on a hit, a jolt): stage and sea move together,
   // captions stay put so they remain easy to read.
-  const cam = { s: 1, x: 0, y: 0 };
+  const cam = { s: 1, x: 0, y: 0, r: 0 };
   function cameraAt(sc, b) {
     const c = sc && sc.camera ? sc.camera(b) : null;
-    cam.s = c && c.s !== undefined ? c.s : 1; cam.x = (c && c.x) || 0; cam.y = (c && c.y) || 0;
-    const key = cam.s.toFixed(4) + ':' + cam.x.toFixed(1) + ':' + cam.y.toFixed(1);
+    cam.s = c && c.s !== undefined ? c.s : 1; cam.x = (c && c.x) || 0; cam.y = (c && c.y) || 0; cam.r = (c && c.r) || 0;
+    const key = cam.s.toFixed(4) + ':' + cam.x.toFixed(1) + ':' + cam.y.toFixed(1) + ':' + cam.r.toFixed(4);
     if (key === camKey) return;
     camKey = key;
-    const id = Math.abs(cam.s - 1) < 1e-4 && Math.abs(cam.x) < 0.05 && Math.abs(cam.y) < 0.05;
+    const id = Math.abs(cam.s - 1) < 1e-4 && Math.abs(cam.x) < 0.05 && Math.abs(cam.y) < 0.05 && Math.abs(cam.r) < 1e-4;
     stageEl.style.transformOrigin = G.cx + 'px ' + G.cy + 'px';
-    stageEl.style.transform = id ? '' : 'translate3d(' + cam.x.toFixed(1) + 'px,' + cam.y.toFixed(1) + 'px,0) scale(' + cam.s.toFixed(4) + ')';
+    stageEl.style.transform = id ? '' : 'translate3d(' + cam.x.toFixed(1) + 'px,' + cam.y.toFixed(1) + 'px,0) rotate(' + cam.r.toFixed(4) + 'rad) scale(' + cam.s.toFixed(4) + ')';
     seaKey = '';
   }
   function renderSea(sc, b) {
     const s = sc && sc.backdrop ? sc.backdrop(b) : null;
     const a = s ? clamp(s.sea) : 0, y = s ? G.cy + s.y : G.H;
-    const key = Math.round(a * 300) + ':' + Math.round(y);
+    const d = s && s.dark ? clamp(s.dark) : 0;
+    const key = Math.round(a * 300) + ':' + Math.round(y) + ':' + Math.round(d * 300);
     if (key === seaKey) return;
     seaKey = key;
     sea.style.opacity = a.toFixed(3);
-    // same camera as the stage, about the same origin (the sea's own origin is the viewport's top-left)
-    const top = cam.y + G.cy - cam.s * G.cy + cam.s * y, left = cam.x + G.cx - cam.s * G.cx;
-    sea.style.transform = 'translate3d(' + left.toFixed(1) + 'px,' + top.toFixed(1) + 'px,0)' + (cam.s !== 1 ? ' scale(' + cam.s.toFixed(4) + ')' : '');
+    dark.style.opacity = d.toFixed(3);
+    dark.style.visibility = d > 0.002 ? 'visible' : 'hidden';
+    // same camera as the stage, about the same origin (the sea's own origin is the viewport's top-left):
+    // the sea's top-left (0, y) goes to C + T + s·R·((0, y) − C)
+    const cr = Math.cos(cam.r), sr = Math.sin(cam.r), vx = -G.cx, vy = y - G.cy;
+    const left = G.cx + cam.x + cam.s * (cr * vx - sr * vy), top = G.cy + cam.y + cam.s * (sr * vx + cr * vy);
+    sea.style.transform = 'translate3d(' + left.toFixed(1) + 'px,' + top.toFixed(1) + 'px,0)' + (cam.r ? ' rotate(' + cam.r.toFixed(4) + 'rad)' : '') + (cam.s !== 1 ? ' scale(' + cam.s.toFixed(4) + ')' : '');
   }
 
   // ------------------------------------------------------------ timeline
@@ -193,6 +207,8 @@
         splash: (b, v) => at(b, (T) => A.splash(T, v)),
         snip: (b) => at(b, (T) => A.snip(T)),
         boom: (b, v) => at(b, (T) => A.boom(T, v)),
+        hit: (b, v) => at(b, (T) => A.hit(T, v)),
+        drone: (b, beats, v) => at(b, (T) => A.drone(T, beats * BEAT, v)),
       };
       sc.music(M);
     });
