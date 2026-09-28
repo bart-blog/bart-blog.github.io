@@ -47,7 +47,6 @@ body.idle { cursor: none; }
   opacity: 0;
   transform: translate3d(0, 100vh, 0);
   will-change: transform, opacity;
-  transform-origin: 0 0;
   pointer-events: none;
 }
 
@@ -59,19 +58,19 @@ body.idle { cursor: none; }
   pointer-events: none;
 }
 
-/* The cast: plain boxes, each placed by one matrix3d (see js/stage.js). */
-.el {
+.dot {
   position: absolute;
-  left: 0;
-  top: 0;
-  visibility: hidden;
+  left: -64px;
+  top: -64px;
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background: var(--navy);
+  opacity: 0;
   will-change: transform, opacity;
-  transform-origin: 50% 50%;
-  box-sizing: border-box;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
-.bar { background: var(--navy); }
-.disc { border-radius: 50%; }
-.img img, .lot svg { display: block; width: 100% !important; height: 100% !important; -webkit-user-drag: none; }
 
 /* ------------------------------------------------------------ captions */
 .caption {
@@ -80,10 +79,10 @@ body.idle { cursor: none; }
   right: 6vw;
   top: 76.4%;
   text-align: center;
-  font-size: clamp(24px, min(5.4vw, 6vh), 58px);
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.15;
+  font-size: clamp(17px, 2.1vw, 30px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.28;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -91,24 +90,12 @@ body.idle { cursor: none; }
   will-change: opacity, transform;
   text-wrap: balance;
 }
-.caption .w { display: inline-block; opacity: 0; will-change: opacity, transform; transform-origin: 50% 80%; }
-/* key words get a marker swipe; its width is driven by the film clock (js/main.js) */
-.caption .w.hl {
-  background-image: linear-gradient(var(--yellow), var(--yellow));
-  background-repeat: no-repeat;
-  background-position: 0 84%;
-  background-size: 0% 0.36em;
-  padding: 0 0.07em;
-  margin: 0 -0.07em;
-}
-.caption.link { font-size: clamp(15px, min(2.9vw, 2.4vh), 20px); font-weight: 500; letter-spacing: 0; pointer-events: auto; }
+.caption .w { display: inline-block; opacity: 0; will-change: opacity, transform; }
+.caption.link { font-size: clamp(13px, 1.15vw, 16px); font-weight: 500; letter-spacing: 0; pointer-events: auto; }
 .caption.score { font-size: clamp(12px, 1vw, 14px); font-weight: 500; letter-spacing: 0; text-wrap: nowrap; }
 .caption.score .lab { display: block; text-transform: uppercase; letter-spacing: 0.14em; color: var(--mute); }
 .caption.score .num { display: block; font-size: clamp(34px, 4.4vw, 64px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .caption.score .pill { display: inline-block; margin-top: 0.4em; padding: 0.3em 0.8em; border-radius: 999px; background: var(--yellow); font-weight: 700; font-size: 1.7em; opacity: 0; transform-origin: 0 50%; }
-.caption.flipcap .flip { display: inline-grid; perspective: 600px; text-align: left; }
-.caption.flipcap .flip > span { grid-area: 1 / 1; opacity: 0; transform-origin: 50% 50% -0.5em; backface-visibility: hidden; color: var(--navy); }
-.caption.flipcap .pre { color: var(--mute); }
 @media (max-aspect-ratio: 23/20) {
   .caption.score .lab { display: inline; margin-right: 0.7em; }
   .caption.score .num { display: inline; font-size: clamp(26px, 7vw, 40px); vertical-align: middle; }
@@ -125,7 +112,6 @@ body.idle { cursor: none; }
 }
 .caption.link a:hover, .caption.link a:focus { background: var(--yellow); border-color: var(--yellow); }
 .caption.link small { display: block; margin-top: 0.8em; font-size: 0.86em; font-weight: 400; color: var(--mute); }
-.caption.link small b { font-weight: 700; color: var(--navy); }
 
 /* ------------------------------------------------------------ intro hint */
 #hint {
@@ -186,6 +172,3 @@ body.intro #progress { opacity: 0; }
 @media (prefers-reduced-motion: reduce) {
   #hint { transition: none; }
 }
-.caption.meta { font-size: clamp(12px, min(2.3vw, 1.9vh), 15px); font-weight: 500; letter-spacing: 0.01em; color: var(--navy); text-wrap: nowrap; }
-.caption.meta .fn { opacity: 0.55; }
-.caption.meta .ed { position: absolute; left: 50%; bottom: 100%; margin-bottom: 0.6em; white-space: nowrap; padding: 0.2em 0.7em; font-size: 1.25em; border-radius: 999px; background: var(--yellow); font-weight: 700; opacity: 0; }

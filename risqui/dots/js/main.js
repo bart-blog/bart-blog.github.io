@@ -1,20 +1,19 @@
-/* Conductor: runs the timeline, blends each scene into the next, renders captions, wires up UI. */
+/* Conductor: runs the timeline, blends formations, renders captions, wires up UI. */
 (function () {
   'use strict';
-  const BJ = window.BJ, G = BJ.G, A = BJ.Audio, E = BJ.ease, clamp = BJ.clamp;
-  const BEAT = BJ.BEAT, scenes = BJ.scenes, F = BJ.FIELDS, GROUP = BJ.GROUP;
+  const BJ = window.BJ, G = BJ.G, A = BJ.Audio, E = BJ.ease, clamp = BJ.clamp, lerp = BJ.lerp;
+  const N = BJ.N, BEAT = BJ.BEAT, scenes = BJ.scenes;
 
   let total = 0;
   scenes.forEach((s) => { s.start = total; total += s.beats; });
 
   const body = document.body;
-  const stageEl = document.getElementById('stage');
+  const stage = document.getElementById('stage');
   const capRoot = document.getElementById('captions');
   const hint = document.getElementById('hint');
   const sea = document.getElementById('sea');
   const bar = document.getElementById('bar');
-  const stage = new BJ.Stage(stageEl, BJ.ELEMENTS);
-  const NEL = stage.n;
+  const dots = new BJ.Dots(stage);
 
   // ------------------------------------------------------------ captions
   const caps = [];
@@ -23,13 +22,13 @@
     el.className = 'caption' + (c.cls ? ' ' + c.cls : '');
     const cap = { el, start: sc.start + c.at, end: sc.start + c.to, cls: c.cls, words: [], last: -1, s0: sc.start, update: c.update, place: c.place, uc: {} };
     if (c.words) {
-      c.words.forEach(([txt, at, hl], k) => {
+      c.words.forEach(([txt, at], k) => {
         if (k) el.appendChild(document.createTextNode(' '));
         const w = document.createElement('span');
-        w.className = 'w' + (hl ? ' hl' : '');
+        w.className = 'w';
         w.textContent = txt;
         el.appendChild(w);
-        cap.words.push({ el: w, start: sc.start + at, last: -1, hl: !!hl, hk: -1 });
+        cap.words.push({ el: w, start: sc.start + at, last: -1 });
       });
     } else if (c.html) el.innerHTML = c.html;
     else el.textContent = c.text;
@@ -38,16 +37,16 @@
   }));
 
   function fade(bt, start, end) {
-    const i = E.outQuint(clamp((bt - start) / 0.55));
-    const o = end === Infinity ? 1 : E.inOutSine(clamp((end - bt) / 0.35));
-    return { a: i * o, y: (1 - i) * 0.5 };
+    const i = E.outQuint(clamp((bt - start) / 0.6));
+    const o = end === Infinity ? 1 : E.inOutSine(clamp((end - bt) / 0.4));
+    return { a: i * o, y: (1 - i) * 10 };
   }
   function setCap(el, a, y, cache) {
-    const key = Math.round(a * 200) + Math.round(y * 100) * 1000;
+    const key = Math.round(a * 200) + Math.round(y * 10) * 1000;
     if (cache.last === key) return;
     cache.last = key;
     el.style.opacity = a;
-    el.style.transform = 'translate3d(0,calc(-50% + ' + y.toFixed(2) + 'em),0)';
+    el.style.transform = 'translate3d(0,calc(-50% + ' + y.toFixed(1) + 'px),0)';
     el.style.visibility = a > 0.001 ? 'visible' : 'hidden';
   }
   function renderCaptions(bt) {
@@ -55,64 +54,38 @@
       const f = fade(bt, c.start, c.end);
       if (c.update && f.a > 0.001) c.update(c.el, bt - c.s0, c.uc);
       if (!c.words.length) { setCap(c.el, f.a, f.y, c); continue; }
-      const out = c.end === Infinity ? 1 : E.inOutSine(clamp((c.end - bt) / 0.4));
+      const out = c.end === Infinity ? 1 : E.inOutSine(clamp((c.end - bt) / 0.6));
       const on = bt >= c.start - 0.01 && out > 0 ? out : 0;
       setCap(c.el, on, 0, c);
       for (const w of c.words) {
         const fw = fade(bt, w.start, Infinity);
         const key = Math.round(fw.a * 200);
-        if (w.last !== key) {
-          w.last = key;
-          // words pop up into place: a small rise and a scale that settles with a hint of overshoot
-          const sc = 0.86 + 0.14 * E.outBack(clamp((bt - w.start) / 0.5));
-          w.el.style.opacity = fw.a;
-          w.el.style.transform = 'translate3d(0,' + (fw.y * 1.2).toFixed(3) + 'em,0) scale(' + sc.toFixed(3) + ')';
-        }
-        if (w.hl) {
-          const h = E.inOutCubic(clamp((bt - w.start - 0.25) / 0.45)), hk = Math.round(h * 200);
-          if (w.hk !== hk) { w.hk = hk; w.el.style.backgroundSize = (h * 100).toFixed(1) + '% 0.36em'; }
-        }
+        if (w.last !== key) { w.last = key; w.el.style.opacity = fw.a; w.el.style.transform = 'translate3d(0,' + fw.y.toFixed(1) + 'px,0)'; }
       }
     }
   }
 
   // ------------------------------------------------------------ layout
-  let seaKey = '', camKey = '';
+  let seaKey = '';
   function layout() {
     BJ.layout();
-    BJ.filmLayout();
-    stageEl.style.perspective = G.P + 'px';
-    stageEl.style.perspectiveOrigin = G.cx + 'px ' + G.cy + 'px';
+    stage.style.perspective = Math.max(900, G.R * 4.5) + 'px';
+    stage.style.perspectiveOrigin = G.cx + 'px ' + G.cy + 'px';
     for (const c of caps) {
-      c.el.style.top = G.textY + 'px';
+      c.el.style.top = (c.cls === 'link' ? G.textY + Math.max(70, G.H * 0.085) : G.textY) + 'px';
       if (c.place) Object.assign(c.el.style, c.place());
       c.last = -1;
       c.uc = {};
     }
     hint.style.top = G.textY + 'px';
     seaKey = '';
-    camKey = '';
-    stage.lastT.fill('');
   }
   window.addEventListener('resize', layout);
   layout();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
 
-  // ------------------------------------------------------------ backdrop + camera
-  // A scene may move the whole camera (a punch-in on a hit, a jolt): stage and sea move together,
-  // captions stay put so they remain easy to read.
-  const cam = { s: 1, x: 0, y: 0 };
-  function cameraAt(sc, b) {
-    const c = sc && sc.camera ? sc.camera(b) : null;
-    cam.s = c && c.s !== undefined ? c.s : 1; cam.x = (c && c.x) || 0; cam.y = (c && c.y) || 0;
-    const key = cam.s.toFixed(4) + ':' + cam.x.toFixed(1) + ':' + cam.y.toFixed(1);
-    if (key === camKey) return;
-    camKey = key;
-    const id = Math.abs(cam.s - 1) < 1e-4 && Math.abs(cam.x) < 0.05 && Math.abs(cam.y) < 0.05;
-    stageEl.style.transformOrigin = G.cx + 'px ' + G.cy + 'px';
-    stageEl.style.transform = id ? '' : 'translate3d(' + cam.x.toFixed(1) + 'px,' + cam.y.toFixed(1) + 'px,0) scale(' + cam.s.toFixed(4) + ')';
-    seaKey = '';
-  }
+  // ------------------------------------------------------------ backdrop
+  // The sea: a pale band below the waterline, as on risqui.nl.
   function renderSea(sc, b) {
     const s = sc && sc.backdrop ? sc.backdrop(b) : null;
     const a = s ? clamp(s.sea) : 0, y = s ? G.cy + s.y : G.H;
@@ -120,56 +93,131 @@
     if (key === seaKey) return;
     seaKey = key;
     sea.style.opacity = a.toFixed(3);
-    // same camera as the stage, about the same origin (the sea's own origin is the viewport's top-left)
-    const top = cam.y + G.cy - cam.s * G.cy + cam.s * y, left = cam.x + G.cx - cam.s * G.cx;
-    sea.style.transform = 'translate3d(' + left.toFixed(1) + 'px,' + top.toFixed(1) + 'px,0)' + (cam.s !== 1 ? ' scale(' + cam.s.toFixed(4) + ')' : '');
+    sea.style.transform = 'translate3d(0,' + y.toFixed(1) + 'px,0)';
   }
 
   // ------------------------------------------------------------ timeline
-  // Transitions blend in parameter space: the old scene keeps running while each
-  // element eases, field by field, into the new one. Group fields (how a whole
-  // formation is turned) may use their own ease, so a plane can stand up while
-  // its rows rearrange.
-  const q = {}, s = {}, t = {};
-  const LOT = BJ.ELEMENTS.map((e) => !!e.lottie); // for Lottie actors clip drives a sub-layer, not visibility
-  const vis = (p, i) => p.o > 0.004 && p.w > 0.3 && p.h > 0.3 && (LOT[i] || p.clip > 0.002);
-  function evalPose(sc, i, b, p) { BJ.resetPose(p); sc.pose(i, b, p); return p; }
-  function sceneAt(bt) {
-    for (let k = 0; k < scenes.length; k++) if (bt < scenes[k].start + scenes[k].beats) return k;
-    return scenes.length - 1;
-  }
-  function sceneFrame(bt) {
-    const idx = sceneAt(bt), sc = scenes[idx], b = bt - sc.start;
-    const prev = idx > 0 ? scenes[idx - 1] : null, bl = sc.blend, pb = prev ? b + prev.beats : 0;
-    if (prev && bl && prev.frame) prev.frame(pb);
-    if (sc.frame) sc.frame(b);
-    for (let i = 0; i < NEL; i++) {
-      evalPose(sc, i, b, t);
-      let out = t;
-      if (prev && bl) {
-        const st = bl.start ? bl.start(i) : 0, du = bl.dur ? bl.dur(i) : 1, raw = (b - st) / du;
-        if (raw < 1) {
-          evalPose(prev, i, pb, s);
-          const sv = vis(s, i), tv = vis(t, i);
-          if (sv || tv) {
-            if (!sv) { for (const f of F) s[f] = t[f]; s.o = 0; s.w *= 0.4; s.h *= 0.4; }
-            else if (!tv) { for (const f of F) t[f] = s[f]; t.o = 0; t.w *= 0.4; t.h *= 0.4; }
-            const r = clamp(raw), p = (bl.ease || E.inOutCubic)(r), gp = (bl.gease || bl.ease || E.inOutCubic)(r);
-            for (const f of F) q[f] = s[f] + (t[f] - s[f]) * (GROUP[f] ? gp : p);
-            q.o = s.o + (t.o - s.o) * r;
-            q.r = s.r + (t.r - s.r) * r; q.g = s.g + (t.g - s.g) * r; q.b = s.b + (t.b - s.b) * r;
-            q.w = Math.max(0, q.w); q.h = Math.max(0, q.h); q.clip = clamp(q.clip);
-            if (bl.mid) bl.mid(i, r, q);
-            out = q;
-          }
-        }
-      }
-      stage.set(i, out);
+  const o = { x: 0, y: 0, z: 0, sx: 1, sy: 1, rot: 0, o: 1, c: 0 };
+  const prev = {};
+  for (const k of ['x', 'y', 'z', 'sx', 'sy', 'rot', 'o', 'c']) prev[k] = new Float32Array(N);
+  let cur = -1;
+  // role[i]: which of the scene's "parts" dot i plays. Re-paired at every scene change.
+  let role = new Int16Array(N).map((_, i) => i);
+  let src = null; // the previous scene, kept alive so dots peel off a moving formation
+  const so = { x: 0, y: 0, z: 0, sx: 1, sy: 1, rot: 0, o: 1, c: 0 };
+  // last source state per dot; if the old scene teleports a dot (a loop wrapping), it leaves from here
+  const SK = ['x', 'y', 'z', 'sx', 'sy', 'rot', 'o', 'c'], last = {}, frozen = new Uint8Array(N);
+  for (const k of SK) last[k] = new Float32Array(N);
+
+  function resetO() { o.x = o.y = o.z = o.rot = o.c = 0; o.sx = o.sy = 1; o.o = 1; o.sm = 1; }
+  function evalInto(q, sc, r, b, cam) {
+    q.x = q.y = q.z = q.rot = q.c = 0; q.sx = q.sy = 1; q.o = 1; q.sm = 1;
+    sc.pose(r, b * BEAT, b, q);
+    if (cam) {
+      const cz = cam.zoom || 1, cr = cam.rot || 0, c = Math.cos(cr), s = Math.sin(cr), x = q.x, y = q.y;
+      q.x = (x * c - y * s) * cz; q.y = (x * s + y * c) * cz; q.z *= cz;
+      q.sx *= cz; q.sy *= cz; q.rot += cr;
     }
-    cameraAt(sc, b);
+    return q;
+  }
+  const durOf = (bl, r) => (typeof bl.dur === 'function' ? bl.dur(r) : bl.dur || 0.01);
+  const moves = (bl) => typeof bl.dur === 'function' || (bl.dur || 0) > 0.05;
+  function blendStart(bl, r) {
+    return bl.start ? bl.start(r) : (bl.delay || 0) + (bl.order ? bl.order(r) : r / (N - 1)) * (bl.stagger || 0);
+  }
+  // Pair every dot with the part of the new formation nearest to it (minimum total travel),
+  // measured where that part will be when the dot arrives. Visible dots stay visible.
+  const vis = (q) => q.o > 0.05 && Math.max(q.sx, q.sy) > 0.03;
+  function remap(sc) {
+    const bl = sc.blend || {};
+    if (sc.remap === 'keep') return; // same cast as the previous scene
+    if (sc.remap === false || !moves(bl)) { role = role.map((_, i) => i); return; }
+    const tx = new Float32Array(N), ty = new Float32Array(N), tz = new Float32Array(N), tv = new Uint8Array(N);
+    const q = {};
+    for (let r = 0; r < N; r++) {
+      const ba = blendStart(bl, r) + durOf(bl, r);
+      evalInto(q, sc, r, ba, sc.camera ? sc.camera(ba) : null);
+      tx[r] = q.x; ty[r] = q.y; tz[r] = q.z; tv[r] = vis(q) ? 1 : 0;
+    }
+    const pv = new Uint8Array(N);
+    for (let i = 0; i < N; i++) pv[i] = prev.o[i] > 0.05 && Math.max(prev.sx[i], prev.sy[i]) > 0.03 ? 1 : 0;
+    const pen = (G.R * 4) * (G.R * 4);
+    const cost = new Float64Array(N * N);
+    for (let i = 0; i < N; i++) for (let r = 0; r < N; r++) {
+      const dx = prev.x[i] - tx[r], dy = prev.y[i] - ty[r], dz = (prev.z[i] - tz[r]) * 0.5;
+      cost[i * N + r] = (pv[i] ? dx * dx + dy * dy + dz * dz : 0) + (pv[i] !== tv[r] ? pen : 0) +
+        ((i === 0) !== (r === 0) ? 1e15 : 0); // the hero is always the hero
+    }
+    const a = BJ.assign(N, (i, r) => cost[i * N + r]);
+    role = Int16Array.from(a);
+  }
+  function write(i) {
+    dots.x[i] = o.x; dots.y[i] = o.y; dots.z[i] = o.z;
+    dots.sx[i] = o.sx; dots.sy[i] = o.sy; dots.rot[i] = o.rot; dots.o[i] = o.o; dots.c[i] = o.c; dots.sm[i] = o.sm === undefined ? 1 : o.sm;
+  }
+
+  function sceneFrame(bt, dtSong) {
+    let idx = scenes.length - 1;
+    for (let k = 0; k < scenes.length; k++) if (bt < scenes[k].start + scenes[k].beats) { idx = k; break; }
+    const sc = scenes[idx];
+    if (idx !== cur) {
+      for (const k in prev) prev[k].set(dots[k]);
+      const from = cur >= 0 && cur === idx - 1 ? scenes[cur] : null, fromRole = role;
+      cur = idx;
+      if (sc.enter) sc.enter(prev);
+      remap(sc);
+      src = from && sc.remap !== false && sc.remap !== 'keep' && moves(sc.blend || {}) ? { sc: from, role: fromRole } : null;
+      for (const k of SK) last[k].set(prev[k]);
+      frozen.fill(0);
+    }
+    const b = bt - sc.start, t = b * BEAT;
+    if (sc.update) sc.update(t, b, dtSong);
+    const bl = sc.blend || {}, ease = bl.ease || E.glide, arc = bl.arc || 0;
+    const cam = sc.camera ? sc.camera(b) : null;
+    const sb = src ? bt - src.sc.start : 0, scam = src && src.sc.camera ? src.sc.camera(sb) : null;
+    for (let i = 0; i < N; i++) {
+      const r = role[i];
+      evalInto(o, sc, r, b, cam);
+      const raw = clamp((b - blendStart(bl, r)) / durOf(bl, r));
+      if (raw < 1) {
+        // where the dot would be if the old scene had kept going
+        let px, py, pz, psx, psy, prot, po, pc;
+        if (src) {
+          if (!frozen[i]) {
+            evalInto(so, src.sc, src.role[i], sb, scam);
+            if (Math.hypot(so.x - last.x[i], so.y - last.y[i]) > G.R * 0.35) frozen[i] = 1;
+            else for (const k of SK) last[k][i] = so[k];
+          }
+          px = last.x[i]; py = last.y[i]; pz = last.z[i]; psx = last.sx[i]; psy = last.sy[i]; prot = last.rot[i]; po = last.o[i]; pc = last.c[i];
+        } else {
+          px = prev.x[i]; py = prev.y[i]; pz = prev.z[i]; psx = prev.sx[i]; psy = prev.sy[i]; prot = prev.rot[i]; po = prev.o[i]; pc = prev.c[i];
+        }
+        // a dot that was hidden appears where it is needed instead of flying in from nowhere
+        if (po < 0.02 || Math.max(psx, psy) < 0.02) { px = o.x; py = o.y; pz = o.z; prot = o.rot; pc = o.c; psx = psy = 0; po = 0; }
+        const p = ease(raw);
+        const dx = o.x - px, dy = o.y - py, off = Math.sin(Math.PI * clamp(p)) * arc;
+        o.x = lerp(px, o.x, p) - dy * off;
+        o.y = lerp(py, o.y, p) + dx * off;
+        o.z = lerp(pz, o.z, p);
+        o.sx = Math.max(0, lerp(psx, o.sx, p));
+        o.sy = Math.max(0, lerp(psy, o.sy, p));
+        o.rot = lerp(prot, o.rot, p);
+        o.o = clamp(lerp(po, o.o, clamp(p)));
+        o.c = lerp(pc, o.c, clamp(p));
+      }
+      write(i);
+    }
     renderSea(sc, b);
   }
-  function introFrame() { sceneFrame(0); }
+
+  function introFrame(now) {
+    for (let i = 0; i < N; i++) {
+      resetO();
+      BJ.introPose(i, 0, -10, o);
+      if (i === 0) { const s = 1 + 0.06 * Math.sin(now * 2.2); o.sx *= s; o.sy *= s; }
+      write(i);
+    }
+  }
 
   // ------------------------------------------------------------ score
   function buildEvents() {
@@ -212,6 +260,7 @@
     const go = () => {
       if (A.ok) A.newRun(); else A.clock.reset(-0.15);
       A.load(buildEvents());
+      cur = -1;
       body.classList.remove('ended');
       A.clock.resume();
       setMode('play');
@@ -284,20 +333,23 @@
   window.addEventListener('touchstart', poke, { passive: true });
 
   // ------------------------------------------------------------ loop
-  let lastSong = 0;
+  let lastSong = 0, lastPerf = performance.now();
   function frame() {
+    const perf = performance.now(), dtReal = Math.min(0.1, (perf - lastPerf) / 1000);
+    lastPerf = perf;
     if (mode === 'debug') {
       // driven by BJ.debug.to()
     } else if (mode === 'intro') {
-      introFrame();
-      stage.render();
+      introFrame(perf / 1000);
+      dots.render(dtReal);
     } else {
       const T = A.clock.time();
       A.pump(T);
+      const dt = Math.max(0, Math.min(0.1, T - lastSong));
       lastSong = T;
       const bt = Math.max(0, T / BEAT);
-      sceneFrame(bt);
-      stage.render();
+      sceneFrame(bt, dt);
+      dots.render(dt);
       renderCaptions(bt);
       bar.style.transform = 'scaleX(' + clamp(bt / total).toFixed(4) + ')';
       if (bt >= total && !body.classList.contains('ended')) body.classList.add('ended');
@@ -307,31 +359,22 @@
   setMode('intro');
   requestAnimationFrame(frame);
 
-  // Review hook: jump (silently, deterministically) to a given time in seconds.
+  // Review hook: deterministically simulate (silently) up to a given time.
   let simT = 0;
   BJ.debug = {
     total: total * BEAT,
-    stage,
+    dots,
     buildEvents,
-    scenes: scenes.map((sc) => ({ name: sc.name, start: sc.start, beats: sc.beats })),
-    to(sec) {
-      if (mode !== 'debug') { setMode('debug'); body.classList.add('debug'); }
-      simT = sec;
-      sceneFrame(sec / BEAT);
-      stage.render();
-      renderCaptions(sec / BEAT);
-      return simT;
-    },
-    // projected screen centre and visibility of every element
-    centers() {
-      const out = [], p = stage.p, m = stage.m;
-      for (let i = 0; i < NEL; i++) {
-        const el = stage.els[i];
-        if (!stage.vis[i]) { out.push(null); continue; }
-        const r = el.getBoundingClientRect();
-        out.push([r.left + r.width / 2, r.top + r.height / 2, p.o[i], r.width, r.height]);
+    to(sec, step = 1 / 60) {
+      if (mode !== 'debug') { setMode('debug'); body.classList.add('debug'); cur = -1; simT = 0; }
+      while (sec - simT > 1e-6) {
+        const dt = Math.min(step, sec - simT);
+        simT += dt;
+        sceneFrame(simT / BEAT, dt);
+        dots.render(dt);
       }
-      return out;
+      renderCaptions(simT / BEAT);
+      return simT;
     },
   };
 })();
