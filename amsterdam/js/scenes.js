@@ -3,7 +3,7 @@
    services and, when the tiles flip round, turns out to be the caret in the code behind them. Then the
    screen goes Amsterdam red. The same shapes become the roles on the team, a data map of the city,
    18.000 colleagues, the three values, and finally the three crosses of the city's mark.
-   A ~38-second cut at 105 BPM, in Dutch.
+   A ~56-second cut at 88 BPM, in Dutch.
    Every scene defines:
      pose(i, b, p)  shape i at local beat b: p.x, p.y (from G.cx/G.cy), p.w, p.h, p.r,
                     p.tip, p.rot, p.rx, p.ry, p.z, p.o, p.c (and p.sym for pills)
@@ -90,7 +90,7 @@
   const LAND1 = 1.5;
   const S1 = {
     name: 'stad',
-    beats: 6,
+    beats: 7,
     introBeat: 0,
     blend: { dur: 0.01 },
     pose(i, b, p) {
@@ -141,10 +141,10 @@
     },
     type: [
       { at: 0.3, to: 2.9, text: 'Amsterdam.', size: 1.3 },
-      { at: 3.1, to: 5.8, text: 'Een stad die | nooit stilstaat.', stagger: 0.1 },
+      { at: 3.1, to: 6.8, text: 'Een stad die | nooit stilstaat.', stagger: 0.1 },
     ],
     music(M) {
-      chords(M, [[0, 'C', 3], [3, 'F', 3]], 0.24);
+      chords(M, [[0, 'C', 3], [3, 'F', 4]], 0.24);
       carillon(M, 0.15, ['G5', 'E5', 'C6', 'G5', 'A5', 'E5']);
       for (let k = 0; k < NH; k++) M.marimba(0.2 + Math.abs(k - 4) * 0.1, penta(9 - Math.abs(k - 4), 3), 0.07, (k / 8 - 0.5) * 1.2);
       M.bell(LAND1, 'E6', 0.16); M.marimba(LAND1, 'C6', 0.14); M.click(LAND1, 0.25);
@@ -152,9 +152,9 @@
       for (let k = 0; k < NH; k++) for (let m = 0; m < 6; m++) { const t = lightT1(k, m); if (t < 6 && !(k === HERO_WIN[0] && m === HERO_WIN[1])) lights.push([t, sky().H[k].cx]); }
       lights.sort((a, b) => a[0] - b[0]).forEach(([t, x], n) => { if (n % 3 === 0) M.beep(t, penta(10 + (n / 3) % 7, 4), 0.03, clamp(x / (G.R * 1.6 || 1), -1, 1) * 0.7); });
       carillon(M, 3.1, ['C6', 'A5', 'G5', 'E5', 'D5', 'E5', 'G5', null, 'A5', 'G5'], 0.25, 0.1);
-      M.kick(3, 0.2); M.kick(4, 0.26); M.kick(5, 0.3);
-      for (let b = 4.5; b < 6; b += 0.5) M.tick(b, 0.03, 0.3);
-      M.whoosh(5, 1, 0.05, 400, 3000);
+      M.kick(3, 0.2); M.kick(4, 0.24); M.kick(5, 0.27); M.kick(6, 0.3);
+      for (let b = 4.5; b < 7; b += 0.5) M.tick(b, 0.03, 0.3);
+      M.whoosh(6, 1, 0.05, 400, 3000);
     },
   };
 
@@ -176,7 +176,7 @@
     else if (part === 2) bar(p, x0, P.y + T * 0.14, T * TL2[t], T * 0.085, C.ink);
     else bar(p, x0, P.y + T * 0.29, T * TL2[t] * 0.6, T * 0.055, C.grey3);
   }
-  const TAP2 = [0.3, 1.3, 2.3], TGT2 = [5, 2, 9], B2 = 6;
+  const TAP2 = [0.3, 1.8, 3.3], TGT2 = [5, 2, 9], B2 = 8;
   const S2 = {
     name: 'diensten',
     beats: B2,
@@ -198,17 +198,17 @@
       if (k >= 0) { const P = L.P[t], pk = hit(b, TAP2[k], 5); scaleAbout(p, P.x, P.y, 1 + 0.07 * pk); if (part === 0) p.c = mix(C.grey1, C.grey2, pk); }
     },
     type: [
-      { at: 0.3, to: 1.25, text: 'Paspoort.', size: 1.2, stagger: 0 },
-      { at: 1.3, to: 2.25, text: 'Parkeren.', size: 1.2, stagger: 0 },
-      { at: 2.3, to: 3.25, text: 'Melding.', size: 1.2, stagger: 0 },
-      { at: 3.45, to: 5.8, text: 'De stad draait op IT.' },
+      { at: 0.3, to: 1.75, text: 'Paspoort.', size: 1.2, stagger: 0 },
+      { at: 1.8, to: 3.25, text: 'Parkeren.', size: 1.2, stagger: 0 },
+      { at: 3.3, to: 4.6, text: 'Melding.', size: 1.2, stagger: 0 },
+      { at: 4.8, to: 7.8, text: 'De stad draait op IT.' },
     ],
     music(M) {
-      chords(M, [[0, 'Am', 3], [3, 'G', 3]], 0.26);
+      chords(M, [[0, 'Am', 4], [4, 'G', 4]], 0.26);
       M.whoosh(0, 0.7, 0.05, 2400, 500);
       TAP2.forEach((t, k) => { M.click(t, 0.3); M.marimba(t, penta(12 + k * 2, 3), 0.15, (k - 1) * 0.4); M.beep(t + 0.05, penta(17 + k * 2, 3), 0.04); });
-      M.ep(3.45, 'E5', 0.12); M.ep(3.45, 'B5', 0.08, 0.3); M.ep(4.5, 'D5', 0.1);
-      groove(M, 0, B2, [[0, 'A1'], [3, 'G1']], 0.75);
+      M.ep(4.8, 'E5', 0.12); M.ep(4.8, 'B5', 0.08, 0.3); M.ep(6, 'D5', 0.1);
+      groove(M, 0, B2, [[0, 'A1'], [4, 'G1']], 0.75);
     },
   };
 
@@ -234,7 +234,7 @@
     const aa = a < PI / 2 ? a : a - PI, dx = p.x - P.x;
     p.x = P.x + dx * Math.cos(aa); p.z = -dx * Math.sin(aa) + Math.sin(a) * T * 0.3; p.ry = aa;
   }
-  const B3 = 5, HERO3 = TGT2[2];
+  const B3 = 6, HERO3 = TGT2[2];
   const S3 = {
     name: 'achter',
     beats: B3,
@@ -258,21 +258,21 @@
       else tileBack(p, t, part, b - ft - 0.5);
       flip(p, P, L.T, a);
     },
-    type: [{ at: 0.6, to: 4.8, text: 'Achter elke klik | zit een team.', stagger: 0.1 }],
+    type: [{ at: 0.6, to: 5.8, text: 'Achter elke klik | zit een team.', stagger: 0.1 }],
     music(M) {
-      chords(M, [[0, 'F', 2.5], [2.5, 'G', 2.5]], 0.26);
+      chords(M, [[0, 'F', 3], [3, 'G', 3]], 0.26);
       const L = tiles();
       for (let d = 0; d <= L.cols + L.rows - 2; d++) { const t = 0.1 + d * 0.09; M.whoosh(t, 0.5, 0.02, 800, 3000); M.marimba(t + 0.25, penta(14 - d, 3), 0.08, (d / 5 - 0.5)); }
-      for (let b = 0.9; b < 4.6; b += 0.125) if (rnd[Math.round(b * 8) + 300] > 0.35) M.tick(b, 0.02 + rnd[Math.round(b * 8) + 350] * 0.025, (rnd[Math.round(b * 8) + 400] - 0.5) * 1.4);
-      M.ep(0.6, 'A5', 0.1); M.ep(2.5, 'B5', 0.1); M.ep(2.5, 'D6', 0.07, 0.3);
-      groove(M, 0, B3, [[0, 'F1'], [2.5, 'G1']], 0.8);
+      for (let b = 0.9; b < 5.6; b += 0.125) if (rnd[Math.round(b * 8) + 300] > 0.35) M.tick(b, 0.02 + rnd[Math.round(b * 8) + 350] * 0.025, (rnd[Math.round(b * 8) + 400] - 0.5) * 1.4);
+      M.ep(0.6, 'A5', 0.1); M.ep(3, 'B5', 0.1); M.ep(3, 'D6', 0.07, 0.3);
+      groove(M, 0, B3, [[0, 'F1'], [3, 'G1']], 0.8);
     },
   };
 
   // =========================================================== 4 · dat team zijn wij
   // The code tiles pull into the caret. The caret squares up, then fills the screen: Amsterdam red.
   // On the drop a white grid rolls towards us, pulsing with the kick.
-  const COVER4 = [1.35, 1.95], DROP4 = 2, B4 = 10;
+  const COVER4 = [1.35, 1.95], DROP4 = 2, B4 = 13;
   const coverD = () => 2.4 * Math.max(G.W, G.H);
   const TILT4 = 1.0;
   const plane4 = perLayout(() => {
@@ -317,9 +317,9 @@
       p.o = Math.pow(Math.sin((PI * u) / L.rows), 0.7) * (0.5 + 0.5 * ((c + r) % 3 === 0 ? 1 : 0.4 + 0.6 * pk));
     },
     type: [
-      { at: 2.05, to: 4.4, text: 'Dat team | zijn wij.', size: 1.3, color: '#fff', stagger: 0.12 },
-      { at: 4.6, to: 7.2, text: 'Digitaal werken aan | de stad van morgen.', color: '#fff', stagger: 0.1 },
-      { at: 7.4, to: 9.8, text: 'Voor ruim 900.000 | Amsterdammers.', color: '#fff', stagger: 0.1 },
+      { at: 2.05, to: 4.8, text: 'Dat team | zijn wij.', size: 1.3, color: '#fff', stagger: 0.12 },
+      { at: 5.0, to: 8.8, text: 'Digitaal werken aan | de stad van morgen.', color: '#fff', stagger: 0.1 },
+      { at: 9.0, to: 12.8, text: 'Voor ruim 900.000 | Amsterdammers.', color: '#fff', stagger: 0.1 },
     ],
     music(M) {
       chords(M, [[0, 'Am', 1], [1, 'G', 1]], 0.24);
@@ -329,9 +329,9 @@
       M.whoosh(COVER4[0] - 0.4, 1.0, 0.08, 300, 3400);
       M.boom(DROP4, 0.42); M.splash(DROP4, 0.12); M.kick(DROP4, 0.5);
       carillon(M, DROP4, ['C6', 'G5', 'E5', 'G5', 'C6', 'E6', 'D6', 'C6'], 0.25, 0.13);
-      chords(M, [[2, 'C', 2], [4, 'G', 2], [6, 'Am', 2], [8, 'F', 2]], 0.3);
-      groove(M, DROP4, B4, [[2, 'C2'], [4, 'G1'], [6, 'A1'], [8, 'F1']]);
-      const HOOK = { 4: ['D5', 'G5', 'B5', 'A5', 'G5'], 6: ['C5', 'E5', 'A5', 'G5', 'E5'], 8: ['C5', 'F5', 'A5', 'G5', 'F5'] };
+      chords(M, [[2, 'C', 3], [5, 'G', 4], [9, 'Am', 2], [11, 'F', 2]], 0.3);
+      groove(M, DROP4, B4, [[2, 'C2'], [5, 'G1'], [9, 'A1'], [11, 'F1']]);
+      const HOOK = { 5: ['D5', 'G5', 'B5', 'A5', 'G5'], 7: ['D5', 'G5', 'B5', 'D6', 'B5'], 9: ['C5', 'E5', 'A5', 'G5', 'E5'], 11: ['C5', 'F5', 'A5', 'G5', 'F5'] };
       for (const s in HOOK) HOOK[s].forEach((n, k) => M.marimba(+s + [0, 0.5, 0.75, 1.25, 1.5][k], n, 0.11, (k % 2 ? 0.3 : -0.3)));
     },
   };
@@ -340,7 +340,7 @@
   // The team, role by role. One set of shapes redraws itself: a neural net, a padlock, a chart,
   // a phone, a row of sliders. The red one is always the part that matters.
   const U5 = () => Math.min(G.R * 1.45, G.W * 0.62), FY5 = () => -G.R * 0.06;
-  const T5 = [0.3, 1.5, 2.7, 3.9, 5.1], MOR5 = 0.42, B5 = 8;
+  const T5 = [0.3, 2.0, 3.7, 5.4, 7.1], MOR5 = 0.42, B5 = 12.5;
   const blank = (q) => { q.x = q.y = q.z = q.w = q.h = q.r = q.tip = q.rot = q.rx = q.ry = q.sym = 0; q.o = 1; q.c = C.ink; return q; };
   const TK = ['x', 'y', 'z', 'w', 'h', 'r', 'tip', 'rot', 'rx', 'ry', 'o'];
   const qa = {}, qz = {};
@@ -407,7 +407,7 @@
       return hide(q);
     }
     // sliders: tuning until it fits
-    const val = (j) => 0.5 + 0.28 * Math.sin(b * (0.9 + j * 0.25) + j * 2.1) * (1 - 0.6 * clamp((b - 6.8) / 0.8)), y = (j) => fy + (j - 1) * 0.26 * U, L = U * 0.84;
+    const val = (j) => 0.5 + 0.28 * Math.sin(b * (0.9 + j * 0.25) + j * 2.1) * (1 - 0.6 * clamp((b - 9.4) / 0.8)), y = (j) => fy + (j - 1) * 0.26 * U, L = U * 0.84;
     if (i === 0) return rect(q, -L / 2 + val(1) * L, y(1), U * 0.1, U * 0.1, 0, C.red);
     if (i >= 1 && i <= 3) return rect(q, 0, y(i - 1), L, U * 0.02, 0, C.grey3);
     if (i >= 4 && i <= 6) { const j = i - 4; return bar(q, -L / 2, y(j), val(j) * L, U * 0.02, j === 1 ? C.red : C.ink); }
@@ -429,29 +429,29 @@
       tween(p, qa, qz, E.glide(clamp((b - T5[k] + MOR5) / MOR5)));
     },
     type: [
-      ...ROLES.map((t, k) => ({ at: T5[k] - 0.1, to: k < 4 ? T5[k + 1] - 0.3 : 6.05, text: t, stagger: 0.06 })),
-      { at: 6.25, to: 7.9, text: 'Welke rol | past bij jou?', stagger: 0.1 },
+      ...ROLES.map((t, k) => ({ at: T5[k] - 0.1, to: k < 4 ? T5[k + 1] - 0.3 : 8.8, text: t, stagger: 0.06 })),
+      { at: 9.0, to: 12.3, text: 'Welke rol | past bij jou?', stagger: 0.1 },
     ],
     music(M) {
-      chords(M, [[0, 'C', 2.4], [2.4, 'Am', 2.4], [4.8, 'F', 1.45], [6.25, 'G', 1.75]], 0.28);
-      groove(M, 0, 6, [[0, 'C2'], [2.4, 'A1'], [4.8, 'F1']], 0.85);
-      groove(M, 6, B5, [[6, 'G1']], 0.7, true);
+      chords(M, [[0, 'C', 3.4], [3.4, 'Am', 3.4], [6.8, 'F', 2.2], [9, 'G', 3.5]], 0.28);
+      groove(M, 0, 9, [[0, 'C2'], [3.4, 'A1'], [6.8, 'F1']], 0.85);
+      groove(M, 9, B5, [[9, 'G1']], 0.7, true);
       T5.forEach((t, k) => { M.bell(t, penta(12 + k, 3), 0.1, (k - 2) * 0.3); M.whoosh(t - MOR5, MOR5 + 0.1, 0.035, 600, 2600); });
       [0.1, 0.35, 0.6].forEach((t, l) => M.beep(T5[0] + t, penta(13 + l * 2, 3), 0.045, (l - 1) * 0.5));
       [0.7, 0.95, 1.2].forEach((t, l) => M.beep(T5[0] + t, penta(15 + l * 2, 3), 0.035, (l - 1) * 0.5));
       M.click(T5[1] + 0.45, 0.4); M.thump(T5[1] + 0.45, 0.2);
       for (let j = 0; j < 7; j++) M.marimba(T5[2] + j * 0.06, penta(8 + j, 3), 0.07, (j / 6 - 0.5));
       M.click(T5[3] + 0.55, 0.35); M.beep(T5[3] + 0.58, 'G6', 0.04);
-      for (let t = T5[4] + 0.1; t < 7.6; t += 0.25) M.tick(t, 0.02, Math.sin(t * 3) * 0.6);
-      M.ep(6.25, 'B4', 0.1); M.ep(6.25, 'D5', 0.08, 0.3); M.ep(7, 'G5', 0.09, -0.3);
-      M.whoosh(7.2, 0.8, 0.05, 400, 3000);
+      for (let t = T5[4] + 0.1; t < 8.8; t += 0.25) M.tick(t, 0.02, Math.sin(t * 3) * 0.6);
+      M.ep(9, 'B4', 0.1); M.ep(9, 'D5', 0.08, 0.3); M.ep(10, 'G5', 0.09, -0.3);
+      M.whoosh(11.7, 0.8, 0.05, 400, 3000);
     },
   };
 
   // =========================================================== 6 · data voor de stad
   // The shapes lie down into a map of the city. Three ripples run across it from three
   // points, and the districts light up: cleaner air, less traffic, more homes.
-  const TILT6 = 0.95, RT6 = [0.3, 1.8, 3.3], B6 = 7;
+  const TILT6 = 0.95, RT6 = [0.3, 2.5, 4.7], B6 = 10.5;
   const COL6 = [C.green, C.orange, C.blue];
   const map6 = perLayout(() => {
     const cols = G.portrait ? 8 : 12, rows = G.portrait ? 10 : 7;
@@ -496,25 +496,25 @@
     type: [
       { at: RT6[0], to: RT6[1] - 0.2, text: 'Voor schonere lucht.' },
       { at: RT6[1], to: RT6[2] - 0.2, text: 'Voor minder drukte.' },
-      { at: RT6[2], to: 4.7, text: 'Voor meer woningen.' },
-      { at: 4.9, to: 6.85, text: 'Zo helpt data | de stad vooruit.', stagger: 0.1 },
+      { at: RT6[2], to: 6.6, text: 'Voor meer woningen.' },
+      { at: 6.8, to: 10.35, text: 'Zo helpt data | de stad vooruit.', stagger: 0.1 },
     ],
     music(M) {
-      chords(M, [[0, 'Am', 1.5], [1.5, 'F', 1.5], [3, 'C', 1.8], [4.8, 'G', 2.2]], 0.28);
-      groove(M, 0, B6, [[0, 'A1'], [1.5, 'F1'], [3, 'C2'], [4.8, 'G1']], 0.85);
+      chords(M, [[0, 'Am', 2.2], [2.2, 'F', 2.5], [4.7, 'C', 2.1], [6.8, 'G', 3.7]], 0.28);
+      groove(M, 0, B6, [[0, 'A1'], [2.2, 'F1'], [4.7, 'C2'], [6.8, 'G1']], 0.85);
       RT6.forEach((t, k) => {
         M.drop(t, ['E5', 'G5', 'C6'][k], 0.2, (k - 1) * 0.5);
         for (let d = 0; d < 6; d++) M.marimba(t + 0.1 + d * 0.15, penta(14 + k * 2 - d, 3), 0.07 - d * 0.008, (k - 1) * 0.5 + (d % 2 ? 0.2 : -0.2));
         if (k) M.whoosh(t - 0.45, 0.45, 0.03, 900, 2400);
       });
-      M.ep(4.9, 'B4', 0.1); M.ep(4.9, 'D5', 0.08, 0.3); M.ep(5.9, 'G5', 0.09, -0.3);
+      M.ep(6.8, 'B4', 0.1); M.ep(6.8, 'D5', 0.08, 0.3); M.ep(7.8, 'G5', 0.09, -0.3);
     },
   };
 
   // =========================================================== 7 · 18.000 collega's
   // The map gathers into a crowd of dots around a counter. When the count reaches 18.000
   // one more dot pops in, in red: the next colleague.
-  const N7 = 110, B7 = 7, NEW7 = 4.3;
+  const N7 = 110, B7 = 8.5, NEW7 = 5.0;
   const crowd7 = perLayout(() => {
     const r0 = Math.max(G.R * 0.42, G.F * 1.9), ro = Math.max(r0 * 1.5, Math.min(G.R * 1.0, G.W * 0.46)), n = N7 + 1;
     const d = Math.sqrt((PI * (ro * ro - r0 * r0)) / n) * 0.72, P = [];
@@ -522,7 +522,7 @@
     return { d, P };
   });
   const DOT7 = [C.ink, C.blue, C.grey4, C.azure, C.ink, C.green, C.dark, C.purple, C.orange, C.ink, C.magenta];
-  const count7 = (b) => E.outCubic(clamp((b - 0.25) / 3.3));
+  const count7 = (b) => E.outCubic(clamp((b - 0.25) / 4.0));
   const S7 = {
     name: 'collegas',
     beats: B7,
@@ -532,7 +532,7 @@
       if (i === 0) {
         const g = E.outBack(clamp((b - NEW7) / 0.35));
         if (g <= 0) return hide(p);
-        const P = L.P[N7], pk = maxHit(b, [5, 6], 5);
+        const P = L.P[N7], pk = maxHit(b, [NEW7 + 1, NEW7 + 2], 5);
         return circle(p, P.rr * Math.cos(P.a + spin), P.rr * Math.sin(P.a + spin), L.d * 1.35 * g * (1 + 0.2 * pk), C.red);
       }
       if (i > N7) return hide(p);
@@ -542,26 +542,26 @@
       circle(p, P.rr * Math.cos(P.a + spin), P.rr * Math.sin(P.a + spin), L.d * E.outBack(s) * (1 + 0.3 * pk), DOT7[Math.floor(rnd[k + 200] * DOT7.length)]);
     },
     type: [
-      { at: 0.2, to: 4.2, fn: (b) => fmt(Math.round(18000 * count7(b))), cls: 'num', y: () => G.cy / G.H, size: 0.95 },
-      { at: NEW7, to: 6.85, text: '18.001', cls: 'num', color: '#ec0000', y: () => G.cy / G.H, size: 0.95, stagger: 0 },
-      { at: 0.5, to: 4.1, text: 'Eén digitale werkplek | voor ruim 18.000 collega\'s.', size: 0.82, stagger: 0.08 },
-      { at: 4.5, to: 6.85, text: 'Word jij | nummer 18.001?', stagger: 0.1 },
+      { at: 0.2, to: NEW7 - 0.1, fn: (b) => fmt(Math.round(18000 * count7(b))), cls: 'num', y: () => G.cy / G.H, size: 0.95 },
+      { at: NEW7, to: 8.35, text: '18.001', cls: 'num', color: '#ec0000', y: () => G.cy / G.H, size: 0.95, stagger: 0 },
+      { at: 0.5, to: 4.85, text: 'Eén digitale werkplek | voor ruim 18.000 collega\'s.', size: 0.82, stagger: 0.08 },
+      { at: 5.1, to: 8.35, text: 'Word jij | nummer 18.001?', stagger: 0.1 },
     ],
     music(M) {
-      chords(M, [[0, 'F', 2], [2, 'G', 2.3], [NEW7, 'C', B7 - NEW7]], 0.28);
-      groove(M, 0, 4, [[0, 'F1'], [2, 'G1']], 0.8);
-      groove(M, 4, B7, [[4, 'C2']], 0.75, true);
-      for (let t = 0.3; t < 3.4; t += 0.125) { const c = count7(t); M.tick(t, 0.012 + c * 0.02, Math.sin(t * 5) * 0.5); }
-      for (let t = 0.5; t < 3.6; t += 0.5) M.beep(t, penta(10 + Math.round(count7(t) * 7), 4), 0.03, 0);
+      chords(M, [[0, 'F', 2.5], [2.5, 'G', 2.5], [NEW7, 'C', B7 - NEW7]], 0.28);
+      groove(M, 0, NEW7, [[0, 'F1'], [2.5, 'G1']], 0.8);
+      groove(M, NEW7, B7, [[NEW7, 'C2']], 0.75, true);
+      for (let t = 0.3; t < 4.2; t += 0.125) { const c = count7(t); M.tick(t, 0.012 + c * 0.02, Math.sin(t * 5) * 0.5); }
+      for (let t = 0.5; t < 4.4; t += 0.5) M.beep(t, penta(10 + Math.round(count7(t) * 7), 4), 0.03, 0);
       M.click(NEW7, 0.4); M.bell(NEW7, 'C6', 0.2); M.bell(NEW7 + 0.25, 'E6', 0.14, 0.3); M.marimba(NEW7, 'G5', 0.14, -0.3);
-      M.ep(4.5, 'E5', 0.1); M.ep(4.5, 'G5', 0.08, 0.3); M.ep(5.5, 'A5', 0.09);
-      M.whoosh(6.2, 0.8, 0.04, 500, 2600);
+      M.ep(5.1, 'E5', 0.1); M.ep(5.1, 'G5', 0.08, 0.3); M.ep(6.1, 'A5', 0.09);
+      M.whoosh(7.7, 0.8, 0.04, 500, 2600);
     },
   };
 
   // =========================================================== 8 · Actief · Open · Integer
   // Three squares. The red dot bounces across them and each one it lands on turns red.
-  const L8 = [0.5, 1.5, 2.5], B8 = 5, VAL8 = ['Actief', 'Open', 'Integer'];
+  const L8 = [0.5, 1.5, 2.5], B8 = 6, VAL8 = ['Actief', 'Open', 'Integer'];
   const blk8 = () => Math.min(G.R * 0.5, G.W * 0.17), bx8 = (j) => (j - 1) * blk8() * 1.85;
   const S8 = {
     name: 'waarden',
@@ -588,16 +588,16 @@
       } else rect(p, bx8(j), q * 0.62, q * 0.8 * (1 + 0.15 * pk), q * 0.05, 0, C.grey2);
     },
     type: [
-      ...VAL8.map((t, j) => ({ at: L8[j] - 0.05, to: 4.8, text: t, cls: 'tag', size: 0.5, stagger: 0, x: () => 0.5 + bx8(j) / G.W, y: () => (G.cy + blk8() * 0.64 + G.F * 0.55) / G.H })),
-      { at: 3.0, to: 4.8, text: 'Zo werken wij.', stagger: 0.08 },
+      ...VAL8.map((t, j) => ({ at: L8[j] - 0.05, to: 5.8, text: t, cls: 'tag', size: 0.5, stagger: 0, x: () => 0.5 + bx8(j) / G.W, y: () => (G.cy + blk8() * 0.64 + G.F * 0.55) / G.H })),
+      { at: 3.0, to: 5.8, text: 'Zo werken wij.', stagger: 0.08 },
     ],
     music(M) {
-      chords(M, [[0, 'Am', 1.5], [1.5, 'F', 1.5], [3, 'G', 2]], 0.28);
-      groove(M, 0, 4, [[0, 'A1'], [1.5, 'F1'], [3, 'G1']], 0.75, true);
+      chords(M, [[0, 'Am', 1.5], [1.5, 'F', 1.5], [3, 'G', 3]], 0.28);
+      groove(M, 0, 5, [[0, 'A1'], [1.5, 'F1'], [3, 'G1']], 0.75, true);
       L8.forEach((t, j) => { M.marimba(t, ['C5', 'E5', 'G5'][j], 0.16, (j - 1) * 0.5); M.bell(t, ['C6', 'E6', 'G6'][j], 0.09, (j - 1) * 0.5); M.clap(t, 0.08, (j - 1) * 0.4); });
       M.ep(3.0, 'B4', 0.1); M.ep(3.0, 'D5', 0.08, 0.3);
-      [4.0, 4.25, 4.5, 4.625, 4.75, 4.875].forEach((t, k) => M.clap(t, 0.04 + k * 0.015, (k % 2 ? 0.3 : -0.3)));
-      M.whoosh(4.1, 0.9, 0.06, 300, 3200);
+      [5.0, 5.25, 5.5, 5.625, 5.75, 5.875].forEach((t, k) => M.clap(t, 0.04 + k * 0.015, (k % 2 ? 0.3 : -0.3)));
+      M.whoosh(5.1, 0.9, 0.06, 300, 3200);
     },
   };
 

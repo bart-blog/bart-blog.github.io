@@ -3,12 +3,12 @@
   'use strict';
   const BJ = (window.BJ = window.BJ || {});
 
-  // The cut runs at 105 BPM: brisk like a spot, but with time to read every line;
+  // The cut runs at 88 BPM: an unhurried groove that leaves time to read every line;
   // the stage still sits on the golden section.
   const PHI = (1 + Math.sqrt(5)) / 2;
   BJ.PHI = PHI;
   BJ.GA = Math.PI * (3 - Math.sqrt(5)); // golden angle, 137.5°
-  BJ.BEAT = 60 / 105;
+  BJ.BEAT = 60 / 88;
   BJ.N = 150; // shapes on stage
   BJ.TAU = Math.PI * 2;
 
