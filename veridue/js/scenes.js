@@ -44,7 +44,7 @@
   const rnd = (seed, n) => { const r = BJ.rng(seed), a = []; for (let k = 0; k < n; k++) a.push(r()); return a; };
   function shuffle(a, seed) { const r = BJ.rng(seed); for (let k = a.length - 1; k > 0; k--) { const j = Math.floor(r() * (k + 1)); [a[k], a[j]] = [a[j], a[k]]; } return a; }
   function groove(M, a, z, v = 0.22, hat = 0.025) { for (let b = a; b < z - 0.01; b += 1) { M.kick(b, v); M.tick(b + 0.5, hat, 0.25); } }
-  const gw = () => Math.min(G.W * 0.86, G.R * 3.3);
+  const gw = () => Math.min(G.W * 0.86, G.R * (G.short ? 4.2 : 3.3)); // wider on a sideways phone, where height is scarce
   const cover = () => 2.3 * Math.hypot(G.W / 2, G.H * 0.6);
   const invSine = (u) => Math.acos(1 - 2 * clamp(u)) / PI; // inverse of ease.inOutSine
   // things that break loose: they tumble, fall and fade (f from 0 to 1)
@@ -60,7 +60,7 @@
   const ND = 60;
   const deals = perLayout(() => {
     const cols = G.portrait ? 6 : 12, rows = ND / cols;
-    const cell = Math.min((G.W * 0.84) / cols, (G.H * 0.5) / rows, G.R * 0.3), pos = [], diag = [];
+    const cell = Math.min((G.W * 0.84) / cols, (G.H * (G.portrait ? 0.56 : 0.5)) / rows, G.R * 0.3), pos = [], diag = [];
     for (let s = 0; s < ND; s++) {
       const r = Math.floor(s / cols), c = s % cols;
       pos.push([(c - (cols - 1) / 2) * cell, (r - (rows - 1) / 2) * cell]);
@@ -213,7 +213,7 @@
       hide(p);
     },
     type: [
-      { at: 0.3, to: 6.8, fn: (b) => 'Week ' + (1 + Math.round(week3(b) * (NW - 1))), y: yF(() => gant().top - gant().rh * 1.75), size: 0.6, cls: 'num' },
+      { at: 0.3, to: 6.8, fn: (b) => 'Week ' + (1 + Math.round(week3(b) * (NW - 1))), y: yF(() => gant().top - Math.max(gant().rh * 1.75, gant().rh * 0.8 + 16)), size: 0.6, cls: 'num' },
       { at: 0.4, to: 2.6, text: 'Weeks of | manual review.' },
       { at: 2.8, to: 4.4, text: 'Red flags surface | too late.' },
       { at: 4.6, to: 6.8, text: 'Fees spent. | Deal lost.' },
@@ -288,7 +288,7 @@
   const RR5 = rnd(55, NR);
   const risk = perLayout(() => {
     const cols = G.portrait ? 10 : 20, rows = NR / cols;
-    const cell = Math.min((G.W * 0.86) / cols, (G.H * 0.42) / rows, G.R * 0.26), pos = [];
+    const cell = Math.min((G.W * 0.86) / cols, (G.H * (G.portrait ? 0.48 : 0.42)) / rows, G.R * 0.26), pos = [];
     for (let j = 0; j < NR; j++) pos.push([((j % cols) - (cols - 1) / 2) * cell, (Math.floor(j / cols) - (rows - 1) / 2) * cell]);
     const x1 = (cols / 2 + 0.5) * cell, x0 = -x1;
     const ts = pos.map((q) => SCAN5[0] + (SCAN5[1] - SCAN5[0]) * invSine((q[0] - x0) / (x1 - x0)));
@@ -365,9 +365,10 @@
       const Lw = Wt * 0.52, Dw = Wt * 0.34, Dh = Math.min(Dw * 1.3, G.H * 0.5), rh = Dh / 4.4;
       return { Lw, rh, lx: -Wt / 2 + Lw / 2, top: -2 * rh, Dw, Dh, dx: Wt / 2 - Dw / 2, dy: 0 };
     }
-    const Lw = Wt, rh = Math.min(G.H * 0.062, Lw * 0.17), Dw = Wt * 0.66, Dh = Math.min(Dw * 1.2, G.H * 0.25);
+    // portrait: the list sits left, the document steps down to the right, so every link falls clear of the rows
+    const Lw = Wt * 0.64, rh = Math.min(G.H * 0.062, Lw * 0.19), Dw = Wt * 0.62, Dh = Math.min(Dw * 1.2, G.H * 0.24);
     const top = -G.H * 0.29 + rh * 0.6;
-    return { Lw, rh, lx: 0, top, Dw, Dh, dx: 0, dy: top + 4 * rh + rh * 0.55 + Dh / 2 };
+    return { Lw, rh, lx: -Wt / 2 + Lw / 2, top, Dw, Dh, dx: Wt / 2 - Dw / 2, dy: top + 4 * rh + rh * 0.7 + Dh / 2 };
   });
   const rowY6 = (k) => trace().top + (k + 0.5) * trace().rh;
   const docLine6 = (m) => {
@@ -444,7 +445,8 @@
     },
     type: [
       { at: 0.2, to: 5.8, text: 'Key risks', cls: 'lab', size: 0.4, ax: 0, x: xF(() => trace().lx - trace().Lw / 2), y: yF(() => trace().top - trace().rh * 0.35) },
-      { at: 0.35, to: 5.8, text: 'Source document', cls: 'lab', size: 0.4, ax: 0, x: xF(() => trace().dx - trace().Dw / 2), y: yF(() => trace().dy - trace().Dh / 2 - trace().rh * 0.35) },
+      { at: 0.35, to: 5.8, text: 'Source document', cls: 'lab', size: 0.4, ax: 0, when: () => !G.portrait, x: xF(() => trace().dx - trace().Dw / 2), y: yF(() => trace().dy - trace().Dh / 2 - trace().rh * 0.35) },
+      { at: 0.35, to: 5.8, text: 'Source | document', cls: 'lab', size: 0.4, ax: 1, when: () => G.portrait, x: xF(() => trace().dx - trace().Dw / 2 - G.W * 0.035), y: yF(() => trace().dy - trace().Dh / 2 + G.F * 0.5) },
       { at: 0.5, to: 5.8, text: 'Every finding, | traced to its source.' },
     ],
     music(M) {
@@ -645,7 +647,7 @@
 
   // =========================================================== 10 · Veri fast
   // The chart dissolves; the green deal beats under the line, then stretches into the button.
-  const logoW = () => Math.min(G.W * 0.62, G.R * 3, 820);
+  const logoW = () => Math.min(G.W * (G.portrait ? 0.78 : 0.62), G.R * 3, 820);
   const CTA_Y = () => (G.portrait ? 0.64 : 0.67);
   const TXT10 = [0.4, 3.3], LOGO10 = 3.6, MOVE10 = [3.3, 5.0], BTN10 = [5.1, 5.9], SHOW10 = 5.9;
   let btnCache = { v: -1, at: 0, r: null };

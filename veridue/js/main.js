@@ -163,14 +163,25 @@
     }
     styleLine(it);
   }
+  const MINPX = { lab: 13, sub: 12, num: 15 }; // small labels stay readable on phones
   const axOf = (it) => (typeof it.ax === 'function' ? it.ax() : it.ax);
   function styleLine(it) {
-    const st = it.el.style, fs = sizeOf(it.size);
+    const st = it.el.style;
+    let fs = Math.max(MINPX[it.cls] || 0, sizeOf(it.size));
     st.fontSize = fs.toFixed(1) + 'px';
     const y = typeof it.y === 'function' ? it.y() : it.y === undefined ? G.textY / G.H : it.y;
     st.top = (y * G.H).toFixed(1) + 'px';
-    if (it.x !== undefined) st.left = ((typeof it.x === 'function' ? it.x() : it.x) * G.W).toFixed(1) + 'px';
+    const left = it.x !== undefined ? (typeof it.x === 'function' ? it.x() : it.x) * G.W : undefined;
+    if (left !== undefined) st.left = left.toFixed(1) + 'px';
     const ax = axOf(it);
+    if (!it.html) {
+      // lines break only where the script says (|); on narrow screens they shrink to fit instead of wrapping
+      st.whiteSpace = 'nowrap'; st.maxWidth = 'none';
+      const room = ax === 0 && left !== undefined ? G.W - left - 12 : ax === 1 && left !== undefined ? left - 12 : G.W * 0.9;
+      const w = it.el.offsetWidth;
+      if (w > room && room > 0) { fs *= room / w; st.fontSize = fs.toFixed(1) + 'px'; }
+    }
+    it.fs = fs;
     if (ax !== undefined) st.textAlign = ax === 0 ? 'left' : ax === 1 ? 'right' : 'center';
     st.color = it.color || '';
     if (it.weight) st.fontWeight = it.weight;
@@ -185,11 +196,11 @@
   function renderType(bt) {
     for (const it of items) {
       const start = it.s0 + it.at, end = it.s0 + it.to;
-      const on = bt >= start - 0.02 && bt <= end + 0.02;
+      const on = bt >= start - 0.02 && bt <= end + 0.02 && (!it.when || it.when());
       if (on && !it.el) acquire(it);
       else if (!on && it.el) release(it);
       if (!it.el) continue;
-      const b = bt - it.s0, fs = sizeOf(it.size);
+      const b = bt - it.s0, fs = it.fs;
       if (it.fn) {
         const s = it.fn(b);
         if (s !== it.cur) { it.words[0].el.textContent = s; it.cur = s; }
@@ -233,6 +244,8 @@
     lm.fill('');
   }
   window.addEventListener('resize', layout);
+  window.addEventListener('orientationchange', () => setTimeout(layout, 250));
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
   layout();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
 

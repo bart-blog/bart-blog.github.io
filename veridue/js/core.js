@@ -92,11 +92,20 @@
     G.W = window.innerWidth;
     G.H = window.innerHeight;
     G.cx = G.W / 2;
-    G.cy = G.H * 0.4;
-    G.R = Math.min(G.W * 0.42, G.H * 0.3);
-    G.F = Math.min(G.W * 0.085, G.H * 0.075); // headline size
     G.portrait = G.W / G.H < 0.9;
-    G.textY = G.H * (G.portrait ? 0.76 : 0.8);
+    G.short = !G.portrait && G.H < 520; // phone held sideways
+    if (G.portrait) {
+      // phones: fill the width, sit the visual a bit lower and give the headline the bottom third
+      G.cy = G.H * 0.41;
+      G.R = Math.min(G.W * 0.46, G.H * 0.3);
+      G.F = Math.min(G.W * 0.098, G.H * 0.062);
+      G.textY = G.H * 0.8;
+    } else {
+      G.cy = G.H * (G.short ? 0.38 : 0.4);
+      G.R = Math.min(G.W * 0.42, G.H * (G.short ? 0.33 : 0.3));
+      G.F = Math.min(G.W * 0.085, G.H * (G.short ? 0.08 : 0.075)); // headline size
+      G.textY = G.H * (G.short ? 0.81 : 0.8);
+    }
     G.version++;
   };
 
