@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Carlos, we need to talk.</title>
+  <meta name="description" content="A 30-second intervention for Carlos: still on Squad, still supporting FC Porto.">
+  <meta name="theme-color" content="#0d1117">
+  <style>
+    html, body { margin: 0; height: 100%; background: #0d1117; overflow: hidden; }
+    body { display: grid; place-items: center; font-family: system-ui, -apple-system, sans-serif; color: #f0f3f6; cursor: pointer; }
+    #film { height: 100vh; width: calc(100vh * 9 / 16); max-width: 100vw; max-height: calc(100vw * 16 / 9); object-fit: contain; display: block; }
+    #hint { position: fixed; left: 50%; bottom: 12vh; transform: translateX(-50%); padding: 14px 26px; border-radius: 999px;
+      background: rgba(255,255,255,0.12); backdrop-filter: blur(8px); font-size: 17px; font-weight: 600; white-space: nowrap; transition: opacity .3s; }
+    body.playing #hint { opacity: 0; pointer-events: none; }
+    body.render #hint { display: none; }
+    body.render #film { width: 100vw; height: 100vh; max-width: none; max-height: none; }
+  </style>
+</head>
+<body>
+  <canvas id="film" aria-label="Carlos, we need to talk — a 30 second animation"></canvas>
+  <div id="hint">Click to play &middot; sound on</div>
+  <script src="js/core.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/film.js"></script>
+  <script>
+    (function () {
+      const A = BJ.Audio, F = window.FILM;
+      let playing = false;
+      if (/[?&]render\b/.test(location.search)) { document.body.classList.add('render'); F.ready.then(() => F.render(0)); return; }
+      F.ready.then(() => F.render(1.2));
+      function play() {
+        Promise.resolve(A.init()).then(() => {
+          const run = A.newRun();
+          F.events().forEach((e) => { try { e.fn(run.t0 + e.t); } catch (err) { console.warn(err); } });
+          playing = true;
+          document.body.classList.add('playing');
+          const tick = () => {
+            const t = A.ctx.currentTime - run.t0;
+            F.render(Math.max(0, Math.min(F.total, t)));
+            if (t < F.total + 0.5 && playing) requestAnimationFrame(tick);
+            else { playing = false; document.body.classList.remove('playing'); document.getElementById('hint').textContent = 'Click to replay'; }
+          };
+          requestAnimationFrame(tick);
+        });
+      }
+      window.addEventListener('pointerup', () => { if (!playing) play(); });
+      window.addEventListener('keydown', (e) => { if (e.code === 'Space' && !playing) { e.preventDefault(); play(); } });
+    })();
+  </script>
+</body>
+</html>
