@@ -1,0 +1,247 @@
+{
+  "url": "https://clember.ai",
+  "fetchedAt": "2026-09-29T08:11:39.458Z",
+  "finalUrl": "https://clember.ai/",
+  "title": "Home - Clember",
+  "description": "Clember is an AI-powered cybersecurity platform that helps consultants work faster, smarter, and with greater impact.",
+  "ogImage": "https://clember.ai/wp-content/uploads/2025/08/Copy-of-Featured-image-768x512-3.png",
+  "siteName": "Clember",
+  "lang": "en-US",
+  "themeColor": "#F0F0F0",
+  "headings": {
+    "h1": [
+      "The AI-platform transforming cyber security consulting"
+    ],
+    "h2": [
+      "Calculate your potential time savings with Clember"
+    ],
+    "h3": [
+      "Stop spending hours on manual tasks. Start advising. Deliver more. Grow faster."
+    ]
+  },
+  "nav": [
+    "For who",
+    "For consultants",
+    "For security leaders",
+    "Platform",
+    "Intelligent risk management",
+    "Advanced reporting",
+    "Security Assistant AI Chatbot",
+    "Plug-and-play integrations",
+    "Frameworks",
+    "ISO 27001",
+    "NIS2",
+    "GDPR",
+    "NIST CSF",
+    "CIS",
+    "DORA"
+  ],
+  "paragraphs": [
+    "Clember replaces weeks of manual analysis with instant, intelligent security insights. Upload documents, connect tools, and get a complete cybersecurity posture in minutes, not weeks.",
+    "Built for businesses that value security.",
+    "Security consultants spend up to 60% of their time on repetitive tasks like research, reporting, and risk tracking. Clember takes this out of your hands. Check out how much time you could save by using Clember throughout the consultancy process."
+  ],
+  "ctas": [
+    "Book a demo → https://clember.ai/book-a-demo/",
+    "Book a demo",
+    "Calculate now → https://clember.ai/time-savings-calculator/",
+    "Manage consent"
+  ],
+  "palette": [
+    {
+      "hex": "#ffffff",
+      "share": 0.698,
+      "roles": [
+        "background",
+        "text",
+        "button"
+      ]
+    },
+    {
+      "hex": "#191919",
+      "share": 0.25,
+      "roles": [
+        "text",
+        "heading"
+      ]
+    },
+    {
+      "hex": "#2a47d9",
+      "share": 0.047,
+      "roles": [
+        "heading",
+        "button"
+      ]
+    },
+    {
+      "hex": "#222222",
+      "share": 0.005,
+      "roles": [
+        "button-text"
+      ]
+    }
+  ],
+  "gradients": [],
+  "fonts": {
+    "heading": {
+      "family": "Geist",
+      "weight": "900",
+      "size": "48px",
+      "letterSpacing": "-1.296px",
+      "transform": "none"
+    },
+    "body": {
+      "family": "Geist",
+      "weight": "400",
+      "size": "16px",
+      "letterSpacing": "normal",
+      "transform": "none"
+    },
+    "button": {
+      "family": "Geist, sans-serif",
+      "weight": "500",
+      "size": "15px",
+      "letterSpacing": "normal",
+      "transform": "none"
+    }
+  },
+  "fontFaces": [
+    {
+      "family": "swiper-icons",
+      "weight": "400",
+      "style": "normal",
+      "src": "url(\"data:application/font-woff;charset=utf-8;base64, d09GRgABAAAAAAZgABAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABGRlRNAAAGRAAAABoAAAAci6qHkUdERUYAAAWgAAAAIwAAACQAYABXR1BPUwAABhQAAAAuAAAANuAY7+xHU1VCAAAFxAAAAFAAAABm2fPczU9TLzIAAAHcAAAASgAAAGBP9V5RY21hcAAAAkQAAACIAAABYt6F0cBjdnQgAAACzAAAAAQAAAAEABEBRGdhc3AAAAWYAAAACAAAAAj//wADZ2x5ZgAAAywAAADMAAAD2MHtryVoZWFkAAABbAAAADAAAAA2E2+eoWhoZWEAAAGcAAAAHwAAAC",
+      "base": "https://clember.ai/wp-content/litespeed/css/80f81865df1a49364fdeced6ecde0280.css?ver=e0280"
+    },
+    {
+      "family": "uicore-icons",
+      "weight": "400",
+      "style": "normal",
+      "src": "url(\"https://clember.ai/wp-content/plugins/uicore-framework/assets/fonts/uicore-icons.woff2?bc5uma\") format(\"woff2\"), url(\"https://clember.ai/wp-content/plugins/uicore-framework/assets/fonts/uicore-icons.woff?bc5uma\") format(\"woff\"), url(\"https://clember.ai/wp-content/plugins/uicore-framework/assets/fonts/uicore-icons.ttf?bc5uma\") format(\"truetype\")",
+      "base": "https://clember.ai/wp-content/litespeed/css/5c9768ca934e15b0fa703dd6f27590d4.css?ver=590d4"
+    },
+    {
+      "family": "icomoon",
+      "weight": "400",
+      "style": "normal",
+      "src": "url(\"/wp-content/uploads/elementor/custom-icons/icomoon-2/fonts/icomoon.ttf?8d5mtx\") format(\"truetype\"), url(\"/wp-content/uploads/elementor/custom-icons/icomoon-2/fonts/icomoon.woff?8d5mtx\") format(\"woff\")",
+      "base": "https://clember.ai/wp-content/litespeed/css/b872c97b4c67c190b16bd0331780b7dd.css?ver=0b7dd"
+    },
+    {
+      "family": "themify",
+      "weight": "400",
+      "style": "normal",
+      "src": "url(\"/wp-content/plugins/uicore-framework/assets/fonts/themify/themify.woff\") format(\"woff\"), url(\"/wp-content/plugins/uicore-framework/assets/fonts/themify/themify.ttf\") format(\"truetype\")",
+      "base": "https://clember.ai/wp-content/litespeed/css/dbc23db01b4c78df2be37f89f69ed0f8.css?ver=ed0f8"
+    },
+    {
+      "family": "themify",
+      "weight": "400",
+      "style": "normal",
+      "src": "url(\"/wp-content/plugins/uicore-framework/assets/fonts/themify/themify.woff\") format(\"woff\"), url(\"/wp-content/plugins/uicore-framework/assets/fonts/themify/themify.ttf\") format(\"truetype\")",
+      "base": "https://clember.ai/wp-content/litespeed/css/dbc23db01b4c78df2be37f89f69ed0f8.css?ver=ed0f8"
+    },
+    {
+      "family": "Geist",
+      "weight": "900",
+      "style": "normal",
+      "src": "url(\"https://clember.ai/wp-content/uploads/2025/09/Geist-VariableFont_wght.ttf\") format(\"truetype\")",
+      "base": "https://clember.ai/"
+    },
+    {
+      "family": "Geist",
+      "weight": "700",
+      "style": "normal",
+      "src": "url(\"https://clember.ai/wp-content/uploads/2025/09/Geist-VariableFont_wght.ttf\") format(\"truetype\")",
+      "base": "https://clember.ai/"
+    },
+    {
+      "family": "Geist",
+      "weight": "400",
+      "style": "normal",
+      "src": "url(\"https://clember.ai/wp-content/uploads/2025/09/Geist-VariableFont_wght.ttf\") format(\"truetype\")",
+      "base": "https://clember.ai/"
+    },
+    {
+      "family": "Geist",
+      "weight": "300",
+      "style": "normal",
+      "src": "url(\"https://clember.ai/wp-content/uploads/2025/09/Geist-VariableFont_wght.ttf\") format(\"truetype\")",
+      "base": "https://clember.ai/"
+    }
+  ],
+  "logos": [
+    {
+      "kind": "img",
+      "src": "https://clember.ai/wp-content/uploads/2025/08/clember-inverted-logo_color.png.webp",
+      "w": 159,
+      "h": 40,
+      "inHeader": true,
+      "file": "assets/logo-1.webp"
+    },
+    {
+      "kind": "img",
+      "src": "https://clember.ai/wp-content/uploads/2026/06/Eraneos_322x200-300x186.png.webp",
+      "w": 180,
+      "h": 112,
+      "inHeader": false,
+      "file": "assets/logo-2.webp"
+    },
+    {
+      "kind": "img",
+      "src": "https://clember.ai/wp-content/uploads/2025/07/Golden-ratio-logo-16-300x186.png.webp",
+      "w": 180,
+      "h": 112,
+      "inHeader": false,
+      "file": "assets/logo-3.webp"
+    },
+    {
+      "kind": "img",
+      "src": "https://clember.ai/wp-content/uploads/2025/07/Golden-ratio-logo-18-300x186.png.webp",
+      "w": 180,
+      "h": 112,
+      "inHeader": false,
+      "file": "assets/logo-4.webp"
+    },
+    {
+      "kind": "img",
+      "src": "https://clember.ai/wp-content/uploads/2026/06/TriOpSys_322x200-300x186.png.webp",
+      "w": 180,
+      "h": 112,
+      "inHeader": false,
+      "file": "assets/logo-5.webp"
+    },
+    {
+      "kind": "img",
+      "src": "https://clember.ai/wp-content/uploads/2025/07/Golden-ratio-logo-17-300x186.png.webp",
+      "w": 180,
+      "h": 112,
+      "inHeader": false,
+      "file": "assets/logo-6.webp"
+    }
+  ],
+  "icons": [
+    "https://clember.ai/wp-content/uploads/2025/07/clember-orb.svg",
+    "https://clember.ai/wp-content/uploads/2025/07/Clember-site-icon-150x150.png",
+    "https://clember.ai/wp-content/uploads/2025/07/Clember-site-icon-300x300.png"
+  ],
+  "copy": "The AI-platform transforming cyber security consulting Stop spending hours on manual tasks. Start advising. Deliver more. Grow faster. Clember replaces weeks of manual analysis with instant, intelligent security insights. Upload documents, connect tools, and get a complete cybersecurity posture in minutes, not weeks. Book a demo Built for businesses that value security. Calculate your potential time savings with Clember Security consultants spend up to 60% of their time on repetitive tasks like research, reporting, and risk tracking. Clember takes this out of your hands. Check out how much time you could save by using Clember throughout the consultancy process. Calculate now",
+  "fontFiles": [
+    "https://clember.ai/wp-content/uploads/2025/09/Geist-VariableFont_wght.ttf",
+    "https://clember.ai/wp-content/plugins/uicore-framework/assets/fonts/uicore-icons.woff2?bc5uma",
+    "https://clember.ai/wp-content/plugins/uicore-framework/assets/fonts/themify/themify.woff",
+    "https://clember.ai/wp-content/uploads/elementor/custom-icons/icomoon-2/fonts/icomoon.ttf?8d5mtx"
+  ],
+  "iconFiles": [
+    "assets/icon-0.svg",
+    "assets/icon-1.png",
+    "assets/icon-2.png"
+  ],
+  "ogImageFile": "assets/og.png",
+  "fontDownloads": [
+    {
+      "url": "https://clember.ai/wp-content/plugins/uicore-framework/assets/fonts/uicore-icons.woff2?bc5uma",
+      "file": "assets/font-uicore-icons.woff2"
+    }
+  ]
+}
