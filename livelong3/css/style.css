@@ -1,0 +1,162 @@
+/* Jost (variable), self-hosted like on livelong.nl. SIL Open Font License. */
+@font-face {
+  font-family: 'Jost';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('../fonts/jost-latin.woff2') format('woff2');
+}
+
+:root {
+  --blue: #0053a2;
+  --blue-dark: #001c3b;
+  --blue-50: #eaf2fb;
+  --orange: #f18700;
+  --orange-600: #d47700;
+  --ink: #0b1220;
+  --mute: #55627a;
+  --bg: #ffffff;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  overflow: hidden;
+  color: var(--ink);
+  font-family: "Jost", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-text-size-adjust: 100%;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+html { position: fixed; inset: 0; }
+body.intro { cursor: pointer; }
+body.idle { cursor: none; }
+
+html, body { transition: none; }
+
+/* Flat stage with perspective: stacking follows DOM order (the orange shape is last). */
+#stage {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.sh {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+  background: var(--blue);
+  opacity: 0;
+  will-change: transform, opacity;
+  contain: layout style;
+}
+
+/* ------------------------------------------------------------ kinetic type */
+#type { position: fixed; inset: 0; pointer-events: none; }
+.line {
+  position: absolute;
+  left: 50%;
+  top: 80%;
+  width: max-content;
+  max-width: 88vw;
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
+  color: var(--ink);
+  opacity: 0;
+  transform: translate3d(-50%, -50%, 0);
+  will-change: opacity, transform;
+  text-wrap: balance;
+  white-space: normal;
+}
+.line .w { display: inline-block; opacity: 0; will-change: opacity, transform, filter; }
+.line.num { font-variant-numeric: tabular-nums; letter-spacing: -0.04em; }
+.line.soft { font-weight: 450; letter-spacing: -0.01em; }
+.line.logo img { display: block; height: 1em; width: auto; }
+.line.link { font-size: clamp(16px, 1.55vw, 23px) !important; font-weight: 500; letter-spacing: 0.01em; pointer-events: auto; line-height: 1.25; }
+.line.link a {
+  display: inline-block;
+  color: #fff;
+  text-decoration: none;
+  padding: 0.8em 1.7em;
+  background: var(--orange);
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(241, 135, 0, .28);
+  transition: background .25s, box-shadow .25s, transform .25s;
+}
+.line.link a:hover, .line.link a:focus { background: var(--orange-600); box-shadow: 0 12px 28px rgba(241, 135, 0, .36); transform: translateY(-1px); }
+.line.link small { display: block; margin-top: 1em; font-size: 0.86em; font-weight: 400; letter-spacing: 0; color: var(--mute); }
+
+/* ------------------------------------------------------------ intro hint */
+#hint {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 80%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45em;
+  text-align: center;
+  transition: opacity .7s ease, transform .7s ease;
+  pointer-events: none;
+}
+.hint-title { font-size: clamp(20px, 2.6vw, 36px); font-weight: 600; letter-spacing: -0.005em; }
+.hint-sub { font-size: clamp(13px, 1.1vw, 15px); color: var(--mute); letter-spacing: 0.02em; }
+body.debug #hint, body.debug #controls { display: none; }
+body:not(.intro) #hint { opacity: 0; transform: translateY(calc(-50% + 10px)); }
+
+/* ------------------------------------------------------------ controls */
+#controls {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  display: flex;
+  gap: 6px;
+  transition: opacity .6s ease;
+}
+body.intro #controls, body.idle #controls { opacity: 0; pointer-events: none; }
+body.ended #controls { opacity: 1; pointer-events: auto; }
+#controls button {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 83, 162, 0.07);
+  color: var(--blue);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.8;
+  transition: opacity .25s, background .25s, transform .25s;
+}
+#controls button:hover { opacity: 1; background: rgba(0, 83, 162, 0.12); }
+#controls button:active { transform: scale(0.94); }
+#controls svg { width: 18px; height: 18px; fill: currentColor; }
+.i-play, .i-muted { display: none; }
+body.paused .i-play, body.muted .i-muted { display: block; }
+body.paused .i-pause, body.muted .i-sound { display: none; }
+
+#progress { position: fixed; left: 0; right: 0; bottom: 0; height: 3px; pointer-events: none; }
+#bar { height: 100%; background: linear-gradient(90deg, var(--blue), var(--orange)); opacity: 0.85; transform-origin: 0 50%; transform: scaleX(0); }
+body.intro #progress { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  #hint { transition: none; }
+}
+
+/* on the orange field the controls turn white */
+body.dark #controls button { background: rgba(255, 255, 255, 0.18); color: #fff; }
