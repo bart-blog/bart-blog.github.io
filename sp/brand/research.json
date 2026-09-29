@@ -1,0 +1,478 @@
+{
+  "url": "https://schubergphilis.com",
+  "fetchedAt": "2026-09-29T16:55:07.960Z",
+  "finalUrl": "https://schubergphilis.com/",
+  "title": "Engineering business progress | Schuberg Philis",
+  "description": "Schuberg Philis is an innovative business technology company, solving our customers’ most complex IT-challenges. We focus on mission critical applications…",
+  "ogImage": "https://static.schubergphilis.com/media/images/_1200x630_crop_center-center_82_none/SBPlogo.png?mtime=1644999090",
+  "siteName": "Schuberg Philis",
+  "lang": "en",
+  "themeColor": null,
+  "headings": {
+    "h1": [
+      "Engineering business progress"
+    ],
+    "h2": [
+      "Our customers",
+      "Our value propositions",
+      "We put experts in the lead",
+      "What's new and noteworthy at Schuberg Philis",
+      "Interested in joining our journey?",
+      "Certifications & assurance",
+      "It's the people, actually"
+    ],
+    "h3": [
+      "We are proud to partner with:",
+      "Schuberg Philis ranked Best IT company in The Netherlands",
+      "Schuberg Philis joins Prometheus to advance collective cyber defense in the age of autonomous AI",
+      "Schuberg Philis and the Dutch Association of Insurers join forces to build a technologically resilient insurance sector",
+      "Operational resilience: the dominant perspective"
+    ]
+  },
+  "nav": [
+    "What we offer",
+    "Cloud",
+    "Data & AI",
+    "Software",
+    "Security",
+    "How we work",
+    "The SBP Trinity",
+    "Lab271",
+    "Insights",
+    "Our reports",
+    "Our frameworks",
+    "Our webinars",
+    "Industries",
+    "Financial services",
+    "Manufacturing"
+  ],
+  "paragraphs": [
+    "For every project, we develop the best IT solution and work with the best possible partners.",
+    "Unlock the full potential of the cloud with our expert solutions. We help you harness cloud technology to drive innovation, enhance security, and improve operational efficiency, ensuring your business stays competitive and resilient in an ever-changing landscape.",
+    "Our belief is that the right combination of our experts and your experts can achieve anything. We develop IT solutions, but getting a job done right also means that we empower you to master your own technology.",
+    "Annemieke Deering Mar 03, 2025 ⋅ 2 min read English Dutch",
+    "Annemieke Deering Sep 09, 2026 ⋅ 3 min read English Dutch",
+    "Annemieke Deering Sep 09, 2026 ⋅ 2 min read English Dutch",
+    "Tom den Hartog, Eva Noordhoek Sep 09, 2026 ⋅ 5 min read English",
+    "We always strive for 100% and then some. It’s no surprise that we take the search for new talent very seriously too. Working with us, you can master your own destiny.",
+    "Currently we have 55 openings in Technology , Business , Support",
+    "We hold certifications ensuring high-quality service, independently audited annually. These certifications ensure the high standards you expect from us.",
+    "Our company was designed to match who we are and the ambitions we share. Working in self-steering teams that put experts in the lead, we take collective responsibility for fulfilling our promises to our colleagues, customers, and society at large."
+  ],
+  "ctas": [
+    "Contact → https://schubergphilis.com/contact",
+    "Read more \\ → https://schubergphilis.com/what-we-offer",
+    "Read more → https://schubergphilis.com/value-propositions/cloud",
+    "How we work \\ → https://schubergphilis.com/how-we-work",
+    "See all our careers \\ → https://schubergphilis.com/careers",
+    "Technology DevOps Engineer - Linux/Kubernetes → https://schubergphilis.com/careers/devops-engineer-linux-kubernetes",
+    "Business Functional Business Analist → https://schubergphilis.com/careers/functional-business-analist",
+    "Technology Databricks Platform Engineer → https://schubergphilis.com/careers/databricks-platform-engineer-2",
+    "Support Onboarding Specialist → https://schubergphilis.com/careers/onboarding-specialist",
+    "Support Recruitment Coordinator → https://schubergphilis.com/careers/recruitment-coordinator",
+    "Technology Windows DevOps Automation Engineer → https://schubergphilis.com/careers/windows-devops-automation-engineer",
+    "Technology Software Engineer - Golang/C++ → https://schubergphilis.com/careers/software-engineer-golang-c",
+    "Technology GenAI Python Engineer → https://schubergphilis.com/careers/genai-python-engineer-3",
+    "Technology Windows DevOps Engineer → https://schubergphilis.com/careers/windows-devops-engineer-3",
+    "Technology Automation Engineer → https://schubergphilis.com/careers/automation-engineer-3"
+  ],
+  "palette": [
+    {
+      "hex": "#ffffff",
+      "share": 0.49,
+      "roles": [
+        "text",
+        "background",
+        "heading",
+        "button-text",
+        "svg"
+      ]
+    },
+    {
+      "hex": "#1e80ed",
+      "share": 0.233,
+      "roles": [
+        "background",
+        "button",
+        "svg"
+      ]
+    },
+    {
+      "hex": "#020c17",
+      "share": 0.148,
+      "roles": [
+        "text",
+        "heading",
+        "background",
+        "button"
+      ]
+    },
+    {
+      "hex": "#39516b",
+      "share": 0.116,
+      "roles": [
+        "background"
+      ]
+    },
+    {
+      "hex": "#6a7c90",
+      "share": 0.007,
+      "roles": [
+        "background"
+      ]
+    },
+    {
+      "hex": "#1ee8ed",
+      "share": 0.003,
+      "roles": [
+        "text",
+        "svg"
+      ]
+    },
+    {
+      "hex": "#9ca8b5",
+      "share": 0.003,
+      "roles": [
+        "text"
+      ]
+    },
+    {
+      "hex": "#353d45",
+      "share": 0.001,
+      "roles": [
+        "text"
+      ]
+    },
+    {
+      "hex": "#e6e9ec",
+      "share": 0,
+      "roles": [
+        "background"
+      ]
+    },
+    {
+      "hex": "#000000",
+      "share": 0,
+      "roles": [
+        "svg"
+      ]
+    },
+    {
+      "hex": "#141414",
+      "share": 0,
+      "roles": [
+        "svg"
+      ]
+    }
+  ],
+  "gradients": [
+    "linear-gradient(rgb(23, 33, 43), rgba(23, 33, 43, 0.99) 8.1%, rgba(23, 33, 43, 0.953) 15.5%, rgba(23, 33, 43, 0.894) 22.5%, rgba(23, 33, 43, 0.824) 29%, rgba(23, 33, 43, 0.74) 35.3%, rgba(23, 33, 43, 0.647), rgba(23, 33, 43, 0.55) 47.1%, rgba(23, 33, 43, 0.45) 52.9%, rgba(23, 33, 43, 0.353), rgba(23",
+    "linear-gradient(rgba(5, 16, 28, 0), rgba(5, 16, 28, 0.01) 8.1%, rgba(5, 16, 28, 0.047) 15.5%, rgba(5, 16, 28, 0.106) 22.5%, rgba(5, 16, 28, 0.176) 29%, rgba(5, 16, 28, 0.26) 35.3%, rgba(5, 16, 28, 0.353), rgba(5, 16, 28, 0.45) 47.1%, rgba(5, 16, 28, 0.55) 52.9%, rgba(5, 16, 28, 0.647), rgba(5, 16, 2",
+    "linear-gradient(rgba(14, 24, 34, 0), rgba(14, 24, 34, 0.01) 8.1%, rgba(14, 24, 34, 0.047) 15.5%, rgba(14, 24, 34, 0.106) 22.5%, rgba(14, 24, 34, 0.176) 29%, rgba(14, 24, 34, 0.26) 35.3%, rgba(14, 24, 34, 0.353), rgba(14, 24, 34, 0.45) 47.1%, rgba(14, 24, 34, 0.55) 52.9%, rgba(14, 24, 34, 0.647), rgb"
+  ],
+  "fonts": {
+    "heading": {
+      "family": "TTInterphases, sans-serif",
+      "weight": "800",
+      "size": "100px",
+      "letterSpacing": "normal",
+      "transform": "none"
+    },
+    "body": {
+      "family": "TTInterphasesMono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Courier New\", monospace",
+      "weight": "400",
+      "size": "12px",
+      "letterSpacing": "normal",
+      "transform": "none"
+    },
+    "button": {
+      "family": "TTInterphases, sans-serif",
+      "weight": "700",
+      "size": "14px",
+      "letterSpacing": "normal",
+      "transform": "uppercase"
+    }
+  },
+  "fontFaces": [
+    {
+      "family": "TTInterphases",
+      "weight": "900",
+      "style": "italic",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_Black_Italic.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphases",
+      "weight": "900",
+      "style": "normal",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_Black.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphases",
+      "weight": "800",
+      "style": "italic",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_ExtraBold_Italic.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphases",
+      "weight": "800",
+      "style": "normal",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_ExtraBold.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphases",
+      "weight": "700",
+      "style": "italic",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_Bold_Italic.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphases",
+      "weight": "700",
+      "style": "normal",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_Bold.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphases",
+      "weight": "600",
+      "style": "italic",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_DemiBold_Italic.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphases",
+      "weight": "600",
+      "style": "normal",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_DemiBold.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphases",
+      "weight": "500",
+      "style": "italic",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_Medium_Italic.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphases",
+      "weight": "500",
+      "style": "normal",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_Medium.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphases",
+      "weight": "400",
+      "style": "italic",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_Italic.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphases",
+      "weight": "400",
+      "style": "normal",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_Regular.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphases",
+      "weight": "300",
+      "style": "italic",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_Light_Italic.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphases",
+      "weight": "300",
+      "style": "normal",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_Light.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphases",
+      "weight": "200",
+      "style": "italic",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_ExtraLight_Italic.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphases",
+      "weight": "200",
+      "style": "normal",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_ExtraLight.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphases",
+      "weight": "100",
+      "style": "italic",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_Thin_Italic.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphases",
+      "weight": "100",
+      "style": "normal",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_Thin.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphasesMono",
+      "weight": "700",
+      "style": "italic",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_Mono_Bold_Italic.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphasesMono",
+      "weight": "700",
+      "style": "normal",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_Mono_Bold.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphasesMono",
+      "weight": "400",
+      "style": "italic",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_Mono_Italic.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "TTInterphasesMono",
+      "weight": "400",
+      "style": "normal",
+      "src": "url(\"https://schubergphilis.com/dist/fonts/TT_Interphases_Mono_Regular.woff2\") format(\"woff2\")",
+      "base": "https://schubergphilis.com/"
+    },
+    {
+      "family": "swiper-icons",
+      "weight": "400",
+      "style": "normal",
+      "src": "url(\"data:application/font-woff;charset=utf-8;base64, d09GRgABAAAAAAZgABAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABGRlRNAAAGRAAAABoAAAAci6qHkUdERUYAAAWgAAAAIwAAACQAYABXR1BPUwAABhQAAAAuAAAANuAY7+xHU1VCAAAFxAAAAFAAAABm2fPczU9TLzIAAAHcAAAASgAAAGBP9V5RY21hcAAAAkQAAACIAAABYt6F0cBjdnQgAAACzAAAAAQAAAAEABEBRGdhc3AAAAWYAAAACAAAAAj//wADZ2x5ZgAAAywAAADMAAAD2MHtryVoZWFkAAABbAAAADAAAAA2E2+eoWhoZWEAAAGcAAAAHwAAAC",
+      "base": "https://schubergphilis.com/dist/assets/app-BnBXIHr_.css"
+    }
+  ],
+  "logos": [
+    {
+      "kind": "svg",
+      "w": 116,
+      "h": 32,
+      "inHeader": true,
+      "file": "assets/logo-1.svg"
+    },
+    {
+      "kind": "svg",
+      "w": 12,
+      "h": 12,
+      "inHeader": true,
+      "file": "assets/logo-2.svg"
+    },
+    {
+      "kind": "svg",
+      "w": 12,
+      "h": 12,
+      "inHeader": true,
+      "file": "assets/logo-3.svg"
+    },
+    {
+      "kind": "svg",
+      "w": 12,
+      "h": 12,
+      "inHeader": true,
+      "file": "assets/logo-4.svg"
+    },
+    {
+      "kind": "img",
+      "src": "https://static.schubergphilis.com/media/images/_1440x809_crop_center-center_82_line/BNP_website_banner.png",
+      "w": 272,
+      "h": 250,
+      "inHeader": true,
+      "file": "assets/logo-5.png"
+    },
+    {
+      "kind": "img",
+      "src": "https://static.schubergphilis.com/media/images/_1440x1440_crop_center-center_82_line/Op_Res_In_Control_Is_Not_Continuity_Report_Post_1.png",
+      "w": 171,
+      "h": 160,
+      "inHeader": false,
+      "file": "assets/logo-6.png"
+    }
+  ],
+  "icons": [
+    "https://schubergphilis.com/dist/apple-touch-icon.png",
+    "https://schubergphilis.com/dist/favicon-32x32.png",
+    "https://schubergphilis.com/dist/favicon-16x16.png",
+    "https://schubergphilis.com/dist/safari-pinned-tab.svg",
+    "https://schubergphilis.com/dist/favicon.ico"
+  ],
+  "copy": "Engineering business progress Mission-critical IT has always been at the heart of our work. With 100% uptime, a 99%+ project success rate (35% industry average), and #1 customer satisfaction, we’ve learned that true progress isn’t just about flawless technology. It’s about resilience, trust, and sustainable value. When we commit to a customer, we commit to keeping operations running, audits clean, and people confident. By planning, building, and running by the same team, we truly enable business progress that is built to last. Read more \\ Our customers For every project, we develop the best IT solution and work with the best possible partners. We are proud to partner with: Our value propositions Cloud Data & AI Software Security Unlock the full potential of the cloud with our expert solutions. We help you harness cloud technology to drive innovation, enhance security, and improve operational efficiency, ensuring your business stays competitive and resilient in an ever-changing landscape. Read more We put experts in the lead Our belief is that the right combination of our experts and your experts can achieve anything. We develop IT solutions, but getting a job done right also means that we empower you to master your own technology. How we work \\ What's new and noteworthy at Schuberg Philis Schuberg Philis ranked Best IT company in The Netherlands Annemieke Deering Mar 03, 2025 ⋅ 2 min read English Dutch Featured Schuberg Philis joins Prometheus to advance collective cyber defense in the age of autonomous AI Annemieke Deering Sep 09, 2026 ⋅ 3 min read English Dutch Schuberg Philis and the Dutch Association of Insurers join forces to build a technologically resilient insurance sector Annemieke Deering Sep 09, 2026 ⋅ 2 min read English Dutch Operational resilience: the dominant perspective Tom den Hartog, Eva Noordhoek Sep 09, 2026 ⋅ 5 min read English Operational resilience: the dominant perspective Tom den Hartog, Eva Noordhoek Sep 09, 2026 ⋅ 5 min read English Interested in joining our journey? We always strive for 100% and then some. It’s no surprise that we take the search for new talent very seriously too. Working with us, you can master your own destiny. See all our careers \\ Currently we have 55 openings in Technology , Business , Support Technology DevOps Engineer - Linux/Kubernetes Business Functional Business Analist Technology Databricks Platform Engineer Technology Senior Network Engineer - Mission-Critical Infrastructure Support Onboarding Specialist Support Recruitment Coordinator Technology Windows DevOps Automation Engineer Technology Software Engineer - Golang/C++ Business Commercial Director Sales (Nordics) - Financial Services Technology GenAI Python Engineer Technology Windows DevOps Engineer Technology Automation Engineer Technology Technical Security Lead Technology AWS Platform Engineer Support Accounts Payable Specialist Business Customer Director Consulting - Investment Management Business Customer Director Consulting - Insurance & Pensions Technology DevOps Engineer Akamai Technology Windows Engineer Technology Windows DevOps Engineer Business Customer Director Sales Support Technology Recruiter Support Facility Manager Support Technology Recruiter Support Stage: Innovative Strategic Business Design Business Customer Director Consulting - Utilities Business Commercial Software Lead Business Commercial Security Lead Business Commercial Data & AI Lead Business Customer Director Consulting - Publieke Sector, Transport & Logistiek Business Customer Director Consulting - Energie, Logistiek & Manufacturing Business Customer Director Consulting - Financial Services Business Customer Director Consulting - Asset Management Business Proposition Ambassador - Software Business Customer Director Delivery Technology OT Cyber Security Expert Business Customer Director Consulting Technology VMware Cloud Engineer Technology Software Engineer - Frontend Technology Senior DevOps DBA - MS SQL Server Technology Security Engineer - MDR Technology Windows DevOps Engineer Technology Platform Engineer - Backup & Recovery Technology Software Engineer - Python Backend Technology Azure Platform Engineer Technology Tech Lead (Eindhoven) Technology Tech Lead (Amsterdam) Technology Senior Cloud Engineer Technology Tech Lead (Rotterdam) Technology GenAI Python Engineer Technology Senior Kubernetes Engineer Technology Network Automation Engineer Technology Cloud Engineer Azure Technology Security Engineer Technology Senior Kubernetes Engineer Certifications & assurance We hold certifications ensuring high-quality service, independently audited annually. These certifications ensure the high standards you expect from us. It's the people, actually Our company was designed to match who we are and the ambitions we share. Working in self-steering teams that put experts in the lead, we take collective responsibility for fulfilling our promises to our colleagues, customers, and society at large. Who we are \\",
+  "fontFiles": [
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_Black.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_Black_Italic.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_ExtraBold.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_Bold_Italic.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_Bold.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_Medium_Italic.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_DemiBold.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_Medium.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_DemiBold_Italic.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_Light_Italic.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_Italic.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_Regular.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_ExtraBold_Italic.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_Light.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_ExtraLight_Italic.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_ExtraLight.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_Thin.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_Mono_Bold_Italic.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_Mono_Bold.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_Mono_Italic.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_Thin_Italic.woff2",
+    "https://schubergphilis.com/dist/fonts/TT_Interphases_Mono_Regular.woff2"
+  ],
+  "iconFiles": [
+    "assets/icon-0.png",
+    "assets/icon-1.png",
+    "assets/icon-2.png",
+    "assets/icon-3.svg"
+  ],
+  "ogImageFile": "assets/og.png",
+  "fontDownloads": [
+    {
+      "url": "https://schubergphilis.com/dist/fonts/TT_Interphases_Black.woff2",
+      "file": "assets/font-TT_Interphases_Black.woff2"
+    },
+    {
+      "url": "https://schubergphilis.com/dist/fonts/TT_Interphases_Black_Italic.woff2",
+      "file": "assets/font-TT_Interphases_Black_Italic.woff2"
+    },
+    {
+      "url": "https://schubergphilis.com/dist/fonts/TT_Interphases_ExtraBold.woff2",
+      "file": "assets/font-TT_Interphases_ExtraBold.woff2"
+    },
+    {
+      "url": "https://schubergphilis.com/dist/fonts/TT_Interphases_Bold_Italic.woff2",
+      "file": "assets/font-TT_Interphases_Bold_Italic.woff2"
+    },
+    {
+      "url": "https://schubergphilis.com/dist/fonts/TT_Interphases_Bold.woff2",
+      "file": "assets/font-TT_Interphases_Bold.woff2"
+    },
+    {
+      "url": "https://schubergphilis.com/dist/fonts/TT_Interphases_Medium_Italic.woff2",
+      "file": "assets/font-TT_Interphases_Medium_Italic.woff2"
+    },
+    {
+      "url": "https://schubergphilis.com/dist/fonts/TT_Interphases_DemiBold.woff2",
+      "file": "assets/font-TT_Interphases_DemiBold.woff2"
+    },
+    {
+      "url": "https://schubergphilis.com/dist/fonts/TT_Interphases_Medium.woff2",
+      "file": "assets/font-TT_Interphases_Medium.woff2"
+    }
+  ]
+}
