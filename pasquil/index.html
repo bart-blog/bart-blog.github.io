@@ -6,15 +6,21 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <title>Pasquil — Informatiebeveiliging is niet gewoon</title>
-  <meta name="description" content="Een film van 30 seconden over Pasquil: informatiebeveiliging en privacy, met humor en durf. Gemaakt van 150 vormen, matrix3d-transforms, kinetische typografie en een gesynthetiseerde soundtrack.">
+  <meta name="description" content="Een film van 30 seconden over Pasquil: informatiebeveiliging en privacy, met humor en durf. Op de beat geknipt met 150 vormen, de illustraties van pasquil.nl en kinetische typografie.">
   <meta name="theme-color" content="#ffffff">
   <link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="audio/track.m4a" as="fetch" crossorigin>
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="intro">
-  <div id="stage" aria-hidden="true"></div>
-  <div id="type" aria-live="polite"></div>
+  <div id="world">
+    <div id="back" aria-hidden="true"></div>
+    <div id="stage" aria-hidden="true"></div>
+    <div id="art"></div>
+    <div id="type" aria-live="polite"></div>
+    <div id="flash" aria-hidden="true"></div>
+  </div>
 
   <div id="hint">
     <span class="hint-title">Een korte film over Pasquil</span>

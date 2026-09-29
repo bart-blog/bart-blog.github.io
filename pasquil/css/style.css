@@ -37,6 +37,12 @@ html { position: fixed; inset: 0; }
 body.intro { cursor: pointer; }
 body.idle { cursor: none; }
 
+/* Everything that shakes lives in #world: illustrations under the shapes (#back), the shapes,
+   illustrations over the shapes (#art), the type and a white flash. */
+#world, #back, #art, #flash { position: fixed; inset: 0; pointer-events: none; }
+#back, #art { overflow: hidden; }
+#flash { background: #fff; opacity: 0; }
+
 /* Flat stage with perspective: stacking follows DOM order (the yellow shape is last). */
 #stage {
   position: fixed;
@@ -56,6 +62,29 @@ body.idle { cursor: none; }
   will-change: transform, opacity;
   contain: layout style;
 }
+
+/* ------------------------------------------------------------ illustrations (from pasquil.nl) */
+.art {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  visibility: hidden;
+  object-fit: contain;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+.art.office { will-change: auto; }
+/* The logo split in two for the shout: "pas" and "quil". The keyhole stays see-through. */
+.art.half {
+  background: var(--navy);
+  -webkit-mask: url('../img/logo.png') no-repeat;
+  mask: url('../img/logo.png') no-repeat;
+}
+.art.half.pas { -webkit-mask-size: 204.04% 100%; mask-size: 204.04% 100%; -webkit-mask-position: 0 0; mask-position: 0 0; }
+.art.half.quil { -webkit-mask-size: 196.12% 100%; mask-size: 196.12% 100%; -webkit-mask-position: 100% 0; mask-position: 100% 0; }
 
 /* ------------------------------------------------------------ kinetic type */
 #type { position: fixed; inset: 0; pointer-events: none; }
@@ -80,6 +109,16 @@ body.idle { cursor: none; }
 .line.pw { font-weight: 600; letter-spacing: 0.02em; }
 .line.label { font-weight: 700; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
 .line.soft { font-weight: 500; letter-spacing: -0.005em; line-height: 1.3; }
+/* captions on the office illustration: white on a navy label */
+.line.tag {
+  color: #fff;
+  background: var(--navy);
+  padding: 0.34em 0.72em 0.4em;
+  border-radius: 0.42em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  box-shadow: 0.12em 0.12em 0 rgba(11, 29, 81, 0.25);
+}
 /* The white logo from pasquil.nl, used as a mask so it can be navy; the keyhole stays see-through. */
 .line.logo .mark {
   display: block;

@@ -1,5 +1,5 @@
-/* Conductor: renders the shapes (one matrix3d per element), sets the kinetic type,
-   blends one scene into the next, schedules the score and wires up the controls. */
+/* Conductor: renders the shapes (one matrix3d per element), the illustrations and the
+   kinetic type, blends one scene into the next, plays the soundtrack and wires up the controls. */
 (function () {
   'use strict';
   const BJ = window.BJ, G = BJ.G, A = BJ.Audio, E = BJ.ease, clamp = BJ.clamp, lerp = BJ.lerp, C = BJ.C;
@@ -9,6 +9,8 @@
   scenes.forEach((s) => { s.start = total; total += s.beats; });
 
   const body = document.body;
+  const world = document.getElementById('world');
+  const flash = document.getElementById('flash');
   const stage = document.getElementById('stage');
   const typeRoot = document.getElementById('type');
   const hint = document.getElementById('hint');
@@ -136,7 +138,7 @@
   }
 
   // ------------------------------------------------------------ kinetic type
-  // scene.type: [{ at, to, text | fn(b) | html, y (fraction of H), x (px from centre), align, size, color, weight, stagger, pop }]
+  // scene.type: [{ at, to, text | fn(b) | html, y (fraction of H), x (px from centre), align, size, color, weight, stagger, pop, cut }]
   // Words rise into place one after another, sharpening as they land.
   const items = [];
   scenes.forEach((sc) => (sc.type || []).forEach((t) => items.push(Object.assign({ s0: sc.start, el: null, words: [], cur: '' }, t))));
@@ -207,7 +209,7 @@
         }
         continue;
       }
-      const out = end === Infinity ? 1 : E.inOutSine(clamp((end - bt) / 0.45));
+      const out = end === Infinity || it.cut ? 1 : E.inOutSine(clamp((end - bt) / 0.45));
       const k0 = Math.round(out * 300) + ':' + Math.round(fs);
       if (k0 !== it.key) {
         it.key = k0;
@@ -226,6 +228,55 @@
         s.filter = f < 0.995 ? 'blur(' + ((1 - f) * 0.14 * fs).toFixed(1) + 'px)' : 'none';
       });
     }
+  }
+
+  // ------------------------------------------------------------ illustrations
+  // scene.art: [{ at, to, src | html, layer: 'back' (under the shapes) | 'front', cls, place(b) }]
+  // place(b) returns { x, y (centre, px from G.cx/G.cy), w, h, s, rot, o } or null.
+  // Layout size only follows w/h in steps, in between the element is scaled: crisp and cheap.
+  const arts = [];
+  const layers = { back: document.getElementById('back'), front: document.getElementById('art') };
+  scenes.forEach((sc) => (sc.art || []).forEach((a) => {
+    let el;
+    if (a.src) { el = new Image(); el.alt = ''; el.draggable = false; el.decoding = 'async'; el.src = a.src; }
+    else { el = document.createElement('div'); el.innerHTML = a.html || ''; }
+    el.className = 'art' + (a.cls ? ' ' + a.cls : '');
+    if (a.label) { el.setAttribute('role', 'img'); el.setAttribute('aria-label', a.label); }
+    layers[a.layer === 'back' ? 'back' : 'front'].appendChild(el);
+    arts.push(Object.assign({ s0: sc.start, el, lw: 0, lh: 0, lv: -1, on: false, tk: '', ok: '' }, a));
+  }));
+  function renderArt(bt) {
+    for (const a of arts) {
+      const b = bt - a.s0, P = bt >= a.s0 + a.at && bt < a.s0 + a.to ? a.place(b) : null;
+      const st = a.el.style;
+      if (!P || P.o <= 0.004 || P.w < 1) {
+        if (a.on) { st.visibility = 'hidden'; a.on = false; }
+        continue;
+      }
+      if (!a.on) { st.visibility = 'visible'; a.on = true; }
+      const w = P.w, h = P.h || P.w;
+      if (a.lv !== G.version || Math.abs(w / a.lw - 1) > 0.06 || Math.abs(h / a.lh - 1) > 0.06) {
+        a.lw = w; a.lh = h; a.lv = G.version;
+        st.width = w.toFixed(1) + 'px'; st.height = h.toFixed(1) + 'px';
+      }
+      const k = (w / a.lw) * (P.s === undefined ? 1 : P.s);
+      const t = 'translate3d(' + (G.cx + P.x - a.lw / 2).toFixed(1) + 'px,' + (G.cy + P.y - a.lh / 2).toFixed(1) + 'px,0)' +
+        (P.rot ? ' rotate(' + P.rot.toFixed(4) + 'rad)' : '') + (k !== 1 ? ' scale(' + k.toFixed(4) + ')' : '');
+      if (t !== a.tk) { st.transform = t; a.tk = t; }
+      const o = P.o === undefined ? 1 : Math.min(1, P.o), ok = o.toFixed(3);
+      if (ok !== a.ok) { st.opacity = ok; a.ok = ok; }
+    }
+  }
+
+  // ------------------------------------------------------------ camera shake and flash
+  // scene.fx(b) → { x, y, rot, flash }: moves the whole picture (shapes, art and type) at once.
+  let fxk = '', flk = '';
+  function renderFx(sc, b) {
+    const f = sc && sc.fx ? sc.fx(b) : null;
+    const t = f && (f.x || f.y || f.rot) ? 'translate3d(' + (f.x || 0).toFixed(1) + 'px,' + (f.y || 0).toFixed(1) + 'px,0) rotate(' + (f.rot || 0).toFixed(4) + 'rad)' : '';
+    if (t !== fxk) { world.style.transform = t; fxk = t; }
+    const fl = f && f.flash > 0.004 ? Math.min(1, f.flash).toFixed(3) : '0';
+    if (fl !== flk) { flash.style.opacity = fl; flk = fl; }
   }
 
   // ------------------------------------------------------------ layout
@@ -251,6 +302,9 @@
     }
     setBg(C.white);
   }
+
+  // ------------------------------------------------------------ soundtrack
+  BJ.Audio.loadTrack('audio/track.m4a', BJ.TRACK_OFF, 0.0014);
 
   // ------------------------------------------------------------ score
   function buildEvents() {
@@ -278,7 +332,7 @@
         buzz: (b, v) => at(b, (T) => A.buzz(T, v)),
         womp: (b, n, beats, v, vib) => at(b, (T) => A.womp(T, BJ.m(n), beats * BEAT, v, vib)),
       };
-      sc.music(M);
+      if (sc.music) sc.music(M);
     });
     return ev;
   }
@@ -376,7 +430,9 @@
       const bt = Math.max(0, T / BEAT);
       sceneFrame(bt);
       render();
+      renderArt(bt);
       renderType(bt);
+      renderFx(scenes[cur], bt - scenes[cur].start);
       bar.style.transform = 'scaleX(' + clamp(bt / total).toFixed(4) + ')';
       body.classList.toggle('dark', !!(scenes[cur] && scenes[cur].dark && scenes[cur].dark(bt - scenes[cur].start)));
       if (bt >= total && !body.classList.contains('ended')) body.classList.add('ended');
@@ -403,7 +459,9 @@
       }
       sceneFrame(bt);
       render();
+      renderArt(bt);
       renderType(bt);
+      renderFx(scenes[cur], bt - scenes[cur].start);
       return sec;
     },
   };

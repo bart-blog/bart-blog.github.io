@@ -1,6 +1,6 @@
-/* Audio: a tiny Web Audio studio. Every sound is synthesized — no samples.
+/* Audio: the soundtrack (audio/track.m4a) plus a tiny Web Audio studio of synthesized voices.
    The audio clock is the master clock; the animation reads its time from here,
-   so a pulse on screen and the note that caused it can never drift apart. */
+   so a hit on screen and the drum that caused it can never drift apart. */
 (function () {
   'use strict';
   const BJ = window.BJ;
@@ -14,6 +14,7 @@
     events: [],
     ptr: 0,
     ok: false,
+    track: { buf: null, off: 0 },
   });
 
   A.init = function () {
@@ -48,6 +49,10 @@
     A.master.gain.value = A.muted ? 0 : 0.9;
     A.master.connect(comp);
     comp.connect(ctx.destination);
+    // the soundtrack is mastered already: it skips the compressor
+    A.music = ctx.createGain();
+    A.music.gain.value = A.muted ? 0 : 1;
+    A.music.connect(ctx.destination);
 
     A.reverb = ctx.createConvolver();
     A.reverb.buffer = impulse(ctx, 3.6, 2.6);
@@ -85,12 +90,17 @@
       const old = A.run;
       old.dry.gain.setTargetAtTime(0, ctx.currentTime, 0.03);
       old.send.gain.setTargetAtTime(0, ctx.currentTime, 0.03);
-      setTimeout(() => { old.dry.disconnect(); old.send.disconnect(); }, 400);
+      old.bus.gain.setTargetAtTime(0, ctx.currentTime, 0.03);
+      setTimeout(() => {
+        if (old.src) try { old.src.stop(); } catch (e) {}
+        old.dry.disconnect(); old.send.disconnect(); old.bus.disconnect();
+      }, 400);
     }
-    const dry = ctx.createGain(), send = ctx.createGain();
+    const dry = ctx.createGain(), send = ctx.createGain(), bus = ctx.createGain();
     dry.connect(A.master);
     send.connect(A.reverb);
-    A.run = { dry, send, t0: ctx.currentTime + 0.15 };
+    bus.connect(A.music);
+    A.run = { dry, send, bus, src: null, srcT0: 0, t0: ctx.currentTime + 0.15 };
     A.clock.reset(-0.15);
     return A.run;
   };
@@ -98,7 +108,52 @@
   A.setMuted = function (m) {
     A.muted = m;
     if (A.master) A.master.gain.setTargetAtTime(m ? 0 : 0.9, A.ctx.currentTime, 0.05);
+    if (A.music) A.music.gain.setTargetAtTime(m ? 0 : 1, A.ctx.currentTime, 0.05);
   };
+
+  // ------------------------------------------------------------ soundtrack
+  // Decoded once at page load (an offline context needs no user gesture); the buffer is then
+  // played by whichever context the run uses. `firstAt` is where the first sound starts in the
+  // master WAV: if a decoder adds padding, the offset is corrected so the drums stay on the cut.
+  A.loadTrack = function (url, offset, firstAt) {
+    A.track.off = offset || 0;
+    const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    if (!OAC || !window.fetch) return Promise.resolve(null);
+    return fetch(url)
+      .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
+      .then((ab) => new Promise((res, rej) => {
+        const oc = new OAC(2, 1, 48000), p = oc.decodeAudioData(ab, res, rej);
+        if (p && p.then) p.then(res, rej);
+      }))
+      .then((buf) => {
+        if (firstAt !== undefined) {
+          const a = buf.getChannelData(0), b = buf.numberOfChannels > 1 ? buf.getChannelData(1) : a, n = Math.min(a.length, buf.sampleRate * 2);
+          let i = 0;
+          while (i < n && Math.abs(a[i] + b[i]) < 0.1) i++;
+          const pad = i / buf.sampleRate - firstAt;
+          if (i < n && Math.abs(pad) < 0.2) A.track.off += pad;
+        }
+        A.track.buf = buf;
+        return buf;
+      })
+      .catch((e) => { console.warn('soundtrack unavailable:', e); return null; });
+  };
+  // Keep the soundtrack playing in step with the song clock. Joins in sync if it finished
+  // loading late, and restarts in the right place if the clock had to re-anchor.
+  function syncTrack(T) {
+    const r = A.run, buf = A.track.buf;
+    if (!buf) return;
+    if (r.src && Math.abs(r.srcT0 - r.t0) < 0.04) return;
+    if (r.src) { try { r.src.stop(); } catch (e) {} r.src.disconnect(); r.src = null; }
+    const pos = T < 0 ? 0 : T + 0.05, off = pos + A.track.off;
+    r.srcT0 = r.t0;
+    if (off >= buf.duration) { r.src = { stop() {}, disconnect() {} }; return; }
+    const s = A.ctx.createBufferSource();
+    s.buffer = buf;
+    s.connect(r.bus);
+    s.start(r.t0 + pos, Math.max(0, off));
+    r.src = s;
+  }
 
   // ------------------------------------------------------------ clock
   // ctx.currentTime advances in audio-callback sized steps; we low-pass it against
@@ -139,6 +194,7 @@
   };
   A.pump = function (songTime) {
     if (!A.ok || !A.run || A.clock.paused || A.ctx.state !== 'running') return;
+    syncTrack(songTime);
     const ahead = songTime + 0.25;
     while (A.ptr < A.events.length && A.events[A.ptr].t < ahead) {
       const e = A.events[A.ptr++];

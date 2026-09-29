@@ -3,12 +3,14 @@
   'use strict';
   const BJ = (window.BJ = window.BJ || {});
 
-  // Everything is tuned to the golden ratio: one beat lasts 1/φ seconds (≈ 97 BPM),
-  // scenes last a Fibonacci number of bars, and the stage sits on the golden section.
+  // The film is cut to the soundtrack (audio/track.m4a): 120.64 BPM, measured from the WAV.
+  // Film beat 0 sits TRACK_OFF seconds into the track; BJ.sec() turns a track time into film beats.
   const PHI = (1 + Math.sqrt(5)) / 2;
   BJ.PHI = PHI;
   BJ.GA = Math.PI * (3 - Math.sqrt(5)); // golden angle, 137.5°
-  BJ.BEAT = 1 / PHI;
+  BJ.BEAT = 60 / 120.64;
+  BJ.TRACK_OFF = 0.01;
+  BJ.sec = (s) => (s - BJ.TRACK_OFF) / BJ.BEAT;
   BJ.N = 150; // shapes on stage
   BJ.TAU = Math.PI * 2;
 
@@ -105,6 +107,7 @@
   BJ.C = {
     white: hex('#ffffff'), bg: hex('#ffffff'), navy: hex('#0b1d51'), ink: hex('#272838'), yellow: hex('#fcba04'),
     red: hex('#ea3546'), green: hex('#4dcb58'), mist: hex('#e3e7f1'), steel: hex('#a3adc9'), deep: hex('#1c3478'),
+    office: hex('#fab800'), // the yellow of the isometric office illustration on pasquil.nl
   };
   BJ.mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
   BJ.css = (c) => 'rgb(' + Math.round(c[0]) + ',' + Math.round(c[1]) + ',' + Math.round(c[2]) + ')';
