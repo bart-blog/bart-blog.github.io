@@ -193,7 +193,8 @@
       if (it.html) {
         // html lines (logo, link) fade in place, so shapes can line up with them exactly
         if (!it.placed) { it.placed = 1; it.el.style.transform = 'translate3d(-50%,-50%,0)'; }
-        const f = E.inOutSine(clamp((bt - it.s0 - (it.show === undefined ? it.at : it.show)) / (it.fade || 0.9)));
+        const f = E.inOutSine(clamp((bt - it.s0 - (it.show === undefined ? it.at : it.show)) / (it.fade || 0.9))) *
+          (end === Infinity ? 1 : E.inOutSine(clamp((end - bt) / 0.45)));
         const k = Math.round(f * 300) + '';
         if (k !== it.hk) { it.hk = k; it.el.style.opacity = f; }
         continue;
