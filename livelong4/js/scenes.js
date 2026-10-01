@@ -519,7 +519,7 @@
 
   // =========================================================== 6 · three reasons, one per bar
   // A: the referral letter tears in half. B: 48 hours go round the clock.
-  // D: 108 walk-in locations light up (timed in its original bar, 12–16; the scene plays it at 8–12).
+  // D: 108 locations (walk in or by appointment) light up (timed in its original bar, 12–16; the scene plays it at 8–12).
   // --- A · the referral
   const DOC = []; // [side, fn(p)] in doc units (1 wide), side -1 left, +1 right
   DOC.push([-1, (p) => rect(p, -0.2375, -0.05, 0.485, 1.25, 0.05, C.white)]);
@@ -616,7 +616,8 @@
       ...two(0.4, 1.4, 3.7, 'No GP', 'referral needed.', { color: '#fff' }),
       { at: 4.2, to: 7.8, fn: (b) => Math.round(FILL6(b) * 48) + 'h', y: () => G.cy / G.H, size: 1.2, cls: 'num' },
       ...two(4.4, 5.4, 7.7, 'Results', 'within 48 hours.'),
-      ...two(8.4, 9.4, 11.8, 'Walk in at', '108 locations.'),
+      ...two(7.9, 8.4, 11.8, 'Walk in or', 'make an appointment', { stagger: 0.25 }),
+      { at: 9, to: 11.8, text: 'at 108 locations.', y: TY(1.6 * 0.84), size: 0.84, stagger: 0.25 },
     ],
     music(M) {
       drums(M, 0, 12, { kick: 1, clap: 1, hat: 1, open: 1, hat16: 1 });

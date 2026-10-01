@@ -627,6 +627,8 @@
   const run9 = (b) => E.inOutSine(clamp((b - RUN9[0]) / (RUN9[1] - RUN9[0])));
   const Rg9 = () => G.R * 0.92;
   // clear the clock before the logo assembles (this pose keeps running while the signature blends in)
+  // the clock dial opens out from the centre, clockwise from 12 o'clock
+  const open9 = (b, k) => lerp(0.2, 1, E.outCubic(clamp((b - 0.05 - (k / 48) * 0.35) / 0.8)));
   const out9 = (b) => 1 - E.inOutSine(clamp((b - 5.2) / 1.1));
   const S9 = {
     name: 'hours',
@@ -646,8 +648,8 @@
       }
       if (r < TXT0) {
         const k = r - 1, a = -Math.PI / 2 + (k / 48) * TAU, T = LIT9[k], on = clamp((b - T) / 0.1);
-        const f = hit(b, T, 3), wave = hit(b, DONE9 + k * 0.01, 3);
-        o.x = Math.cos(a) * Rg; o.y = Math.sin(a) * Rg;
+        const f = hit(b, T, 3), wave = hit(b, DONE9 + k * 0.01, 3), Ro = Rg * open9(b, k);
+        o.x = Math.cos(a) * Ro; o.y = Math.sin(a) * Ro;
         o.sx = o.sy = (k % 12 === 0 ? 0.95 : 0.72) * (1 + 0.5 * f + 0.4 * wave);
         o.c = on; o.o = lerp(0.35, 1, on) * out9(b);
         return;
@@ -655,7 +657,7 @@
       const p = SH.h48.pts[r - TXT0], Tw = Rg * 1.2;
       o.x = p[0] * Tw; o.y = p[1] * Tw;
       o.sx = o.sy = ((SH.h48.sp * Tw * 0.9) / G.dot) * (1 + 0.25 * done);
-      o.c = 0.8 * done; o.o = out9(b);
+      o.o = out9(b);
     },
     captions: [{ at: 0.6, to: 5.7, text: 'Results within 48 hours.' }],
     music(M) {
