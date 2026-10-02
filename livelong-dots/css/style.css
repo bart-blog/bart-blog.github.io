@@ -95,6 +95,8 @@ body.idle { cursor: none; }
   text-wrap: balance;
 }
 .caption.logo img { display: block; margin: 0 auto; width: min(56vw, 34vh); height: auto; }
+.caption.sig { left: 0; right: 0; top: 0 !important; height: 0; opacity: 1 !important; transform: none !important; }
+.caption.sig img { position: absolute; display: block; max-width: none; opacity: 0; transform-origin: 50% 50%; will-change: opacity, transform; }
 .caption .w { display: inline-block; opacity: 0; will-change: opacity, transform; }
 .caption.link { font-size: clamp(14px, 1.2vw, 17px); font-weight: 500; letter-spacing: 0.01em; pointer-events: auto; }
 .caption.link a {

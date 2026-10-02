@@ -821,6 +821,21 @@
     const total = 0.152 * sM + 0.08 * sW + 0.177 * sW, dyM = -total / 2 + 0.076 * sM, dyW = dyM + 0.076 * sM + 0.08 * sW + 0.086 * sW;
     return { mark: (x, y) => [(x - MC[0]) * sM, (y - MC[1]) * sM + dyM], word: (x, y) => [(x - wx) * sW, y * sW + dyW], sM, sW, k: 0.78 };
   });
+  // On the downbeat the dots swell into solid strokes and the real logo (img/logo-mark.png,
+  // img/logo-word.png, cut from logo.png) takes over, laid exactly over the dots.
+  // logo.png: 1640 px per shape unit, shape origin at (960, 299).
+  const SWELL12 = 4.5, SOLID12 = 4.75;
+  const swell12 = (b) => E.inOutSine(clamp((b - SWELL12) / 0.45));
+  const LOGO12 = { mark: [125, 155, 460, 300], word: [585, 110, 1210, 380] };
+  function placeLogo12(img, f, s, [x0, y0, w, h], a, g) {
+    const [x, y] = f((x0 - 960) / 1640, (y0 - 299) / 1640);
+    img.style.left = (G.cx + x).toFixed(1) + 'px';
+    img.style.top = (G.cy + y).toFixed(1) + 'px';
+    img.style.width = ((w / 1640) * s).toFixed(1) + 'px';
+    img.style.height = ((h / 1640) * s).toFixed(1) + 'px';
+    img.style.opacity = a.toFixed(3);
+    img.style.transform = 'scale(' + g.toFixed(4) + ')';
+  }
   const beat12 = (b) => { let e = 0; for (const at of BEAT12) e += hit(b, at, 5) + 0.6 * hit(b, at + 0.3, 6); return e; };
   const S12 = {
     name: 'signature',
@@ -839,22 +854,34 @@
         const s = lerp(1.3, dS, clamp(q)) * (1 + 0.28 * pb);
         o.sx = s * (1 + 0.25 * land - 0.1 * pre); o.sy = s * (1 - 0.25 * land + 0.15 * pre);
         o.c = 1;
+        o.o = 1 - clamp((b - SOLID12 - 0.2) / 0.25);
         return;
       }
+      const sw = swell12(b);
+      o.o = 1 - clamp((b - SOLID12 - 0.2) / 0.25);
       if (r < WD0) {
         const mark = r < BR0, p = mark ? LG.mark[r - MK0] : LG.bars[r - BR0];
         const [x, y] = L.mark(p[0], p[1]), [cx, cy] = L.mark(MC[0], MC[1]), g = 1 + 0.035 * pb;
         o.x = cx + (x - cx) * g; o.y = cy + (y - cy) * g;
         const T = mark ? markAt[r - MK0] : BARS12;
-        o.sx = o.sy = (((mark ? LG.spO : LG.barW * 1.4) * L.sM * L.k) / G.dot) * (1 + 0.35 * hit(b, T, 4) + 0.15 * pb);
+        o.sx = o.sy = (((mark ? LG.spO : LG.barW * 1.4) * L.sM * L.k) / G.dot) * (1 + 0.35 * hit(b, T, 4) + 0.15 * pb) * (1 + (mark ? 0.2 : 0.3) * sw);
         o.c = mark ? 1 : 0;
         return;
       }
       const p = LG.word[r - WD0], [x, y] = L.word(p[0], p[1]);
       o.x = x; o.y = y;
-      o.sx = o.sy = ((LG.spW * L.sW * L.k) / G.dot) * (1 + 0.3 * hit(b, LAND12(letter12(p[0])), 4));
+      o.sx = o.sy = ((LG.spW * L.sW * L.k) / G.dot) * (1 + 0.3 * hit(b, LAND12(letter12(p[0])), 4)) * (1 + 0.75 * sw);
     },
     captions: [
+      {
+        at: SWELL12, to: Infinity, cls: 'sig',
+        html: '<img class="lm" src="img/logo-mark.png" alt=""><img class="lw" src="img/logo-word.png" alt="LiveLong">',
+        update(el, b) {
+          const L = LL12(), pb = beat12(b), a = E.inOutSine(clamp((b - SOLID12) / 0.4));
+          placeLogo12(el.children[0], L.mark, L.sM, LOGO12.mark, a, 1 + 0.035 * pb);
+          placeLogo12(el.children[1], L.word, L.sW, LOGO12.word, a, 1 + 0.012 * pb);
+        },
+      },
       { at: 5.6, to: Infinity, text: 'Take charge of your health.' },
       {
         at: 6.8, to: Infinity, cls: 'link',
@@ -870,6 +897,7 @@
       M.pad(1.8, 'D3 A3 C4 F#4', 3.2, 0.24); M.sub(1.8, 'D2', 3.2, 0.2);
       M.drop(DROP12 + 0.2, 'D6', 0.28); M.bell(DROP12 + 0.2, 'G6', 0.22);
       BEAT12.forEach((at, k) => { M.thump(at, 0.5 - k * 0.03); M.thump(at + 0.3, 0.3 - k * 0.02); });
+      M.whoosh(SWELL12, 0.6, 0.05, 900, 3200); M.bell(SOLID12 + 0.1, 'B6', 0.08);
       M.boom(5, 0.45); M.kick(5, 0.36); M.bell(5, 'D7', 0.14);
       M.ep(5, 'G3', 0.36); M.ep(5, 'G2', 0.3); M.ep(5.03, 'B5', 0.2); M.ep(5.06, 'D6', 0.18);
       M.pad(5, 'G3 D4 F#4 A4 B4', 3.5, 0.3); M.sub(5, 'G1', 3.5, 0.28);
